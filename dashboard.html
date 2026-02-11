@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Kemal Computer</title>
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Inline styles for dashboard.html to ensure specific overrides or initial layout */
+        :root {
+            --primary-color: #008080;
+            --primary-hover: #006666;
+            --secondary-color: #f0f0f0;
+            --secondary-hover: #e0e0e0;
+            --success-color: #22c55e;
+            --success-hover: #16a34a;
+            --info-color: #3b82f6;
+            --info-hover: #2563eb;
+            --warning-color: #f59e0b;
+            --warning-hover: #d97706;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --bg-color: #f0f2f5;
+            --container-bg: #ffffff;
+            --text-color: #333333;
+            --text-color-light: #6b7280;
+            --border-color: #e5e7eb;
+            --border-radius-sm: 8px;
+            --border-radius-md: 12px;
+            --border-radius-lg: 16px;
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --transition-ease: all 0.3s ease;
+            --status-waiting-bg: #f59e0b;
+            --status-waiting-text: white;
+            --status-process-bg: #22c55e;
+            --status-process-text: white;
+            --status-finished-bg: #008080;
+            --status-finished-text: white;
+            --status-picked-up-bg: #6a08eb;
+            --status-picked-up-text: white;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1300px;
+            margin: 30px auto;
+            padding: 30px;
+            background-color: var(--container-bg);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 2.5em;
+            margin: 0;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .header-buttons button {
+            padding: 10px 15px;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-size: 1em;
+            transition: var(--transition-ease);
+            color: white;
+            border: none;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        #searchInput {
+            width: calc(100% - 24px);
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            font-size: 1em;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        #searchInput:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 128, 128, 0.2);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        #serviceTable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: none;
+        }
+
+        #serviceTable th, #serviceTable td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        #serviceTable th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        #serviceTable tr:nth-child(even) {
+            background-color: var(--secondary-color);
+        }
+
+        #serviceTable tr:hover:not(.edit-mode):not(.no-data-row) {
+            background-color: #f5f5f5;
+        }
+
+        .status-column {
+            position: sticky;
+            right: 180px;
+            z-index: 5;
+            background-color: var(--container-bg);
+        }
+        #serviceTable th.status-column {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .action-column {
+            position: sticky;
+            right: 0;
+            z-index: 10;
+            background-color: var(--container-bg);
+        }
+        #serviceTable th.action-column {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .action-buttons button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: var(--transition-ease);
+            margin-right: 5px;
+        }
+        .action-buttons button:last-child {
+            margin-right: 0;
+        }
+
+        .whatsapp-button {
+            background-color: #25D366;
+            color: white;
+        }
+        .whatsapp-button:hover {
+            background-color: #128C7E;
+        }
+
+        .edit-button {
+            background-color: var(--info-color);
+            color: white;
+        }
+        .edit-button:hover {
+            background-color: var(--info-hover);
+        }
+
+        .delete-button {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        .delete-button:hover {
+            background-color: var(--danger-hover);
+        }
+
+        .save-button {
+            background-color: var(--success-color);
+            color: white;
+        }
+        .save-button:hover {
+            background-color: var(--success-hover);
+        }
+
+        .cancel-button {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+        .cancel-button:hover {
+            background-color: var(--secondary-hover);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            color: white;
+            text-transform: capitalize;
+            font-size: 0.85em;
+        }
+        .status-waiting { background-color: var(--status-waiting-bg); color: var(--status-waiting-text); }
+        .status-process { background-color: var(--status-process-bg); color: var(--status-process-text); }
+        .status-finished { background-color: var(--status-finished-bg); color: var(--status-finished-text); }
+        .status-picked-up { background-color: var(--status-picked-up-bg); color: var(--status-picked-up-text); }
+
+        .add-new-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-size: 1.1em;
+            display: block;
+            width: fit-content;
+            margin: 30px auto 0 auto;
+            transition: var(--transition-ease);
+            box-shadow: var(--shadow-md);
+        }
+        .add-new-button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            background-color: var(--container-bg);
+            margin: auto;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .close-button {
+            color: var(--text-color-light);
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: var(--danger-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Edit Modal Form Styles */
+        #editModal .modal-content {
+            max-width: 600px;
+            text-align: left;
+        }
+        #editModal h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        #editForm .form-group {
+            margin-bottom: 15px;
+        }
+        #editForm .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        #editForm .form-group input,
+        #editForm .form-group textarea,
+        #editForm .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+        #editForm .form-group input:focus,
+        #editForm .form-group textarea:focus,
+        #editForm .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-size: 1em;
+            transition: var(--transition-ease);
+        }
+        .modal-button.primary-button {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .modal-button.primary-button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .modal-button.danger-button {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        .modal-button.danger-button:hover {
+            background-color: var(--danger-hover);
+        }
+
+        .modal-button.secondary-button {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+        .modal-button.secondary-button:hover {
+            background-color: var(--secondary-hover);
+        }
+        
+        .modal-button.success-button {
+            background-color: var(--success-color);
+            color: white;
+        }
+        .modal-button.success-button:hover {
+            background-color: var(--success-hover);
+        }
+
+        .no-data-row td {
+            font-style: italic;
+            color: var(--text-color-light);
+            padding: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 992px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .header-buttons {
+                width: 100%;
+                display: flex;
+                justify-content: flex-end;
+            }
+            .header-buttons button {
+                margin-left: 5px;
+                margin-right: 0;
+                font-size: 0.9em;
+                padding: 8px 12px;
+            }
+            #serviceTable th, #serviceTable td {
+                padding: 8px;
+                font-size: 0.9em;
+            }
+            .action-buttons button {
+                padding: 6px 10px;
+                font-size: 0.8em;
+            }
+            .add-new-button {
+                font-size: 1em;
+                padding: 10px 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 20px;
+            }
+            header h1 {
+                font-size: 2em;
+            }
+            #searchInput {
+                width: calc(100% - 20px);
+                padding: 10px;
+            }
+            .table-responsive {
+                width: 100%;
+                overflow-x: auto;
+            }
+            #serviceTable {
+                min-width: 700px;
+            }
+            .status-badge {
+                padding: 4px 8px;
+                font-size: 0.8em;
+            }
+        }
+        @media (max-width: 480px) {
+            .header-buttons {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .header-buttons button {
+                margin-left: 0;
+                margin-bottom: 10px;
+                width: 100%;
+            }
+            .add-new-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dashboard Admin</h1>
+            <div class="header-buttons">
+                <button class="btn-primary" onclick="refreshData()"><i class="fas fa-sync-alt"></i> Perbarui</button>
+                <button class="btn-danger" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </header>
+
+        <section class="controls">
+            <input type="text" id="searchInput" placeholder="Cari Kode, Nama, Device, Kerusakan, HP, atau Keterangan..." onkeyup="filterTable()">
+        </section>
+
+        <div class="table-responsive">
+            <table id="serviceTable">
+                <thead>
+                    <tr>
+                        <th>Kode Service</th>
+                        <th>Nama Pelanggan</th>
+                        <th>Device</th>
+                        <th>Kerusakan</th>
+                        <th>Nomor HP</th>
+                        <th class="status-column">Status</th>
+                        <th>Keterangan</th>
+                        <th class="action-column">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <button class="add-new-button" onclick="window.location.href='admin.html'"><i class="fas fa-plus"></i> Tambah Service Baru</button>
+    </div>
+
+    <div id="customModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <p id="modalMessage"></p>
+            <div class="modal-buttons" id="modalButtons">
+            </div>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeEditModal()">&times;</span>
+            <h2>Edit Layanan</h2>
+            <form id="editForm">
+                <div class="form-group">
+                    <label for="editKodeService">Kode Service</label>
+                    <input type="text" id="editKodeService" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="editNama">Nama Pelanggan</label>
+                    <input type="text" id="editNama" required>
+                </div>
+                <div class="form-group">
+                    <label for="editDevice">Device</label>
+                    <input type="text" id="editDevice" required>
+                </div>
+                <div class="form-group">
+                    <label for="editKerusakan">Kerusakan</label>
+                    <textarea id="editKerusakan" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="editNomorHp">Nomor HP</label>
+                    <input type="tel" id="editNomorHp" required>
+                </div>
+                <div class="form-group">
+                    <label for="editStatus">Status</label>
+                    <select id="editStatus" required>
+                        <option value="Menunggu">Menunggu</option>
+                        <option value="Proses">Proses</option>
+                        <option value="Selesai">Selesai</option>
+                        <option value="Diambil">Diambil</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editKeterangan">Keterangan</label>
+                    <textarea id="editKeterangan" rows="3"></textarea>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="modal-button success-button" onclick="saveEdit()">Simpan Perubahan</button>
+                    <button type="button" class="modal-button secondary-button" onclick="closeEditModal()">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRvkYXHUb42q2H8F_2687CTihtDDNuYQ4",
+            authDomain: "website-track-service.firebaseapp.com",
+            databaseURL: "https://website-track-service-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "website-track-service",
+            storageBucket: "website-track-service.firebasestorage.app",
+            messagingSenderId: "87573564376",
+            appId: "1:87573564376:web:c93c07f0506d00535a00ad",
+            measurementId: "G-64T8XNWK5F"
+        };
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+        import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        const adminEmail = "dayatkemal16@gmail.com";
+
+        let servicesData = {};
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                if (user.email === adminEmail) {
+                    loadServices();
+                } else {
+                    signOut(auth).then(() => {
+                        window.location.href = 'login.html';
+                    }).catch((error) => {
+                        console.error("Error signing out non-admin user:", error);
+                        window.location.href = 'login.html';
+                    });
+                }
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        window.logoutAdmin = async () => {
+            try {
+                await signOut(auth);
+                showModal("Anda telah logout.", "info", () => {
+                    window.location.href = 'login.html';
+                });
+            } catch (error) {
+                console.error("Error logging out:", error);
+                showModal("Gagal logout. Silakan coba lagi.", "info");
+            }
+        };
+
+        window.loadServices = () => {
+            const servicesRef = ref(db, 'antrian');
+            onValue(servicesRef, (snapshot) => {
+                const tableBody = document.getElementById('serviceTable').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = '';
+                servicesData = {};
+
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        const serviceCode = childSnapshot.key;
+                        const service = childSnapshot.val();
+                        servicesData[serviceCode] = service;
+
+                        let statusBadgeClass = '';
+                        switch (service.status) {
+                            case 'Menunggu': statusBadgeClass = 'status-waiting'; break;
+                            case 'Proses': statusBadgeClass = 'status-process'; break;
+                            case 'Selesai': statusBadgeClass = 'status-finished'; break;
+                            case 'Diambil': statusBadgeClass = 'status-picked-up'; break;
+                            default: statusBadgeClass = '';
+                        }
+
+                        const row = tableBody.insertRow();
+                        row.setAttribute('data-id', serviceCode);
+                        row.innerHTML = `
+                            <td>${serviceCode}</td>
+                            <td data-field="nama">${service.nama}</td>
+                            <td data-field="device">${service.device || '-'}</td>
+                            <td data-field="kerusakan">${service.kerusakan}</td>
+                            <td data-field="nomorHp">${service.nomorHp || '-'}</td>
+                            <td class="status-column" data-field="status"><span class="status-badge ${statusBadgeClass}">${service.status}</span></td>
+                            <td data-field="keterangan">${service.keterangan || '-'}</td>
+                            <td class="action-buttons action-column">
+                                <button class="whatsapp-button" onclick="sendWhatsappNotification('${serviceCode}')"><i class="fab fa-whatsapp"></i> Notif</button>
+                                <button class="edit-button" onclick="openEditModal('${serviceCode}')">Edit</button>
+                                <button class="delete-button" onclick="deleteService('${serviceCode}')">Hapus</button>
+                            </td>
+                        `;
+                    });
+                } else {
+                    const row = tableBody.insertRow();
+                    row.className = 'no-data-row';
+                    row.innerHTML = '<td colspan="8" style="text-align:center;">Tidak ada data service.</td>';
+                }
+                filterTable();
+            }, (error) => {
+                console.error("Error loading services:", error);
+                showModal("Gagal memuat data service. Silakan refresh halaman.", "info");
+            });
+        };
+
+        window.sendWhatsappNotification = (serviceCode) => {
+            const service = servicesData[serviceCode];
+            if (!service) {
+                showModal("Data tidak ditemukan.", "info");
+                return;
+            }
+
+            const namaPelanggan = service.nama;
+            const device = service.device;
+            const nomorInvoice = serviceCode;
+            const kerusakan = service.kerusakan;
+            const nomorHp = service.nomorHp;
+            const status = service.status;
+
+            let pesanStatus = '';
+            if (status === 'Selesai' || status === 'Diambil') {
+                pesanStatus = `Sudah selesai pengerjaan. Silakan ambil di toko kami.`;
+            } else if (status === 'Proses') {
+                pesanStatus = `Sedang dalam pengerjaan.`;
+            } else {
+                pesanStatus = `Sedang ${status.toLowerCase()} dan menunggu antrian.`;
+            }
+
+            const message = `
+*Notifikasi |Kemal Computer| Service*
+*==============================*
+Kepada Yth. ${namaPelanggan},
+Service-an anda ${device} dengan nomor invoice ${nomorInvoice}, ${pesanStatus}
+*==============================*
+Untuk Proses Tracking, Kamu bisa memantau melalui link dibawah ini. Terimakasih 🙏🙏😊
+_https://kemaldayat.github.io/ServiceTrackKemalComp/?code=${nomorInvoice}_
+            `.trim();
+
+            const whatsappUrl = `https://wa.me/${nomorHp}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        };
+
+        window.refreshData = () => {
+            loadServices();
+            showModal("Data diperbarui.", "info");
+        };
+
+        window.filterTable = () => {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const tableBody = document.getElementById('serviceTable').getElementsByTagName('tbody')[0];
+            const rows = tableBody.getElementsByTagName('tr');
+
+            let found = false;
+            let hasActualData = false;
+
+            for (let i = 0; i < rows.length; i++) {
+                if (!rows[i].classList.contains('no-data-row')) {
+                    hasActualData = true;
+                    break;
+                }
+            }
+
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].classList.contains('no-data-row')) {
+                    rows[i].style.display = 'none';
+                    continue;
+                }
+
+                const serviceCode = rows[i].cells[0].textContent.toLowerCase();
+                const nama = rows[i].cells[1].textContent.toLowerCase();
+                const device = rows[i].cells[2].textContent.toLowerCase();
+                const kerusakan = rows[i].cells[3].textContent.toLowerCase();
+                const nomorHp = rows[i].cells[4].textContent.toLowerCase();
+                const status = rows[i].cells[5].textContent.toLowerCase();
+                const keterangan = rows[i].cells[6].textContent.toLowerCase();
+
+                if (serviceCode.includes(filter) || nama.includes(filter) || device.includes(filter) ||
+                    kerusakan.includes(filter) || nomorHp.includes(filter) || status.includes(filter) ||
+                    keterangan.includes(filter)) {
+                    rows[i].style.display = "";
+                    found = true;
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+
+            const existingNoDataRow = tableBody.querySelector('.no-data-row');
+            if (existingNoDataRow) {
+                existingNoDataRow.remove();
+            }
+
+            if (!found && hasActualData && filter !== '') {
+                const row = tableBody.insertRow();
+                row.className = 'no-data-row';
+                row.innerHTML = '<td colspan="8" style="text-align:center; color:var(--danger-color);">Data tidak ditemukan.</td>';
+            } else if (!hasActualData && filter === '') {
+                const row = tableBody.insertRow();
+                row.className = 'no-data-row';
+                row.innerHTML = '<td colspan="8" style="text-align:center;">Tidak ada data service.</td>';
+            }
+        };
+
+        // FUNGSI BARU UNTUK MEMBUKA MODAL EDIT
+        window.openEditModal = (serviceCode) => {
+            const service = servicesData[serviceCode];
+            if (!service) {
+                showModal("Data tidak ditemukan.", "info");
+                return;
+            }
+
+            document.getElementById('editKodeService').value = serviceCode;
+            document.getElementById('editNama').value = service.nama;
+            document.getElementById('editDevice').value = service.device || '';
+            document.getElementById('editKerusakan').value = service.kerusakan;
+            document.getElementById('editNomorHp').value = service.nomorHp || '';
+            document.getElementById('editStatus').value = service.status;
+            document.getElementById('editKeterangan').value = service.keterangan || '';
+            
+            document.getElementById('editModal').style.display = 'flex';
+        };
+
+        // FUNGSI BARU UNTUK MENUTUP MODAL EDIT
+        window.closeEditModal = () => {
+            document.getElementById('editModal').style.display = 'none';
+        };
+
+        // FUNGSI BARU UNTUK MENYIMPAN PERUBAHAN DARI MODAL
+        window.saveEdit = async () => {
+            const serviceCode = document.getElementById('editKodeService').value;
+            const updatedNama = document.getElementById('editNama').value.trim();
+            const updatedDevice = document.getElementById('editDevice').value.trim();
+            const updatedKerusakan = document.getElementById('editKerusakan').value.trim();
+            const updatedNomorHp = document.getElementById('editNomorHp').value.trim();
+            const updatedStatus = document.getElementById('editStatus').value;
+            const updatedKeterangan = document.getElementById('editKeterangan').value.trim();
+
+            if (!updatedNama || !updatedDevice || !updatedKerusakan || !updatedNomorHp || !updatedStatus) {
+                showModal('Nama, Device, Kerusakan, Nomor HP, dan Status wajib diisi!', 'info');
+                return;
+            }
+
+            if (!/^\d+$/.test(updatedNomorHp) || !updatedNomorHp.startsWith('62')) {
+                showModal('Nomor HP tidak valid. Gunakan format dimulai 62 (misal: 62812...) dan hanya angka.', 'info');
+                return;
+            }
+
+            try {
+                const originalTimestamp = servicesData[serviceCode]?.timestamp || new Date().toISOString();
+
+                await set(ref(db, `antrian/${serviceCode}`), {
+                    nama: updatedNama,
+                    device: updatedDevice,
+                    kerusakan: updatedKerusakan,
+                    nomorHp: updatedNomorHp,
+                    status: updatedStatus,
+                    keterangan: updatedKeterangan,
+                    timestamp: originalTimestamp
+                });
+                showModal("Data berhasil diperbarui!", "info");
+                closeEditModal();
+                loadServices();
+            } catch (error) {
+                console.error("Error updating service:", error);
+                showModal("Gagal memperbarui data. Silakan coba lagi.", "info");
+            }
+        };
+
+        window.deleteService = (serviceCode) => {
+            showModal(
+                `Apakah Anda yakin ingin menghapus layanan dengan kode ${serviceCode}?`,
+                "confirm",
+                () => confirmDelete(serviceCode)
+            );
+        };
+
+        const confirmDelete = async (serviceCode) => {
+            closeModal();
+            try {
+                await remove(ref(db, `antrian/${serviceCode}`));
+                showModal("Layanan berhasil dihapus!", "info");
+            } catch (error) {
+                console.error("Error deleting service:", error);
+                showModal("Gagal menghapus layanan. Silakan coba lagi.", "info");
+            }
+        };
+
+        const customModal = document.getElementById('customModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalButtons = document.getElementById('modalButtons');
+
+        window.showModal = (message, type, callback) => {
+            modalMessage.textContent = message;
+            modalButtons.innerHTML = '';
+
+            if (type === "info") {
+                const okButton = document.createElement('button');
+                okButton.textContent = 'OK';
+                okButton.className = 'modal-button primary-button';
+                okButton.onclick = () => {
+                    closeModal();
+                    if (callback) callback();
+                };
+                modalButtons.appendChild(okButton);
+            } else if (type === "confirm") {
+                const confirmButton = document.createElement('button');
+                confirmButton.textContent = 'Ya';
+                confirmButton.className = 'modal-button danger-button';
+                confirmButton.onclick = () => {
+                    if (callback) callback();
+                    closeModal();
+                };
+                modalButtons.appendChild(confirmButton);
+
+                const cancelButton = document.createElement('button');
+                cancelButton.textContent = 'Tidak';
+                cancelButton.className = 'modal-button secondary-button';
+                cancelButton.onclick = closeModal;
+                modalButtons.appendChild(cancelButton);
+            }
+            customModal.style.display = 'flex';
+        };
+
+        window.closeModal = () => {
+            customModal.style.display = 'none';
+        };
+
+        window.onclick = (event) => {
+            if (event.target == customModal || event.target == document.getElementById('editModal')) {
+                // Do nothing when clicking inside modal content
+                if (event.target.closest('.modal-content')) {
+                    return;
+                }
+                // Close modals if clicking outside the content
+                closeModal();
+                closeEditModal();
+            }
+        };
+    </script>
+</body>
+</html>
