@@ -4,35 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tambah Layanan Baru - Kemal Computer</title>
+    <link rel="icon" type="image/png" href="images/logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0d9488;
+            --primary-hover: #0f766e;
+            --secondary-color: #f8fafc;
+            --bg-color: #f1f5f9;
+            --container-bg: #ffffff;
+            --text-color: #334155;
+            --text-color-light: #64748b;
+            --border-color: #e2e8f0;
+            --border-radius-sm: 8px;
+            --border-radius-md: 12px;
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --transition-ease: all 0.2s ease-in-out;
+        }
+
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; margin: 0; padding: 40px 20px; display: flex; justify-content: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 600px; background-color: var(--container-bg); border-radius: var(--border-radius-md); box-shadow: var(--shadow-md); padding: 35px; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid var(--border-color); }
+        header h1 { color: var(--primary-color); font-size: 1.8em; font-weight: 600; margin: 0; }
+        
+        .back-button { background-color: var(--secondary-color); color: var(--text-color); border: 1px solid var(--border-color); padding: 8px 15px; border-radius: var(--border-radius-sm); cursor: pointer; font-size: 0.9em; font-weight: 500; transition: var(--transition-ease); display: flex; align-items: center; gap: 8px; }
+        .back-button:hover { background-color: var(--border-color); }
+
+        form div { margin-bottom: 18px; position: relative; }
+        label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-color); font-size: 0.95em; }
+        input[type="text"], input[type="tel"], input[type="number"], textarea, select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-family: inherit; font-size: 0.95em; transition: var(--transition-ease); background-color: var(--secondary-color); box-sizing: border-box; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary-color); background-color: #fff; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15); }
+        
+        /* Auto Fill Notification */
+        .autofill-badge { position: absolute; right: 10px; top: 38px; background-color: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 20px; font-size: 0.75em; font-weight: 600; display: none; align-items: center; gap: 5px; animation: fadeIn 0.3s ease-in-out; }
+        
+        button[type="submit"] { width: 100%; background-color: var(--primary-color); color: white; border: none; padding: 14px; border-radius: var(--border-radius-sm); font-size: 1.1em; font-weight: 600; cursor: pointer; transition: var(--transition-ease); margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        button[type="submit"]:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 600px) { header { flex-direction: column; align-items: flex-start; gap: 15px; } .back-button { width: 100%; justify-content: center; } }
+    </style>
 </head>
 <body>
-    <div class="container add-service-container">
+    <div class="container">
         <header>
-            <h1>Tambah Layanan Baru</h1>
-            <button class="back-button" onclick="window.location.href='dashboard.html'"><i class="fas fa-arrow-left"></i> Kembali ke Dashboard</button>
+            <h1><i class="fas fa-plus-circle"></i> Tambah Servis</h1>
+            <button class="back-button" onclick="window.location.href='dashboard.html'"><i class="fas fa-arrow-left"></i> Kembali</button>
         </header>
 
         <form id="addServiceForm">
             <div>
                 <label for="inputNama">Nama Pelanggan:</label>
-                <input type="text" id="inputNama" required>
+                <input type="text" id="inputNama" list="listPelangganLama" placeholder="Ketik nama pelanggan..." required>
+                <datalist id="listPelangganLama">
+                    </datalist>
             </div>
+
+            <div>
+                <label for="inputNomorHp">Nomor HP (Awali dengan 62):</label>
+                <input type="tel" id="inputNomorHp" placeholder="Contoh: 6281234567890" required>
+                <span id="badgeAutofill" class="autofill-badge"><i class="fas fa-check-circle"></i> Auto-fill dari Profil</span>
+            </div>
+
             <div>
                 <label for="inputDevice">Jenis Device (Laptop, HP, dll):</label>
-                <input type="text" id="inputDevice" required>
+                <input type="text" id="inputDevice" placeholder="Contoh: Asus VivoBook 14" required>
             </div>
+
             <div>
                 <label for="inputKerusakan">Deskripsi Keluhan/Kerusakan:</label>
-                <textarea id="inputKerusakan" rows="3" required></textarea>
+                <textarea id="inputKerusakan" rows="3" placeholder="Contoh: Mati total kena air" required></textarea>
             </div>
+            
             <div>
-                <label for="inputNomorHp">Nomor HP (format 62xxxxxxxxxx):</label>
-                <input type="tel" id="inputNomorHp" placeholder="Contoh: 6281234567890" required>
+                <label for="inputBiaya">Estimasi Biaya (Rp):</label>
+                <input type="number" id="inputBiaya" placeholder="Contoh: 150000" min="0">
             </div>
+
             <div>
-                <label for="inputStatus">Status:</label>
+                <label for="inputStatus">Status Pengerjaan:</label>
                 <select id="inputStatus" required>
                     <option value="Menunggu">Menunggu</option>
                     <option value="Proses">Proses</option>
@@ -40,16 +92,17 @@
                     <option value="Diambil">Diambil</option>
                 </select>
             </div>
+            
             <div>
-                <label for="inputKeterangan">Keterangan (opsional):</label>
-                <textarea id="inputKeterangan" rows="3"></textarea>
+                <label for="inputKeterangan">Catatan Tambahan (Opsional):</label>
+                <textarea id="inputKeterangan" rows="2" placeholder="Catatan khusus untuk teknisi atau pelanggan"></textarea>
             </div>
-            <button type="submit" onclick="addService()">Tambahkan Service</button>
+
+            <button type="submit" id="btnSubmit"><i class="fas fa-save"></i> Simpan Data Servis</button>
         </form>
     </div>
 
     <script type="module">
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDRvkYXHUb42q2H8F_2687CTihtDDNuYQ4",
             authDomain: "website-track-service.firebaseapp.com",
@@ -62,57 +115,113 @@
         };
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // Auth state listener for admin check
+        // Pengecekan Akses Admin
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                if (user.email !== "dayatkemal16@gmail.com") { // GANTI DENGAN EMAIL ADMIN ANDA
-                    alert("Anda tidak memiliki izin akses ke halaman ini.");
-                    window.location.href = 'login.html'; // Redirect non-admin to login
-                }
+            if (!user || user.email !== "dayatkemal16@gmail.com") {
+                alert("Anda tidak memiliki izin akses ke halaman ini.");
+                window.location.href = 'login.html';
             } else {
-                alert("Anda belum login atau sesi telah berakhir.");
-                window.location.href = 'login.html'; // Redirect to login page
+                // Begitu berhasil login, langsung tarik data pelanggan
+                loadCustomerDatabase();
             }
         });
 
-        // Function to generate service code based on timestamp and a random string
+        // -------------------------------------------------------------
+        // LOGIKA AUTO-FILL (DARI NAMA -> NOMOR HP) + DROPDOWN LIST
+        // -------------------------------------------------------------
+        let databasePelanggan = {}; // Menyimpan data dengan key = nama huruf kecil
+        const datalistPelanggan = document.getElementById('listPelangganLama');
+        const inputNama = document.getElementById('inputNama');
+        const inputNomorHp = document.getElementById('inputNomorHp');
+        const badgeAutofill = document.getElementById('badgeAutofill');
+
+        // Fungsi mengambil seluruh nama & no HP dari Firebase
+        async function loadCustomerDatabase() {
+            try {
+                const snapshot = await get(ref(db, 'antrian'));
+                if (snapshot.exists()) {
+                    snapshot.forEach((child) => {
+                        const data = child.val();
+                        if (data.nama && data.nomorHp) {
+                            const nameKey = data.nama.toLowerCase().trim();
+                            // Menyimpan data terbaru ke dalam object (supaya unik)
+                            databasePelanggan[nameKey] = {
+                                namaAsli: data.nama,
+                                nomorHp: data.nomorHp
+                            };
+                        }
+                    });
+
+                    // Memasukkan nama-nama tersebut ke dalam datalist
+                    for (const key in databasePelanggan) {
+                        const option = document.createElement('option');
+                        option.value = databasePelanggan[key].namaAsli;
+                        datalistPelanggan.appendChild(option);
+                    }
+                }
+            } catch (error) {
+                console.error("Gagal load data pelanggan:", error);
+            }
+        }
+
+        // Listener saat Abang mengetik atau memilih nama
+        inputNama.addEventListener('input', () => {
+            const namaDiketik = inputNama.value.toLowerCase().trim();
+            badgeAutofill.style.display = 'none';
+
+            // Cek apakah nama yang diketik persis ada di databasePelanggan
+            if (databasePelanggan[namaDiketik]) {
+                // Jika ketemu, otomatis isi nomor HP-nya
+                inputNomorHp.value = databasePelanggan[namaDiketik].nomorHp;
+                
+                // Tampilkan badge hijau & kasih animasi background
+                badgeAutofill.style.display = 'inline-flex';
+                inputNomorHp.style.backgroundColor = '#dcfce7';
+                setTimeout(() => { inputNomorHp.style.backgroundColor = '#fff'; }, 1000);
+            }
+        });
+        // -------------------------------------------------------------
+
+
         function generateServiceCode() {
             const now = new Date();
-            const year = now.getFullYear().toString().substring(2); // YY
-            const month = (now.getMonth() + 1).toString().padStart(2, '0'); // MM
-            const day = now.getDate().toString().padStart(2, '0'); // DD
-            const hours = now.getHours().toString().padStart(2, '0'); // HH
-            const minutes = now.getMinutes().toString().padStart(2, '0'); // MM
-            const seconds = now.getSeconds().toString().padStart(2, '0'); // SS
-            const random = Math.random().toString(36).substring(2, 6).toUpperCase(); // Random 4 chars
-
+            const year = now.getFullYear().toString().substring(2);
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const random = Math.random().toString(36).substring(2, 6).toUpperCase();
             return `KC-${year}${month}${day}-${hours}${minutes}${seconds}-${random}`;
         }
 
-        window.addService = async () => {
+        document.getElementById('addServiceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btnSubmit = document.getElementById('btnSubmit');
             const nama = document.getElementById('inputNama').value.trim();
             const device = document.getElementById('inputDevice').value.trim();
             const kerusakan = document.getElementById('inputKerusakan').value.trim();
-            const nomorHp = document.getElementById('inputNomorHp').value.trim();
+            const nomorHp = inputNomorHp.value.trim();
             const status = document.getElementById('inputStatus').value;
-            const keterangan = document.getElementById('inputKeterangan').value.trim(); // Get Keterangan
-
-            if (!nama || !device || !kerusakan || !nomorHp || !status) {
-                alert('Nama Pelanggan, Device, Keluhan/Kerusakan, Nomor HP, dan Status wajib diisi!');
-                return;
-            }
+            const biaya = document.getElementById('inputBiaya').value.trim();
+            const keterangan = document.getElementById('inputKeterangan').value.trim();
 
             if (!/^\d+$/.test(nomorHp) || !nomorHp.startsWith('62')) {
-                alert('Nomor HP tidak valid. Gunakan format dimulai 62 (misal: 62812...) dan hanya angka.');
+                alert('Nomor HP tidak valid. Wajib diawali 62 dan hanya angka (Contoh: 62812...).');
+                inputNomorHp.focus();
                 return;
             }
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
 
             const serviceCode = generateServiceCode();
 
@@ -123,23 +232,19 @@
                     kerusakan: kerusakan,
                     nomorHp: nomorHp,
                     status: status,
-                    keterangan: keterangan, // Save Keterangan
-                    timestamp: new Date().toISOString() // Save creation timestamp
+                    biaya: Number(biaya) || 0,
+                    keterangan: keterangan,
+                    timestamp: new Date().toISOString()
                 });
-                alert('Layanan baru berhasil ditambahkan dengan kode: ' + serviceCode);
-                document.getElementById('addServiceForm').reset();
-                document.getElementById('inputStatus').value = 'Menunggu'; // Reset status to default
-
-                window.location.href = 'dashboard.html'; // Redirect back to dashboard
+                
+                alert(`Data sukses disimpan! Nomor Invoice: ${serviceCode}`);
+                window.location.href = 'dashboard.html';
 
             } catch (error) {
-                console.error("Error menambahkan layanan baru:", error);
-                alert('Gagal menambahkan layanan baru. Silakan coba lagi.');
+                alert('Gagal menambahkan layanan. Periksa koneksi internet Anda.');
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<i class="fas fa-save"></i> Simpan Data Servis';
             }
-        };
-
-        document.getElementById('addServiceForm').addEventListener('submit', (e) => {
-            e.preventDefault();
         });
     </script>
 </body>
