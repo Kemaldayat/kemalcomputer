@@ -3,52 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kemal Computer - Solusi Servis Elektronik Anda</title>
-    <link rel="icon" type="image/png" href="images/logo.png">
+    <title id="pageTitle">Solusi Servis Elektronik Anda</title>
+    <link rel="icon" type="image/png" href="images/logo.png" id="faviconImg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; color: #334155; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #0d9488; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #0f766e; }
-        .page-content.hidden { display: none; }
-        
-        /* Service Cards Animation */
-        .service-card { transform: translateY(0); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid transparent; }
-        .service-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); border-color: #ccfbf1; }
+    <script> tailwind.config = { theme: { extend: { colors: { primary: 'var(--color-primary)', } } } } </script>
 
-        /* Status Badge */
-        .status-badge { display: inline-flex; align-items: center; justify-content: center; padding: 4px 12px; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; color: #fff; text-transform: capitalize; letter-spacing: 0.025em; }
-        .status-waiting { background-color: #f59e0b; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3); }
-        .status-process { background-color: #10b981; box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3); }
-        .status-finished { background-color: #0d9488; box-shadow: 0 2px 10px rgba(13, 148, 136, 0.3); }
-        .status-picked-up { background-color: #6366f1; box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3); }
-        
-        /* Slider */
+    <style>
+        :root { --color-primary: #0d9488; }
+        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; color: #334155; }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #f1f5f9; } ::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 4px; }
+        .page-content.hidden { display: none; }
+        .service-card { transform: translateY(0); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid transparent; }
+        .service-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border-color: var(--color-primary); }
+        .status-badge { display: inline-flex; align-items: center; justify-content: center; padding: 4px 12px; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; color: #fff; text-transform: capitalize;}
+        .status-waiting { background-color: #f59e0b; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3); } .status-process { background-color: #10b981; } .status-finished { background-color: var(--color-primary); } .status-picked-up { background-color: #6366f1; }
         .slider-container { position: relative; overflow: hidden; border-radius: 1rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
         .slider-wrapper { display: flex; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         .slider-wrapper img { width: 100%; height: auto; flex-shrink: 0; object-fit: cover;}
-        .slider-container::-webkit-scrollbar { display: none; }
-
-        /* Page Transitions */
-        .page-transition { opacity: 0; transition: opacity 0.4s ease-in-out; }
-        .page-transition.active { opacity: 1; }
-
-        /* Loader */
-        .page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.9); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .page-transition { opacity: 0; transition: opacity 0.4s ease-in-out; } .page-transition.active { opacity: 1; }
+        .page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.9); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; visibility: hidden; transition: 0.3s; }
         .page-loader.show { opacity: 1; visibility: visible; }
-        .loading-spinner { display: none; border: 3px solid rgba(255, 255, 255, 0.3); border-top: 3px solid #fff; border-radius: 50%; width: 1.25rem; height: 1.25rem; animation: spin 1s linear infinite; margin-left: 0.5rem; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Gradient Text */
-        .text-gradient { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(to right, #0d9488, #2dd4bf); }
-
-        /* Floating WA Button */
-        .floating-wa { animation: bounce-slow 2s infinite; }
-        @keyframes bounce-slow { 0%, 100% { transform: translateY(-5%); } 50% { transform: translateY(5%); } }
+        .text-gradient { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-image: linear-gradient(to right, var(--color-primary), #2dd4bf); }
+        .floating-wa { animation: bounce-slow 2s infinite; } @keyframes bounce-slow { 0%, 100% { transform: translateY(-5%); } 50% { transform: translateY(5%); } }
+        
+        .product-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; display: flex; flex-direction: column; transition: 0.3s; }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-color: var(--color-primary); }
+        .product-img-box { height: 180px; background: #f1f5f9; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative;}
+        .product-img-box img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s;}
+        .product-card:hover .product-img-box img { transform: scale(1.05); }
     </style>
 </head>
 <body class="bg-slate-50 relative">
@@ -56,191 +40,130 @@
     <header class="bg-white/95 backdrop-blur-md shadow-sm py-4 sticky top-0 z-50 border-b border-gray-100">
         <div class="container mx-auto px-4 lg:px-8 max-w-7xl flex items-center justify-between">
             <div class="flex items-center space-x-3 cursor-pointer group" onclick="showPage('home-page')">
-                <img src="images/logo.png" alt="Logo Kemal Computer" class="w-10 h-10 rounded-lg shadow-sm group-hover:scale-105 transition-transform">
-                <span class="text-xl md:text-2xl font-bold text-teal-800 tracking-tight">Kemal Computer</span>
+                <img id="headerLogo" src="images/logo.png" alt="Logo Toko" class="w-10 h-10 rounded-lg shadow-sm object-cover">
+                <span id="headerNamaToko" class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Memuat...</span>
             </div>
-            
             <nav class="hidden md:flex space-x-8">
-                <a href="#" class="text-slate-600 hover:text-teal-600 font-semibold transition-colors" onclick="showPage('home-page')">Beranda</a>
-                <a href="#" class="text-slate-600 hover:text-teal-600 font-semibold transition-colors" onclick="showPage('reservation-page')">Reservasi Servis</a>
-                <a href="#" class="text-slate-600 hover:text-teal-600 font-semibold transition-colors" onclick="showPage('tracking-page')">Cek Status</a>
+                <a href="#" class="text-slate-600 hover:text-primary font-semibold transition-colors" onclick="showPage('home-page')">Beranda</a>
+                <a href="#" class="text-slate-600 hover:text-primary font-semibold transition-colors" onclick="showPage('reservation-page')">Reservasi Servis</a>
+                <a href="#" class="text-slate-600 hover:text-primary font-semibold transition-colors" onclick="showPage('tracking-page')">Cek Status</a>
             </nav>
-
-            <button id="mobile-menu-btn" class="md:hidden text-slate-600 text-2xl hover:text-teal-600 transition">
-                <i class="fas fa-bars"></i>
-            </button>
+            <button id="mobile-menu-btn" class="md:hidden text-slate-600 text-2xl hover:text-primary"><i class="fas fa-bars"></i></button>
         </div>
     </header>
 
-    <div id="page-loader" class="page-loader">
-        <div class="spinner-border animate-spin inline-block w-10 h-10 border-4 rounded-full border-teal-600 border-r-transparent"></div>
+    <div id="page-loader" class="page-loader show">
+        <div class="inline-block w-10 h-10 border-4 rounded-full border-primary border-r-transparent animate-spin"></div>
     </div>
 
     <div id="mobile-menu" class="hidden md:hidden bg-white shadow-xl py-5 px-6 z-40 fixed w-full top-[73px] border-t border-gray-100">
         <nav class="flex flex-col space-y-4">
-            <a href="#" class="text-slate-700 hover:text-teal-600 font-semibold text-lg transition" onclick="showPage('home-page')">Beranda</a>
-            <a href="#" class="text-slate-700 hover:text-teal-600 font-semibold text-lg transition" onclick="showPage('reservation-page')">Reservasi Servis</a>
-            <a href="#" class="text-slate-700 hover:text-teal-600 font-semibold text-lg transition" onclick="showPage('tracking-page')">Cek Status</a>
+            <a href="#" class="text-slate-700 hover:text-primary font-semibold text-lg" onclick="showPage('home-page')">Beranda</a>
+            <a href="#" class="text-slate-700 hover:text-primary font-semibold text-lg" onclick="showPage('reservation-page')">Reservasi Servis</a>
+            <a href="#" class="text-slate-700 hover:text-primary font-semibold text-lg" onclick="showPage('tracking-page')">Cek Status</a>
         </nav>
     </div>
 
     <main class="container mx-auto px-4 py-8 md:py-12 lg:px-8 max-w-7xl">
-        <section id="home-page" class="page-content">
+        
+        <section id="home-page" class="page-content hidden">
             <div class="bg-white shadow-lg shadow-slate-200/50 p-8 md:p-14 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-12 mb-16 border border-slate-100">
                 <div class="md:w-1/2 text-center md:text-left">
-                    <div class="inline-block bg-teal-50 text-teal-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-6 border border-teal-100">
-                        ⭐ Ahlinya Service Laptop & HP Yogyakarta
+                    <div class="inline-block bg-slate-100 text-primary px-4 py-1.5 rounded-full text-sm font-semibold mb-6 border border-slate-200">
+                        ⭐ Ahlinya Servis Elektronik
                     </div>
-                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-800 leading-[1.15] tracking-tight">
-                        Solusi Cepat & <br> <span class="text-gradient">Terpercaya</span> untuk Device Anda
+                    <h1 id="heroHeadline" class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-800 leading-[1.15] tracking-tight">
+                        Solusi Cepat & <br> <span class="text-gradient">Terpercaya</span>
                     </h1>
-                    <p class="text-lg text-slate-500 mt-6 max-w-lg leading-relaxed">
-                        Mulai dari ganti LCD, mati total, lupa sandi, hingga rakit PC. Kami tangani dengan teknisi profesional dan biaya transparan.
+                    <p id="heroSubHeadline" class="text-lg text-slate-500 mt-6 max-w-lg leading-relaxed">
+                        Kami tangani perangkat Anda dengan teknisi profesional dan biaya yang transparan.
                     </p>
                     <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                        <button onclick="showPage('reservation-page')" class="bg-teal-600 text-white font-semibold py-3.5 px-8 rounded-xl shadow-lg shadow-teal-600/30 hover:bg-teal-700 hover:-translate-y-1 transition-all duration-300">
+                        <button onclick="showPage('reservation-page')" class="bg-primary text-white font-semibold py-3.5 px-8 rounded-xl shadow-lg hover:opacity-90 transition-all">
                             Reservasi Sekarang
                         </button>
-                        <button onclick="showPage('tracking-page')" class="bg-white text-slate-700 border-2 border-slate-200 font-semibold py-3.5 px-8 rounded-xl hover:border-teal-600 hover:text-teal-600 transition-colors flex items-center justify-center gap-2">
+                        <button onclick="showPage('tracking-page')" class="bg-white text-slate-700 border-2 border-slate-200 font-semibold py-3.5 px-8 rounded-xl hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2">
                             <i class="fas fa-search"></i> Lacak Servisan
                         </button>
                     </div>
                 </div>
+                
                 <div class="md:w-1/2 w-full flex justify-center relative mt-8 md:mt-0">
                     <div class="slider-container w-full aspect-video md:aspect-square lg:aspect-video bg-slate-100">
-                        <div class="slider-wrapper h-full" id="image-slider">
-                            <img src="images/servislaptop.jpg" alt="Servis Laptop" class="h-full object-cover">
-                            <img src="images/servishp.jpg" alt="Servis HP" class="h-full object-cover">
-                            <img src="images/bg.jpg" alt="Layanan Servis" class="h-full object-cover">
-                            <img src="images/1.jpg" alt="Servis 1" class="h-full object-cover">
-                            <img src="images/2.jpg" alt="Servis 2" class="h-full object-cover">
-                            <img src="images/3.jpg" alt="Servis 3" class="h-full object-cover">
-                        </div>
+                        <div class="slider-wrapper h-full" id="image-slider"></div>
                     </div>
-                    <button id="prev-btn" class="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/80 backdrop-blur text-slate-800 w-10 h-10 flex items-center justify-center rounded-full shadow-md hover:bg-white transition-all z-10">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button id="next-btn" class="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white/80 backdrop-blur text-slate-800 w-10 h-10 flex items-center justify-center rounded-full shadow-md hover:bg-white transition-all z-10">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
+                    <button id="prev-btn" class="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/80 backdrop-blur text-slate-800 w-10 h-10 flex items-center justify-center rounded-full shadow-md hover:bg-white transition-all z-10"><i class="fas fa-chevron-left"></i></button>
+                    <button id="next-btn" class="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white/80 backdrop-blur text-slate-800 w-10 h-10 flex items-center justify-center rounded-full shadow-md hover:bg-white transition-all z-10"><i class="fas fa-chevron-right"></i></button>
                 </div>
+            </div>
+
+            <div class="mb-20">
+                <div class="text-center mb-10">
+                    <div class="inline-flex items-center justify-center w-12 h-12 bg-primary/10 text-primary rounded-xl text-xl mb-3"><i class="fas fa-desktop"></i></div>
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight">Katalog Rakit & Pengadaan PC</h2>
+                    <p class="text-slate-500 mt-2">Solusi tepat untuk kebutuhan PC Kantor, Sekolah, Desain, hingga Gaming.</p>
+                </div>
+                <div id="katalog-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
             </div>
 
             <div class="mb-20">
                 <div class="text-center mb-12">
                     <h2 class="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight">Layanan Kami</h2>
-                    <p class="text-slate-500 mt-3">Spesialis perbaikan berbagai jenis perangkat keras & lunak.</p>
+                    <p class="text-slate-500 mt-3">Spesialis perbaikan perangkat andalan Anda.</p>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="service-card bg-white p-8 rounded-2xl shadow-sm">
-                        <div class="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center mb-6 text-teal-600 text-3xl">
-                            <i class="fas fa-laptop-medical"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-3">Servis Laptop & PC</h3>
-                        <p class="text-slate-500 leading-relaxed">Perbaikan motherboard mati total, ganti keyboard, LCD, baterai, hingga instalasi ulang OS Windows/Mac.</p>
-                    </div>
-                    <div class="service-card bg-white p-8 rounded-2xl shadow-sm">
-                        <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 text-blue-600 text-3xl">
-                            <i class="fas fa-mobile-alt"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-3">Servis HP & Tablet</h3>
-                        <p class="text-slate-500 leading-relaxed">Penggantian layar sentuh, konektor cas, baterai kembung, hingga mati total masuk air.</p>
-                    </div>
-                    <div class="service-card bg-white p-8 rounded-2xl shadow-sm">
-                        <div class="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center mb-6 text-orange-600 text-3xl">
-                            <i class="fas fa-tools"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-3">Upgrade & Maintenance</h3>
-                        <p class="text-slate-500 leading-relaxed">Perangkat terasa lemot? Kami melayani pembersihan debu, ganti pasta termal, upgrade SSD, dan penambahan RAM.</p>
-                    </div>
-                    <div class="service-card bg-white p-8 rounded-2xl shadow-sm">
-                        <div class="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mb-6 text-purple-600 text-3xl">
-                            <i class="fas fa-microchip"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-3">Reparasi Komponen IC</h3>
-                        <p class="text-slate-500 leading-relaxed">Perbaikan spesifik pada IC Power, IC eMMC, IC Audio, dan komponen mikro lainnya dengan alat memadai.</p>
-                    </div>
-                    <div class="service-card bg-white p-8 rounded-2xl shadow-sm">
-                        <div class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6 text-red-600 text-3xl">
-                            <i class="fas fa-unlock-alt"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-3">Unlock & Bypass FRP</h3>
-                        <p class="text-slate-500 leading-relaxed">Membuka HP yang terkunci karena lupa sandi, lupa pola, atau nyangkut di verifikasi akun Google (FRP Bypass).</p>
-                    </div>
-                    <div class="service-card bg-white p-8 rounded-2xl shadow-sm">
-                        <div class="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center mb-6 text-green-600 text-3xl">
-                            <i class="fab fa-android"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-3">Install Firmware (Flashing)</h3>
-                        <p class="text-slate-500 leading-relaxed">Perbaikan sistem Android (Bootloop, hang logo) maupun iOS (iPhone/iPad) dengan firmware resmi terbaru.</p>
-                    </div>
-                </div>
+                <div id="layanan-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"></div>
             </div>
 
-            <div class="bg-teal-800 text-white p-8 md:p-14 rounded-[2rem] shadow-xl relative overflow-hidden mb-20">
-                <div class="absolute -top-24 -right-24 w-64 h-64 bg-teal-600 rounded-full mix-blend-multiply filter blur-2xl opacity-50"></div>
-                <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-teal-900 rounded-full mix-blend-multiply filter blur-2xl opacity-50"></div>
-                
+            <div id="testimoni-section" class="bg-slate-800 text-white p-8 md:p-14 rounded-[2rem] shadow-xl relative overflow-hidden mb-20" style="background-color: #1e293b;">
+                <div class="absolute -top-24 -right-24 w-64 h-64 rounded-full mix-blend-multiply filter blur-2xl opacity-50" style="background-color: var(--color-primary)"></div>
+                <div class="absolute -bottom-24 -left-24 w-64 h-64 rounded-full mix-blend-multiply filter blur-2xl opacity-50 bg-blue-900"></div>
                 <div class="relative z-10">
                     <div class="text-center mb-10">
                         <h2 class="text-3xl md:text-4xl font-bold tracking-tight">Apa Kata Mereka?</h2>
-                        <p class="text-teal-100 mt-2">Kepuasan pelanggan adalah prioritas utama kami.</p>
+                        <p class="text-slate-300 mt-2">Kepuasan pelanggan adalah prioritas utama kami.</p>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="bg-white/10 backdrop-blur-sm border border-white/20 p-8 rounded-2xl relative">
-                            <i class="fas fa-quote-left absolute top-6 right-6 text-5xl text-white/10"></i>
-                            <div class="flex text-yellow-400 mb-4 text-sm gap-1">
-                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                            </div>
-                            <p class="italic mb-6 text-teal-50 text-lg leading-relaxed">"Pelayanan cepat dan ramah banget. Laptop saya yang tadinya mati total dikira harus ganti motherboard, ternyata bisa diperbaiki komponennya. Jauh lebih hemat!"</p>
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center font-bold">A</div>
-                                <div>
-                                    <p class="font-bold text-white leading-none">Aziz N.</p>
-                                    <span class="text-xs text-teal-200">Mahasiswa</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-white/10 backdrop-blur-sm border border-white/20 p-8 rounded-2xl relative">
-                            <i class="fas fa-quote-left absolute top-6 right-6 text-5xl text-white/10"></i>
-                            <div class="flex text-yellow-400 mb-4 text-sm gap-1">
-                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                            </div>
-                            <p class="italic mb-6 text-teal-50 text-lg leading-relaxed">"Kerusakan HP saya (ganti LCD dan konektor cas) bisa diperbaiki dengan rapi dan biayanya juga transparan dari awal. Sangat direkomendasikan buat yang cari tempat servis amanah."</p>
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 bg-teal-600 rounded-full flex items-center justify-center font-bold">D</div>
-                                <div>
-                                    <p class="font-bold text-white leading-none">Desy</p>
-                                    <span class="text-xs text-teal-200">Pegawai Swasta</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="testimoni-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
                 </div>
             </div>
 
-            <section class="bg-white p-8 md:p-12 rounded-[2rem] shadow-sm border border-slate-100 text-center">
-                <div class="inline-block bg-teal-50 text-teal-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-4 border border-teal-100">
-                    <i class="fas fa-map-marker-alt mr-1"></i> Kunjungi Toko Kami
+            <div class="flex flex-col gap-8 mb-16 max-w-4xl mx-auto">
+                
+                <div id="legalitas-section" class="bg-white p-8 md:p-10 rounded-[2rem] shadow-sm border border-slate-100 hidden text-center">
+                    <div class="inline-flex items-center justify-center w-14 h-14 bg-green-50 text-green-600 rounded-2xl text-2xl mb-4"><i class="fas fa-shield-alt"></i></div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight mb-2">Legalitas Usaha</h2>
+                    <p id="teksLegalitasDesc" class="text-slate-500 mb-6 text-sm md:text-base leading-relaxed">Usaha ini telah terdaftar resmi secara hukum.</p>
+                    
+                    <div class="bg-slate-50 border border-slate-200 p-6 rounded-xl inline-block min-w-[250px] md:min-w-[350px]">
+                        <span class="text-xs text-slate-400 font-bold block uppercase tracking-widest mb-2">Nomor Induk Berusaha (NIB)</span>
+                        <span id="teksNib" class="text-xl md:text-2xl font-bold text-slate-800 tracking-widest bg-white px-6 py-3 rounded-lg shadow-sm block"></span>
+                    </div>
                 </div>
-                <h2 class="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight mb-2">KEMAL COMPUTER</h2>
-                <p class="text-center text-slate-500 mb-8 max-w-2xl mx-auto">Gg. Serai No.127B, Nologaten, Caturtunggal, Kec. Depok, Kabupaten Sleman, Daerah Istimewa Yogyakarta 55281</p>
-                <div class="rounded-2xl overflow-hidden shadow-inner border border-slate-200">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d494.13952150458374!2d110.39919779496459!3d-7.777504966685223!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a598283967701%3A0x7977e22b3102f91b!2sKemal%20Computer!5e0!3m2!1sid!2sid!4v1748915290509!5m2!1sid!2sid" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" class="w-full"></iframe>
+
+                <div class="bg-white p-8 md:p-10 rounded-[2rem] shadow-sm border border-slate-100 text-center">
+                    <div class="inline-block bg-slate-50 text-primary px-4 py-1.5 rounded-full text-sm font-semibold mb-4 border border-slate-200">
+                        <i class="fas fa-map-marker-alt mr-1"></i> Kunjungi Toko Kami
+                    </div>
+                    <h2 id="mapsNamaToko" class="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight mb-2 uppercase">NAMA TOKO</h2>
+                    <p id="mapsAlamat" class="text-center text-slate-500 mb-8 max-w-2xl mx-auto text-sm md:text-base">Alamat Toko</p>
+                    <div id="mapsContainer" class="rounded-2xl overflow-hidden shadow-inner border border-slate-200 bg-slate-100 h-80 md:h-96 flex items-center justify-center text-slate-400">
+                        Memuat Peta...
+                    </div>
                 </div>
-            </section>
+
+            </div>
+
         </section>
 
         <section id="reservation-page" class="page-content hidden">
             <div class="bg-white p-8 md:p-14 rounded-[2rem] shadow-lg shadow-slate-200/50 border border-slate-100 w-full max-w-2xl mx-auto text-center">
-                 <div class="inline-flex items-center justify-center w-16 h-16 bg-teal-100 text-teal-600 rounded-full text-2xl mb-4">
+                 <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-100 text-primary rounded-full text-2xl mb-4">
                      <i class="fas fa-calendar-check"></i>
                  </div>
                  <h2 class="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight mb-4">Reservasi Servis</h2>
                  <p class="text-center text-slate-500 mb-8 leading-relaxed">
                      Untuk pelayanan yang lebih cepat dan responsif, silakan konsultasikan kerusakan perangkat Anda dan lakukan reservasi secara langsung melalui WhatsApp kami.
                  </p>
-                 <a href="https://wa.me/6281254812473?text=Halo%20Mas%20Kemal,%20saya%20ingin%20konsultasi%20dan%20reservasi%20servis." target="_blank" class="w-full inline-block bg-[#25D366] text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-green-600/30 hover:bg-[#128C7E] hover:-translate-y-0.5 transition-all duration-300">
+                 <a id="btnReservasiWa" href="#" target="_blank" class="w-full inline-block bg-[#25D366] text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:bg-[#128C7E] transition-all">
                      <i class="fab fa-whatsapp text-xl mr-2"></i> Reservasi via WhatsApp
                  </a>
              </div>
@@ -248,100 +171,72 @@
 
         <section id="tracking-page" class="page-content hidden">
             <div class="bg-white p-8 md:p-14 rounded-[2rem] shadow-lg shadow-slate-200/50 border border-slate-100 w-full max-w-3xl mx-auto relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-40 h-40 bg-teal-50 rounded-bl-full -z-10"></div>
-                <div class="absolute bottom-0 left-0 w-32 h-32 bg-slate-50 rounded-tr-full -z-10"></div>
-
                 <div class="text-center mb-10">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-teal-100 text-teal-600 rounded-full text-2xl mb-4">
-                        <i class="fas fa-search-location"></i>
-                    </div>
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-slate-100 text-primary rounded-full text-2xl mb-4"><i class="fas fa-search-location"></i></div>
                     <h2 class="text-3xl md:text-4xl font-bold text-slate-800 tracking-tight mb-3">Cek Status Servisan</h2>
-                    <p class="text-slate-500">Masukkan kode invoice / nota service untuk melacak progres perbaikan perangkat Anda.</p>
+                    <p class="text-slate-500">Masukkan kode invoice / nota service untuk melacak progres perbaikan.</p>
                 </div>
-                
                 <form id="checkStatusForm" class="space-y-5">
-                    <div>
-                        <label for="serviceCode" class="block text-sm font-semibold text-slate-700 mb-2">Nomor Invoice (Kode Service)</label>
-                        <div class="relative">
-                            <i class="fas fa-receipt absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 text-lg"></i>
-                            <input type="text" id="serviceCode" placeholder="Contoh: KC-260311-..." required class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 transition-all font-medium text-slate-700 placeholder-slate-400 uppercase">
-                        </div>
+                    <div class="relative">
+                        <i class="fas fa-receipt absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 text-lg"></i>
+                        <input type="text" id="serviceCode" placeholder="Masukkan Nomor Invoice..." required class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 uppercase font-medium text-slate-700">
                     </div>
-                    <button type="submit" id="searchButton" class="w-full bg-teal-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg shadow-teal-600/30 hover:bg-teal-700 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2">
+                    <button type="submit" id="searchButton" class="w-full bg-primary text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-2">
                         <span id="searchButtonText">Lacak Sekarang</span>
-                        <div id="searchSpinner" class="loading-spinner"></div>
+                        <div id="searchSpinner" class="hidden inline-block w-5 h-5 border-2 rounded-full border-white border-r-transparent animate-spin"></div>
                     </button>
                 </form>
 
-                <div id="resultContainer" class="mt-10 bg-white border-2 border-slate-100 p-6 md:p-8 rounded-2xl hidden transition-all duration-300 shadow-md">
+                <div id="resultContainer" class="mt-10 bg-white border-2 border-slate-100 p-6 md:p-8 rounded-2xl hidden transition-all shadow-md">
                     <div class="flex items-center justify-between mb-6 pb-6 border-b border-dashed border-slate-300">
                         <h3 class="font-bold text-xl text-slate-800">Detail Servis</h3>
-                        <img src="images/logo.png" alt="Logo" class="w-8 h-8 opacity-50 grayscale">
+                        <img id="resultLogo" src="images/logo.png" class="w-8 h-8 opacity-50 grayscale object-cover rounded">
                     </div>
-                    
-                    <div id="trackingContent" class="space-y-4">
-                        </div>
+                    <div id="trackingContent" class="space-y-4"></div>
                 </div>
             </div>
         </section>
-
     </main>
 
-    <a href="https://wa.me/6281254812473?text=Halo%20Mas%20Kemal,%20saya%20ingin%20tanya%20seputar%20servis." target="_blank" class="fixed bottom-6 right-6 bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center text-3xl shadow-lg shadow-green-600/30 hover:bg-[#128C7E] transition-colors z-50 floating-wa" title="Chat WhatsApp Sekarang">
-        <i class="fab fa-whatsapp"></i>
-    </a>
+    <a id="btnFloatingWa" href="#" target="_blank" class="fixed bottom-6 right-6 bg-[#25D366] text-white w-14 h-14 rounded-full flex items-center justify-center text-3xl shadow-lg hover:bg-[#128C7E] transition-colors z-50 floating-wa" title="Chat WhatsApp Sekarang"><i class="fab fa-whatsapp"></i></a>
 
-    <footer class="bg-slate-900 text-slate-300 py-12 mt-16 border-t-4 border-teal-600">
+    <footer class="bg-slate-900 text-slate-300 py-12 mt-16 border-t-4" style="border-color: var(--color-primary)">
         <div class="container mx-auto px-4 md:px-8 max-w-7xl">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10 pb-10 border-b border-slate-800 mb-8">
                 <div class="text-center md:text-left">
                     <div class="flex items-center justify-center md:justify-start gap-3 mb-4">
-                        <img src="images/logo.png" alt="Logo Kemal Computer" class="w-10 h-10 rounded-lg">
-                        <span class="text-2xl font-bold text-white tracking-tight">Kemal Computer</span>
+                        <img id="footerLogo" src="images/logo.png" class="w-10 h-10 rounded-lg object-cover bg-white p-1">
+                        <span id="footerNamaToko" class="text-2xl font-bold text-white tracking-tight">Memuat...</span>
                     </div>
-                    <p class="text-sm text-slate-400 max-w-sm leading-relaxed mx-auto md:mx-0">
-                        Pusat perbaikan perangkat elektronik terpercaya di Yogyakarta. Kami menjamin kualitas komponen dan memberikan garansi pada setiap pengerjaan.
-                    </p>
+                    <p class="text-sm text-slate-400 max-w-sm leading-relaxed mx-auto md:mx-0">Pusat perbaikan perangkat elektronik terpercaya. Kami menjamin kualitas komponen dan memberikan garansi pada setiap pengerjaan.</p>
                 </div>
                 <div class="text-center md:text-left md:pl-8">
                     <h3 class="text-lg font-bold text-white mb-5 uppercase tracking-wider text-sm">Informasi Kontak</h3>
                     <ul class="space-y-3 text-sm">
-                        <li class="flex items-start justify-center md:justify-start gap-3">
-                            <i class="fas fa-map-marker-alt mt-1 text-teal-500"></i>
-                            <span class="text-slate-400">Gg. Serai No.127B, Nologaten,<br> Caturtunggal, Depok, Sleman, DIY</span>
-                        </li>
-                        <li class="flex items-center justify-center md:justify-start gap-3">
-                            <i class="fas fa-phone-alt text-teal-500"></i>
-                            <a href="tel:+6281254812473" class="text-slate-400 hover:text-teal-400 transition">+62 812-5481-2473</a>
-                        </li>
+                        <li class="flex items-start justify-center md:justify-start gap-3"><i class="fas fa-map-marker-alt mt-1 text-primary"></i><span id="footerAlamat" class="text-slate-400">Memuat Alamat...</span></li>
+                        <li class="flex items-center justify-center md:justify-start gap-3"><i class="fas fa-phone-alt text-primary"></i><a id="footerWaLink" href="#" class="text-slate-400 hover:text-white transition">Memuat No HP...</a></li>
                     </ul>
                 </div>
                 <div class="text-center md:text-left">
                     <h3 class="text-lg font-bold text-white mb-5 uppercase tracking-wider text-sm">Terhubung dengan Kami</h3>
                     <div class="flex justify-center md:justify-start space-x-4">
-                        <a href="https://www.instagram.com/kemal_computer" target="_blank" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-gradient-to-tr hover:from-yellow-500 hover:via-pink-500 hover:to-purple-600 hover:text-white transition-all text-slate-400"><i class="fab fa-instagram"></i></a>
-                        <a href="https://www.youtube.com/channel/Kemal Comp" target="_blank" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all text-slate-400"><i class="fab fa-youtube"></i></a>
-                        <a href="https://www.tiktok.com/@kemal_computer" target="_blank" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-black hover:text-white transition-all text-slate-400"><i class="fab fa-tiktok"></i></a>
+                        <a id="linkIg" href="#" target="_blank" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-pink-600 hover:text-white transition-all text-slate-400"><i class="fab fa-instagram"></i></a>
+                        <a id="linkYoutube" href="#" target="_blank" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all text-slate-400"><i class="fab fa-youtube"></i></a>
+                        <a id="linkTiktok" href="#" target="_blank" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-black hover:text-white transition-all text-slate-400"><i class="fab fa-tiktok"></i></a>
                     </div>
                 </div>
             </div>
             <div class="flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
-                <p>© 2026 Kemal Computer. All Rights Reserved.</p>
-                <p class="mt-2 md:mt-0">Dibuat dengan <i class="fas fa-heart text-red-500 mx-1"></i> di Yogyakarta</p>
+                <p id="copyrightText">© 2026 Memuat... All Rights Reserved.</p><p class="mt-2 md:mt-0">Powered by Sistem Manajemen Servis</p>
             </div>
         </div>
     </footer>
 
     <script type="module">
         const firebaseConfig = {
-            apiKey: "AIzaSyDRvkYXHUb42q2H8F_2687CTihtDDNuYQ4",
-            authDomain: "website-track-service.firebaseapp.com",
-            databaseURL: "https://website-track-service-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "website-track-service",
-            storageBucket: "website-track-service.firebasestorage.app",
-            messagingSenderId: "87573564376",
-            appId: "1:87573564376:web:c93c07f0506d00535a00ad",
-            measurementId: "G-64T8XNWK5F"
+            apiKey: "AIzaSyDRvkYXHUb42q2H8F_2687CTihtDDNuYQ4", authDomain: "website-track-service.firebaseapp.com",
+            databaseURL: "https://website-track-service-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "website-track-service",
+            storageBucket: "website-track-service.firebasestorage.app", messagingSenderId: "87573564376", appId: "1:87573564376:web:c93c07f0506d00535a00ad"
         };
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
@@ -349,209 +244,222 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        let globalWaNumber = "";
+
+        // Fungsi Beli Produk via WA
+        window.beliViaWa = (namaProduk, harga) => {
+            if(!globalWaNumber) { alert('Nomor WA Toko belum diatur.'); return; }
+            let infoHarga = harga > 0 ? `Harga: Rp ${harga.toLocaleString('id-ID')}` : `Harga: Menyesuaikan Budget`;
+            const pesan = `Halo Admin, saya tertarik untuk layanan pengadaan/rakit ini:\n\n*${namaProduk}*\n${infoHarga}\n\nMohon info lebih lanjut.`;
+            window.open(`https://wa.me/${globalWaNumber}?text=${encodeURIComponent(pesan)}`, '_blank');
+        };
+
+        let currentSlide = 0; let slideInterval; let slides = [];
+        function startSlider() { slideInterval = setInterval(() => { currentSlide = (currentSlide + 1) % slides.length; updateSlider(); }, 4000); }
+        function stopSlider() { clearInterval(slideInterval); }
+        function updateSlider() { const slider = document.getElementById('image-slider'); if(slider && slides.length > 0) slider.style.transform = `translateX(-${currentSlide * 100}%)`; }
+        document.getElementById('prev-btn')?.addEventListener('click', () => { stopSlider(); currentSlide = (currentSlide - 1 + slides.length) % slides.length; updateSlider(); startSlider(); });
+        document.getElementById('next-btn')?.addEventListener('click', () => { stopSlider(); currentSlide = (currentSlide + 1) % slides.length; updateSlider(); startSlider(); });
+
+        async function loadWebsiteSettings() {
+            try {
+                const snapshot = await get(ref(db, 'pengaturan_toko'));
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    
+                    if(data.warnaUtama) document.documentElement.style.setProperty('--color-primary', data.warnaUtama);
+
+                    const nama = data.namaToko || 'Toko Servis';
+                    document.title = `Lacak Servis - ${nama}`;
+                    document.getElementById('headerNamaToko').innerText = nama; document.getElementById('footerNamaToko').innerText = nama;
+                    document.getElementById('mapsNamaToko').innerText = nama; document.getElementById('copyrightText').innerText = `© ${new Date().getFullYear()} ${nama}. All Rights Reserved.`;
+
+                    if(data.logoUrl) {
+                        document.getElementById('faviconImg').href = data.logoUrl; document.getElementById('headerLogo').src = data.logoUrl;
+                        document.getElementById('footerLogo').src = data.logoUrl; document.getElementById('resultLogo').src = data.logoUrl;
+                    }
+
+                    if(data.headline) document.getElementById('heroHeadline').innerText = data.headline;
+                    if(data.subHeadline) document.getElementById('heroSubHeadline').innerText = data.subHeadline;
+
+                    // RENDER LEGALITAS (NIB)
+                    if (data.nib) {
+                        document.getElementById('legalitas-section').classList.remove('hidden');
+                        document.getElementById('teksNib').innerText = data.nib;
+                        document.getElementById('teksLegalitasDesc').innerText = data.legalitasDesc || 'Usaha ini telah terdaftar resmi secara hukum.';
+                    } else {
+                        document.getElementById('legalitas-section').classList.add('hidden');
+                    }
+
+                    if(data.alamat) { document.getElementById('mapsAlamat').innerText = data.alamat; document.getElementById('footerAlamat').innerText = data.alamat; }
+                    if(data.maps) { let mapSrc = data.maps; if(mapSrc.includes('src="')) mapSrc = mapSrc.split('src="')[1].split('"')[0]; document.getElementById('mapsContainer').innerHTML = `<iframe src="${mapSrc}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>`; }
+
+                    if(data.wa) {
+                        const waNumber = data.wa.replace(/[^0-9]/g, '');
+                        globalWaNumber = waNumber;
+                        document.getElementById('footerWaLink').innerText = `+${waNumber}`; document.getElementById('footerWaLink').href = `tel:+${waNumber}`;
+                        const waLinkText = `https://wa.me/${waNumber}?text=Halo%20Admin,%20saya%20ingin%20konsultasi%20servis.`;
+                        document.getElementById('btnFloatingWa').href = waLinkText; document.getElementById('btnReservasiWa').href = waLinkText;
+                    }
+
+                    document.getElementById('linkIg').href = data.ig || '#'; document.getElementById('linkTiktok').href = data.tiktok || '#'; document.getElementById('linkYoutube').href = data.youtube || '#';
+                    if(!data.ig) document.getElementById('linkIg').style.display = 'none'; if(!data.tiktok) document.getElementById('linkTiktok').style.display = 'none'; if(!data.youtube) document.getElementById('linkYoutube').style.display = 'none';
+
+                    // RENDER SLIDER
+                    const sliderWrapper = document.getElementById('image-slider');
+                    if(data.sliders && data.sliders.length > 0) {
+                        sliderWrapper.innerHTML = data.sliders.map(url => `<img src="${url}" class="h-full w-full object-cover flex-shrink-0" alt="Banner">`).join('');
+                    } else {
+                        sliderWrapper.innerHTML = `<img src="images/servislaptop.jpg" class="h-full w-full object-cover flex-shrink-0"><img src="images/servishp.jpg" class="h-full w-full object-cover flex-shrink-0">`;
+                    }
+                    slides = sliderWrapper.querySelectorAll('img'); if(slides.length > 1) startSlider();
+
+                    // RENDER LAYANAN 
+                    const layananGrid = document.getElementById('layanan-grid');
+                    if(data.layanans && data.layanans.length > 0) {
+                        layananGrid.innerHTML = data.layanans.map(l => {
+                            // Pembersihan Kode Ikon Biar Gak Error
+                            let safeIcon = l.icon ? l.icon.trim() : 'fa-tools';
+                            safeIcon = safeIcon.replace('fas ', '').replace('fab ', '');
+                            
+                            return `
+                            <div class="service-card bg-white p-8 rounded-2xl shadow-sm">
+                                <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 text-primary text-3xl"><i class="fas ${safeIcon}"></i></div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-3">${l.title}</h3>
+                                <p class="text-slate-500 leading-relaxed">${l.desc}</p>
+                            </div>
+                            `;
+                        }).join('');
+                    }
+
+                    // RENDER TESTIMONI
+                    const testimoniGrid = document.getElementById('testimoni-grid');
+                    const testimoniSection = document.getElementById('testimoni-section');
+                    if(data.testimonis && data.testimonis.length > 0) {
+                        testimoniSection.style.display = 'block';
+                        testimoniGrid.innerHTML = data.testimonis.map(t => `
+                            <div class="bg-white/10 backdrop-blur-sm border border-white/20 p-8 rounded-2xl relative">
+                                <i class="fas fa-quote-left absolute top-6 right-6 text-5xl text-white/10"></i>
+                                <div class="flex text-yellow-400 mb-4 text-sm gap-1"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                                <p class="italic mb-6 text-slate-200 text-lg leading-relaxed">"${t.teks}"</p>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center font-bold text-white">${t.nama.charAt(0).toUpperCase()}</div>
+                                    <div><p class="font-bold text-white leading-none">${t.nama}</p><span class="text-xs text-slate-300">${t.role}</span></div>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else { testimoniSection.style.display = 'none'; }
+
+                    // RENDER KATALOG PC
+                    const katalogGrid = document.getElementById('katalog-grid');
+                    const katalogProduk = (data.katalog && data.katalog.length > 0) ? data.katalog : [];
+
+                    katalogGrid.innerHTML = katalogProduk.map(p => {
+                        const mediaHtml = p.img ? `<img src="${p.img}" alt="${p.nama}" class="w-full h-full object-cover">` : `<i class="fas fa-desktop text-5xl text-slate-300"></i>`;
+                        const hargaHtml = p.harga > 0 ? `Rp ${p.harga.toLocaleString('id-ID')}` : `Menyesuaikan Budget`;
+                        
+                        return `
+                        <div class="product-card">
+                            <div class="product-img-box">
+                                ${mediaHtml}
+                            </div>
+                            <div class="p-5 flex flex-col flex-grow">
+                                <h3 class="font-bold text-slate-800 mb-1 text-lg leading-tight">${p.nama}</h3>
+                                <p class="text-xs text-slate-500 mb-4 flex-grow">${p.desc}</p>
+                                <div class="font-bold text-primary mb-4 text-lg">${hargaHtml}</div>
+                                <button onclick="beliViaWa('${p.nama}', ${p.harga})" class="w-full bg-green-500 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-green-600 transition flex items-center justify-center gap-2">
+                                    <i class="fab fa-whatsapp text-lg"></i> Pesan via WA
+                                </button>
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+
+                }
+            } catch (error) { console.error("Error CMS:", error); } 
+            finally { showPage('home-page'); }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { loadWebsiteSettings(); });
 
         const pages = document.querySelectorAll('.page-content');
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const pageLoader = document.getElementById('page-loader');
 
-        const checkStatusForm = document.getElementById('checkStatusForm');
-        const serviceCodeInput = document.getElementById('serviceCode');
-        const resultContainer = document.getElementById('resultContainer');
-        const trackingContent = document.getElementById('trackingContent');
-        
-        const slider = document.getElementById('image-slider');
-        const slides = slider ? slider.querySelectorAll('img') : [];
-        let currentSlide = 0;
-        let slideInterval;
-        
         window.showPage = (pageId) => {
             const activePage = document.querySelector('.page-content:not(.hidden)');
-            if (activePage) {
-                activePage.classList.remove('page-transition', 'active');
-                activePage.classList.add('page-transition');
-            }
+            if (activePage) { activePage.classList.remove('page-transition', 'active'); activePage.classList.add('page-transition'); }
             pageLoader.classList.add('show');
             setTimeout(() => {
                 pages.forEach(page => page.classList.add('hidden'));
                 const newPage = document.getElementById(pageId);
-                newPage.classList.remove('hidden');
-                newPage.classList.add('page-transition');
-                setTimeout(() => {
-                    newPage.classList.add('active');
-                    pageLoader.classList.remove('show');
-                    document.documentElement.scrollTop = 0;
-                }, 50);
+                newPage.classList.remove('hidden'); newPage.classList.add('page-transition');
+                setTimeout(() => { newPage.classList.add('active'); pageLoader.classList.remove('show'); document.documentElement.scrollTop = 0; }, 50);
             }, 300);
             mobileMenu.classList.add('hidden');
         };
-
-        function startSlider() {
-            slideInterval = setInterval(() => {
-                currentSlide = (currentSlide + 1) % slides.length;
-                updateSlider();
-            }, 4000);
-        }
-        function stopSlider() { clearInterval(slideInterval); }
-        function updateSlider() {
-            const offset = -currentSlide * 100;
-            slider.style.transform = `translateX(${offset}%)`;
-        }
-        document.getElementById('prev-btn')?.addEventListener('click', () => {
-            stopSlider(); currentSlide = (currentSlide - 1 + slides.length) % slides.length; updateSlider(); startSlider();
-        });
-        document.getElementById('next-btn')?.addEventListener('click', () => {
-            stopSlider(); currentSlide = (currentSlide + 1) % slides.length; updateSlider(); startSlider();
-        });
-
-        const formatRupiah = (angka) => {
-            if (!angka || angka == 0) return "<span class='text-slate-400 italic text-sm font-normal bg-slate-100 px-3 py-1 rounded-full'>Menunggu pengecekan / Belum ditentukan</span>";
-            return new Intl.NumberFormat("id-ID", {
-                style: "currency", currency: "IDR", minimumFractionDigits: 0
-            }).format(angka);
-        };
-        
-        async function trackService(codeToTrack = null) {
-            const searchButton = document.getElementById('searchButton');
-            const searchButtonText = document.getElementById('searchButtonText');
-            const searchSpinner = document.getElementById('searchSpinner');
-
-            const code = (codeToTrack || serviceCodeInput.value).trim().toUpperCase();
-
-            searchButtonText.textContent = 'Mencari Data...';
-            searchSpinner.style.display = 'inline-block';
-            searchButton.disabled = true;
-
-            if (!resultContainer.classList.contains('hidden')) {
-                resultContainer.style.opacity = '0';
-                await new Promise(resolve => setTimeout(resolve, 300));
-            }
-            resultContainer.classList.add('hidden');
-
-            if (!code) {
-                trackingContent.innerHTML = `<div class="bg-red-50 text-red-600 p-4 rounded-xl flex items-center gap-3"><i class="fas fa-exclamation-circle text-xl"></i> <span>Mohon masukkan nomor invoice terlebih dahulu.</span></div>`;
-                showResult(); return;
-            }
-
-            try {
-                const dbRef = ref(db);
-                const snapshot = await get(child(dbRef, `antrian/${code}`));
-
-                if (snapshot.exists()) {
-                    const service = snapshot.val();
-                    let statusBadgeClass = '';
-                    switch (service.status) {
-                        case 'Menunggu': statusBadgeClass = 'status-waiting'; break;
-                        case 'Proses': statusBadgeClass = 'status-process'; break;
-                        case 'Selesai': statusBadgeClass = 'status-finished'; break;
-                        case 'Diambil': statusBadgeClass = 'status-picked-up'; break;
-                        default: statusBadgeClass = 'bg-slate-400';
-                    }
-                    
-                    // TAMBAHAN: Logika untuk memunculkan foto jika ada
-                    let fotoHtml = '';
-                    if (service.fotoUrl) {
-                        fotoHtml = `
-                        <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100">
-                            <div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-3 md:mb-0">
-                                <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center"><i class="fas fa-camera"></i></div> Lampiran Foto
-                            </div>
-                            <div class="md:w-2/3">
-                                <a href="${service.fotoUrl}" target="_blank" title="Klik untuk memperbesar">
-                                    <img src="${service.fotoUrl}" alt="Foto Service" class="w-full max-w-xs object-cover rounded-xl shadow-sm border border-slate-200 hover:opacity-80 transition cursor-pointer">
-                                </a>
-                                <span class="text-xs text-slate-400 mt-2 block italic">*Klik foto untuk memperbesar</span>
-                            </div>
-                        </div>
-                        `;
-                    }
-                    
-                    trackingContent.innerHTML = `
-                        <div class="space-y-4">
-                            <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100">
-                                <div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0">
-                                    <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-user"></i></div> Nama
-                                </div>
-                                <span class="md:w-2/3 text-slate-800 font-medium md:pt-1">${service.nama}</span>
-                            </div>
-                            
-                            <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100">
-                                <div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0">
-                                    <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-laptop"></i></div> Jenis Device
-                                </div>
-                                <span class="md:w-2/3 text-slate-800 md:pt-1">${service.device || '-'}</span>
-                            </div>
-                            
-                            <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100">
-                                <div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0">
-                                    <div class="w-8 h-8 rounded-full bg-red-50 text-red-400 flex items-center justify-center"><i class="fas fa-tools"></i></div> Kerusakan
-                                </div>
-                                <span class="md:w-2/3 text-slate-800 md:pt-1">${service.kerusakan}</span>
-                            </div>
-                            
-                            ${service.keterangan ? `
-                            <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100">
-                                <div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0">
-                                    <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-400 flex items-center justify-center"><i class="fas fa-info-circle"></i></div> Catatan Teknisi
-                                </div>
-                                <span class="md:w-2/3 text-slate-800 md:pt-1">${service.keterangan}</span>
-                            </div>
-                            ` : ''}
-
-                            ${fotoHtml} <div class="flex flex-col md:flex-row md:items-center pb-4 border-b border-slate-100">
-                                <div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0">
-                                    <div class="w-8 h-8 rounded-full bg-green-50 text-green-500 flex items-center justify-center"><i class="fas fa-money-bill-wave"></i></div> Total Biaya
-                                </div>
-                                <span class="md:w-2/3 font-bold text-xl text-teal-600 md:pt-1">${formatRupiah(service.biaya)}</span>
-                            </div>
-
-                            <div class="flex flex-col md:flex-row md:items-center pt-2">
-                                <div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-2 md:mb-0">
-                                    <div class="w-8 h-8 rounded-full bg-purple-50 text-purple-400 flex items-center justify-center"><i class="fas fa-tasks"></i></div> Status Saat Ini
-                                </div>
-                                <span class="md:w-2/3"><span class="status-badge ${statusBadgeClass} px-4 py-1.5">${service.status}</span></span>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    trackingContent.innerHTML = `<div class="bg-red-50 text-red-600 p-4 rounded-xl flex items-center gap-3"><i class="fas fa-search-minus text-xl"></i> <span>Invoice <b>${code}</b> tidak ditemukan. Pastikan kode sudah benar.</span></div>`;
-                }
-            } catch (error) {
-                trackingContent.innerHTML = `<div class="bg-yellow-50 text-yellow-600 p-4 rounded-xl flex items-center gap-3"><i class="fas fa-wifi text-xl"></i> <span>Gangguan koneksi saat mengambil data. Silakan coba lagi.</span></div>`;
-            } finally {
-                showResult();
-            }
-
-            async function showResult() {
-                resultContainer.style.opacity = '0';
-                resultContainer.classList.remove('hidden');
-                await new Promise(resolve => setTimeout(resolve, 50));
-                resultContainer.style.opacity = '1';
-                searchButtonText.textContent = 'Lacak Sekarang';
-                searchSpinner.style.display = 'none';
-                searchButton.disabled = false;
-            }
-        }
-
-        if (checkStatusForm) {
-            checkStatusForm.addEventListener('submit', async (e) => { e.preventDefault(); trackService(); });
-        }
-
         mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const serviceCodeFromUrl = urlParams.get('code');
+        const formatRupiah = (angka) => { if (!angka || angka == 0) return "<span class='text-slate-400 italic text-sm font-normal bg-slate-100 px-3 py-1 rounded-full'>Menunggu pengecekan / Belum ditentukan</span>"; return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(angka); };
+        window.currentTrackedService = null; window.currentTrackedCode = null;
 
-            if (serviceCodeFromUrl) {
-                showPage('tracking-page');
-                serviceCodeInput.value = serviceCodeFromUrl.toUpperCase();
-                setTimeout(() => trackService(serviceCodeFromUrl.toUpperCase()), 500);
-            } else {
-                document.getElementById('home-page')?.classList.add('page-transition', 'active');
-            }
-            if (slides.length > 1) startSlider();
-        });
+        window.printCustomerInvoice = async () => {
+            if(!window.currentTrackedService || !window.currentTrackedCode) return;
+            const service = window.currentTrackedService; const serviceCode = window.currentTrackedCode;
+            const tgl = new Date(service.timestamp || Date.now()).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            let namaToko = "Toko Servis"; let alamat = "-"; let wa = "-"; let logo = "images/logo.png"; let teksGaransi = "*Garansi servis berlaku 1 minggu.";
+            try { const snap = await get(ref(db, 'pengaturan_toko')); if(snap.exists()) { const dt = snap.val(); if(dt.namaToko) namaToko = dt.namaToko; if(dt.alamat) alamat = dt.alamat; if(dt.wa) wa = dt.wa; if(dt.logoUrl) logo = dt.logoUrl; if(dt.teksGaransi) teksGaransi = dt.teksGaransi; } } catch(e) {}
+
+            const printWindow = window.open('', '_blank');
+            const htmlString = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Nota Servis - ${serviceCode}</title><style>body { font-family: 'Courier New', Courier, monospace; color: #000; padding: 20px; font-size: 14px; line-height: 1.5; max-width: 80mm; margin: auto; } .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 15px; } .header img { max-width: 80px; margin-bottom: 5px; border-radius: 8px; } .header h1 { font-size: 22px; margin: 0 0 5px 0; font-family: Arial, sans-serif; font-weight: bold;} .header p { margin: 0; font-size: 12px; } .content { margin-bottom: 15px; } .content p { margin: 4px 0; } .table-item { width: 100%; border-collapse: collapse; margin-top: 10px; } .table-item td { vertical-align: top; padding: 4px 0; } .table-item td:first-child { width: 35%; font-weight: bold; } .total-section { border-top: 2px dashed #000; border-bottom: 2px dashed #000; padding: 10px 0; margin-top: 15px; text-align: right; } .total-section h2 { margin: 0; font-size: 18px; } .footer { text-align: center; font-size: 11px; margin-top: 20px; } @media print { @page { margin: 0; } body { margin: 1cm auto; max-width: 100%; } }</style></head><body><div class="header"><img src="${logo}" alt="Logo" onerror="this.style.display='none'"><h1>${namaToko.toUpperCase()}</h1><p>${alamat}</p><p>WhatsApp: ${wa}</p></div><div class="content"><p><strong>Nota:</strong> ${serviceCode}</p><p><strong>Tgl :</strong> ${tgl}</p><table class="table-item"><tr><td>Pelanggan</td><td>: ${service.nama}</td></tr><tr><td>No. HP</td><td>: ${service.nomorHp || '-'}</td></tr><tr><td>Device</td><td>: ${service.device}</td></tr><tr><td>Keluhan</td><td>: ${service.kerusakan}</td></tr><tr><td>Status</td><td>: ${service.status.toUpperCase()}</td></tr></table></div><div class="total-section"><p style="margin:0; font-size: 12px;">Total Tagihan:</p><h2>${formatRupiah(service.biaya)}</h2></div><div class="footer"><p>Terima kasih atas kepercayaan Anda!</p><p><em>${teksGaransi}</em></p></div><script> setTimeout(() => { window.print(); }, 1000); <\/script></body></html>`;
+            printWindow.document.write(htmlString); printWindow.document.close();
+        };
+
+        const checkStatusForm = document.getElementById('checkStatusForm');
+        if (checkStatusForm) {
+            checkStatusForm.addEventListener('submit', async (e) => { 
+                e.preventDefault(); 
+                const searchButton = document.getElementById('searchButton'); const searchButtonText = document.getElementById('searchButtonText'); const searchSpinner = document.getElementById('searchSpinner'); const resultContainer = document.getElementById('resultContainer'); const trackingContent = document.getElementById('trackingContent');
+                const code = document.getElementById('serviceCode').value.trim().toUpperCase();
+
+                searchButtonText.textContent = 'Mencari...'; searchSpinner.style.display = 'inline-block'; searchButton.disabled = true;
+                if (!resultContainer.classList.contains('hidden')) { resultContainer.style.opacity = '0'; await new Promise(resolve => setTimeout(resolve, 300)); }
+                resultContainer.classList.add('hidden');
+
+                try {
+                    const snapshot = await get(child(ref(db), `antrian/${code}`));
+                    if (snapshot.exists()) {
+                        const service = snapshot.val(); window.currentTrackedService = service; window.currentTrackedCode = code;
+                        let statusBadgeClass = '';
+                        switch (service.status) { case 'Menunggu': statusBadgeClass = 'status-waiting'; break; case 'Proses': statusBadgeClass = 'status-process'; break; case 'Selesai': statusBadgeClass = 'status-finished'; break; case 'Diambil': statusBadgeClass = 'status-picked-up'; break; default: statusBadgeClass = 'bg-gray-400'; }
+                        
+                        let fotoHtml = ''; let rawFotos = service.fotoUrls || service.fotoUrl; let safeFotoArray = [];
+                        if (Array.isArray(rawFotos)) safeFotoArray = rawFotos; else if (typeof rawFotos === 'object' && rawFotos !== null) safeFotoArray = Object.values(rawFotos); else if (typeof rawFotos === 'string') safeFotoArray = [rawFotos];
+
+                        if (safeFotoArray.length > 0) {
+                            let galleryHtml = safeFotoArray.map(url => `<a href="${url}" target="_blank" title="Klik untuk memperbesar" class="block"><img src="${url}" alt="Foto Service" class="w-full h-32 object-cover rounded-xl shadow-sm border border-slate-200 hover:opacity-80 transition cursor-pointer"></a>`).join('');
+                            fotoHtml = `<div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-3 md:mb-0"><div class="w-8 h-8 rounded-full bg-slate-100 text-primary flex items-center justify-center"><i class="fas fa-camera"></i></div> Lampiran Foto</div><div class="md:w-2/3"><div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${galleryHtml}</div></div></div>`;
+                        }
+                        
+                        trackingContent.innerHTML = `
+                            <div class="space-y-4">
+                                <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-user"></i></div> Nama</div><span class="md:w-2/3 text-slate-800 font-medium md:pt-1">${service.nama}</span></div>
+                                <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-laptop"></i></div> Device</div><span class="md:w-2/3 text-slate-800 md:pt-1">${service.device || '-'}</span></div>
+                                <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-red-50 text-red-400 flex items-center justify-center"><i class="fas fa-tools"></i></div> Kerusakan</div><span class="md:w-2/3 text-slate-800 md:pt-1">${service.kerusakan}</span></div>
+                                ${service.keterangan ? `<div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-blue-50 text-blue-400 flex items-center justify-center"><i class="fas fa-info-circle"></i></div> Catatan Teknisi</div><span class="md:w-2/3 text-slate-800 md:pt-1">${service.keterangan}</span></div>` : ''}
+                                ${fotoHtml}
+                                <div class="flex flex-col md:flex-row md:items-center pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-green-50 text-green-500 flex items-center justify-center"><i class="fas fa-money-bill-wave"></i></div> Total Biaya</div><span class="md:w-2/3 font-bold text-xl text-primary md:pt-1">${formatRupiah(service.biaya)}</span></div>
+                                <div class="flex flex-col md:flex-row md:items-center pt-2"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-2 md:mb-0"><div class="w-8 h-8 rounded-full bg-purple-50 text-purple-400 flex items-center justify-center"><i class="fas fa-tasks"></i></div> Status Saat Ini</div><span class="md:w-2/3"><span class="status-badge ${statusBadgeClass} px-4 py-1.5">${service.status}</span></span></div>
+                            </div>
+                            <div class="mt-8 pt-6 border-t border-slate-200"><button onclick="printCustomerInvoice()" class="w-full bg-slate-800 text-white font-bold py-3.5 px-6 rounded-xl shadow-md hover:bg-slate-900 transition-all flex items-center justify-center gap-2"><i class="fas fa-file-download text-lg"></i> Download / Cetak Nota (PDF)</button></div>
+                        `;
+                    } else { trackingContent.innerHTML = `<div class="bg-red-50 text-red-600 p-4 rounded-xl flex items-center gap-3"><i class="fas fa-search-minus text-xl"></i> <span>Invoice <b>${code}</b> tidak ditemukan.</span></div>`; }
+                } catch (error) { trackingContent.innerHTML = `<div class="bg-yellow-50 text-yellow-600 p-4 rounded-xl flex items-center gap-3"><i class="fas fa-wifi text-xl"></i> <span>Gangguan koneksi.</span></div>`; } 
+                finally { resultContainer.style.opacity = '0'; resultContainer.classList.remove('hidden'); await new Promise(resolve => setTimeout(resolve, 50)); resultContainer.style.opacity = '1'; searchButtonText.textContent = 'Cek Status'; searchSpinner.style.display = 'none'; searchButton.disabled = false; }
+            });
+        }
     </script>
 </body>
 </html>
