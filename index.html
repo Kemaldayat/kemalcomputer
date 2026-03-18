@@ -21,7 +21,10 @@
         .status-waiting { background-color: #f59e0b; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3); } .status-process { background-color: #10b981; } .status-finished { background-color: var(--color-primary); } .status-picked-up { background-color: #6366f1; }
         .slider-container { position: relative; overflow: hidden; border-radius: 1rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
         .slider-wrapper { display: flex; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .slider-wrapper img { width: 100%; height: auto; flex-shrink: 0; object-fit: cover;}
+        
+        /* PERBAIKAN CSS TINGGI SLIDER AGAR MUNCUL DI HP */
+        .slider-wrapper img { width: 100%; height: 100%; flex-shrink: 0; object-fit: cover;}
+        
         .page-transition { opacity: 0; transition: opacity 0.4s ease-in-out; } .page-transition.active { opacity: 1; }
         .page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.9); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; visibility: hidden; transition: 0.3s; }
         .page-loader.show { opacity: 1; visibility: visible; }
@@ -127,7 +130,6 @@
             </div>
 
             <div class="flex flex-col gap-8 mb-16 max-w-4xl mx-auto">
-                
                 <div id="legalitas-section" class="bg-white p-8 md:p-10 rounded-[2rem] shadow-sm border border-slate-100 hidden text-center">
                     <div class="inline-flex items-center justify-center w-14 h-14 bg-green-50 text-green-600 rounded-2xl text-2xl mb-4"><i class="fas fa-shield-alt"></i></div>
                     <h2 class="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight mb-2">Legalitas Usaha</h2>
@@ -149,7 +151,6 @@
                         Memuat Peta...
                     </div>
                 </div>
-
             </div>
 
         </section>
@@ -240,7 +241,6 @@
         };
         const antiBlokir = (url) => {
             if(!url) return '';
-            // Jika link-nya dari ImgBB, kita selubungi pakai server Weserv
             if(url.includes('ibb.co')) {
                 return 'https://wsrv.nl/?url=' + url;
             }
@@ -254,7 +254,6 @@
         const db = getDatabase(app);
         let globalWaNumber = "";
 
-        // Fungsi Beli Produk via WA
         window.beliViaWa = (namaProduk, harga) => {
             if(!globalWaNumber) { alert('Nomor WA Toko belum diatur.'); return; }
             let infoHarga = harga > 0 ? `Harga: Rp ${harga.toLocaleString('id-ID')}` : `Harga: Menyesuaikan Budget`;
@@ -283,17 +282,16 @@
                     document.getElementById('mapsNamaToko').innerText = nama; document.getElementById('copyrightText').innerText = `© ${new Date().getFullYear()} ${nama}. All Rights Reserved.`;
 
                     if(data.logoUrl) {
-                    let logoAman = antiBlokir(data.logoUrl);
-                    document.getElementById('faviconImg').href = logoAman; 
-                    document.getElementById('headerLogo').src = logoAman;
-                    document.getElementById('footerLogo').src = logoAman; 
-                    document.getElementById('resultLogo').src = logoAman;
+                        let logoAman = antiBlokir(data.logoUrl);
+                        document.getElementById('faviconImg').href = logoAman; 
+                        document.getElementById('headerLogo').src = logoAman;
+                        document.getElementById('footerLogo').src = logoAman; 
+                        document.getElementById('resultLogo').src = logoAman;
                     }
 
                     if(data.headline) document.getElementById('heroHeadline').innerText = data.headline;
                     if(data.subHeadline) document.getElementById('heroSubHeadline').innerText = data.subHeadline;
 
-                    // RENDER LEGALITAS (NIB)
                     if (data.nib) {
                         document.getElementById('legalitas-section').classList.remove('hidden');
                         document.getElementById('teksNib').innerText = data.nib;
@@ -316,20 +314,19 @@
                     document.getElementById('linkIg').href = data.ig || '#'; document.getElementById('linkTiktok').href = data.tiktok || '#'; document.getElementById('linkYoutube').href = data.youtube || '#';
                     if(!data.ig) document.getElementById('linkIg').style.display = 'none'; if(!data.tiktok) document.getElementById('linkTiktok').style.display = 'none'; if(!data.youtube) document.getElementById('linkYoutube').style.display = 'none';
 
-                    // RENDER SLIDER
+                    // RENDER SLIDER (PERBAIKAN LOGIKA)
                     const sliderWrapper = document.getElementById('image-slider');
                     if(data.sliders && data.sliders.length > 0) {
-                        sliderWrapper.innerHTML = data.sliders.map(url => `<img src="${url}" class="h-full w-full object-cover flex-shrink-0" alt="Banner">`).join('');
-                    } else {
                         sliderWrapper.innerHTML = data.sliders.map(url => `<img src="${antiBlokir(url)}" class="h-full w-full object-cover flex-shrink-0" alt="Banner">`).join('');
+                    } else {
+                        // DEFAULT GAMBAR LOKAL JIKA ADMIN BELUM UPLOAD
+                        sliderWrapper.innerHTML = `<img src="images/servislaptop.jpg" class="h-full w-full object-cover flex-shrink-0" alt="Banner"><img src="images/servishp.jpg" class="h-full w-full object-cover flex-shrink-0" alt="Banner">`;
                     }
                     slides = sliderWrapper.querySelectorAll('img'); if(slides.length > 1) startSlider();
 
-                    // RENDER LAYANAN 
                     const layananGrid = document.getElementById('layanan-grid');
                     if(data.layanans && data.layanans.length > 0) {
                         layananGrid.innerHTML = data.layanans.map(l => {
-                            // Pembersihan Kode Ikon Biar Gak Error
                             let safeIcon = l.icon ? l.icon.trim() : 'fa-tools';
                             safeIcon = safeIcon.replace('fas ', '').replace('fab ', '');
                             
@@ -343,7 +340,6 @@
                         }).join('');
                     }
 
-                    // RENDER TESTIMONI
                     const testimoniGrid = document.getElementById('testimoni-grid');
                     const testimoniSection = document.getElementById('testimoni-section');
                     if(data.testimonis && data.testimonis.length > 0) {
@@ -361,7 +357,6 @@
                         `).join('');
                     } else { testimoniSection.style.display = 'none'; }
 
-                    // RENDER KATALOG PC
                     const katalogGrid = document.getElementById('katalog-grid');
                     const katalogProduk = (data.katalog && data.katalog.length > 0) ? data.katalog : [];
 
@@ -421,7 +416,7 @@
             const tgl = new Date(service.timestamp || Date.now()).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             
             let namaToko = "Toko Servis"; let alamat = "-"; let wa = "-"; let logo = "images/logo.png"; let teksGaransi = "*Garansi servis berlaku 1 minggu.";
-            try { const snap = await get(ref(db, 'pengaturan_toko')); if(snap.exists()) { const dt = snap.val(); if(dt.namaToko) namaToko = dt.namaToko; if(dt.alamat) alamat = dt.alamat; if(dt.wa) wa = dt.wa; if(dt.logoUrl) logo = dt.logoUrl; if(dt.teksGaransi) teksGaransi = dt.teksGaransi; } } catch(e) {}
+            try { const snap = await get(ref(db, 'pengaturan_toko')); if(snap.exists()) { const dt = snap.val(); if(dt.namaToko) namaToko = dt.namaToko; if(dt.alamat) alamat = dt.alamat; if(dt.wa) wa = dt.wa; if(dt.logoUrl) logo = antiBlokir(dt.logoUrl); if(dt.teksGaransi) teksGaransi = dt.teksGaransi; } } catch(e) {}
 
             const printWindow = window.open('', '_blank');
             const htmlString = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Nota Servis - ${serviceCode}</title><style>body { font-family: 'Courier New', Courier, monospace; color: #000; padding: 20px; font-size: 14px; line-height: 1.5; max-width: 80mm; margin: auto; } .header { text-align: center; border-bottom: 2px dashed #000; padding-bottom: 15px; margin-bottom: 15px; } .header img { max-width: 80px; margin-bottom: 5px; border-radius: 8px; } .header h1 { font-size: 22px; margin: 0 0 5px 0; font-family: Arial, sans-serif; font-weight: bold;} .header p { margin: 0; font-size: 12px; } .content { margin-bottom: 15px; } .content p { margin: 4px 0; } .table-item { width: 100%; border-collapse: collapse; margin-top: 10px; } .table-item td { vertical-align: top; padding: 4px 0; } .table-item td:first-child { width: 35%; font-weight: bold; } .total-section { border-top: 2px dashed #000; border-bottom: 2px dashed #000; padding: 10px 0; margin-top: 15px; text-align: right; } .total-section h2 { margin: 0; font-size: 18px; } .footer { text-align: center; font-size: 11px; margin-top: 20px; } @media print { @page { margin: 0; } body { margin: 1cm auto; max-width: 100%; } }</style></head><body><div class="header"><img src="${logo}" alt="Logo" onerror="this.style.display='none'"><h1>${namaToko.toUpperCase()}</h1><p>${alamat}</p><p>WhatsApp: ${wa}</p></div><div class="content"><p><strong>Nota:</strong> ${serviceCode}</p><p><strong>Tgl :</strong> ${tgl}</p><table class="table-item"><tr><td>Pelanggan</td><td>: ${service.nama}</td></tr><tr><td>No. HP</td><td>: ${service.nomorHp || '-'}</td></tr><tr><td>Device</td><td>: ${service.device}</td></tr><tr><td>Keluhan</td><td>: ${service.kerusakan}</td></tr><tr><td>Status</td><td>: ${service.status.toUpperCase()}</td></tr></table></div><div class="total-section"><p style="margin:0; font-size: 12px;">Total Tagihan:</p><h2>${formatRupiah(service.biaya)}</h2></div><div class="footer"><p>Terima kasih atas kepercayaan Anda!</p><p><em>${teksGaransi}</em></p></div><script> setTimeout(() => { window.print(); }, 1000); <\/script></body></html>`;
@@ -450,15 +445,15 @@
                         if (Array.isArray(rawFotos)) safeFotoArray = rawFotos; else if (typeof rawFotos === 'object' && rawFotos !== null) safeFotoArray = Object.values(rawFotos); else if (typeof rawFotos === 'string') safeFotoArray = [rawFotos];
 
                         if (safeFotoArray.length > 0) {
-                            let galleryHtml = safeFotoArray.map(url => `<a href="${url}" target="_blank" title="Klik untuk memperbesar" class="block"><img src="${url}" alt="Foto Service" class="w-full h-32 object-cover rounded-xl shadow-sm border border-slate-200 hover:opacity-80 transition cursor-pointer"></a>`).join('');
+                            let galleryHtml = safeFotoArray.map(url => `<a href="${antiBlokir(url)}" target="_blank" title="Klik untuk memperbesar" class="block"><img src="${antiBlokir(url)}" alt="Foto Service" class="w-full h-32 object-cover rounded-xl shadow-sm border border-slate-200 hover:opacity-80 transition cursor-pointer"></a>`).join('');
                             fotoHtml = `<div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-3 md:mb-0"><div class="w-8 h-8 rounded-full bg-slate-100 text-primary flex items-center justify-center"><i class="fas fa-camera"></i></div> Lampiran Foto</div><div class="md:w-2/3"><div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${galleryHtml}</div></div></div>`;
                         }
                         
                         trackingContent.innerHTML = `
                             <div class="space-y-4">
-                                <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-user"></i></div> Nama</div><span class="md:w-2/3 text-slate-800 font-medium md:pt-1">${service.nama}</span></div>
-                                <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-laptop"></i></div> Device</div><span class="md:w-2/3 text-slate-800 md:pt-1">${service.device || '-'}</span></div>
-                                <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-red-50 text-red-400 flex items-center justify-center"><i class="fas fa-tools"></i></div> Kerusakan</div><span class="md:w-2/3 text-slate-800 md:pt-1">${service.kerusakan}</span></div>
+                                <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-user"></i></div> Nama Pelanggan</div><span class="md:w-2/3 text-slate-800 font-medium md:pt-1">${service.nama}</span></div>
+                                <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-laptop"></i></div> Jenis Device</div><span class="md:w-2/3 text-slate-800 md:pt-1">${service.device || '-'}</span></div>
+                                <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-red-50 text-red-400 flex items-center justify-center"><i class="fas fa-tools"></i></div> Keluhan/Kerusakan</div><span class="md:w-2/3 text-slate-800 md:pt-1">${service.kerusakan}</span></div>
                                 ${service.keterangan ? `<div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-blue-50 text-blue-400 flex items-center justify-center"><i class="fas fa-info-circle"></i></div> Catatan Teknisi</div><span class="md:w-2/3 text-slate-800 md:pt-1">${service.keterangan}</span></div>` : ''}
                                 ${fotoHtml}
                                 <div class="flex flex-col md:flex-row md:items-center pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-green-50 text-green-500 flex items-center justify-center"><i class="fas fa-money-bill-wave"></i></div> Total Biaya</div><span class="md:w-2/3 font-bold text-xl text-primary md:pt-1">${formatRupiah(service.biaya)}</span></div>
