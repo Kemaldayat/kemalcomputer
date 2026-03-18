@@ -10,11 +10,17 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary-color: #0d9488; --primary-hover: #0f766e; --secondary-color: #f8fafc; --secondary-hover: #f1f5f9;
-            --success-color: #10b981; --info-color: #3b82f6; --warning-color: #f59e0b; --danger-color: #ef4444; --danger-hover: #dc2626;
-            --bg-color: #f1f5f9; --container-bg: #ffffff; --text-color: #334155; --text-light: #64748b; --border-color: #e2e8f0;
-            --border-radius-sm: 8px; --border-radius-md: 12px; --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05); --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --sidebar-width: 260px; --status-waiting-bg: #fef3c7; --status-waiting-text: #d97706; --status-process-bg: #dcfce7; --status-process-text: #15803d;
+            --primary-color: #0d9488; --primary-hover: #0f766e;
+            --secondary-color: #f8fafc; --secondary-hover: #f1f5f9;
+            --success-color: #10b981; --info-color: #3b82f6; --warning-color: #f59e0b;
+            --danger-color: #ef4444; --danger-hover: #dc2626;
+            --bg-color: #f1f5f9; --container-bg: #ffffff;
+            --text-color: #334155; --text-light: #64748b; --border-color: #e2e8f0;
+            --border-radius-sm: 8px; --border-radius-md: 12px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05); --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --sidebar-width: 260px;
+            --status-waiting-bg: #fef3c7; --status-waiting-text: #d97706;
+            --status-process-bg: #dcfce7; --status-process-text: #15803d;
             --status-picked-up-bg: #f3e8ff; --status-picked-up-text: #7e22ce;
         }
 
@@ -30,43 +36,93 @@
         .sidebar-category { font-size: 0.75em; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin: 15px 0 8px 10px; }
         .menu-list { display: flex; flex-direction: column; gap: 5px; flex-grow: 1; }
         .menu-item { background: transparent; border: none; width: 100%; text-align: left; padding: 12px 15px; border-radius: 10px; cursor: pointer; font-family: inherit; font-size: 0.9em; font-weight: 500; color: var(--text-light); display: flex; align-items: center; gap: 12px; transition: all 0.2s ease; }
-        .menu-item i { width: 20px; text-align: center; font-size: 1.1em; } .menu-item:hover { background: var(--secondary-color); color: var(--primary-color); } .menu-item.active { background: var(--primary-color); color: white; box-shadow: 0 4px 6px rgba(13, 148, 136, 0.2); }
+        .menu-item i { width: 20px; text-align: center; font-size: 1.1em; }
+        .menu-item:hover { background: var(--secondary-color); color: var(--primary-color); }
+        .menu-item.active { background: var(--primary-color); color: white; box-shadow: 0 4px 6px rgba(13, 148, 136, 0.2); }
 
         .main-content { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; background-color: var(--bg-color); position: relative; }
         .topbar { background: #fff; padding: 15px 30px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 15; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .topbar h1 { font-size: 1.3em; font-weight: 600; margin: 0; }
         .header-buttons { display: flex; gap: 10px; }
         .btn { padding: 8px 15px; border-radius: var(--border-radius-sm); cursor: pointer; font-size: 0.9em; font-weight: 500; transition: var(--transition-ease); border: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: inherit; text-decoration: none; }
-        .btn-primary { background-color: var(--primary-color); color: white; } .btn-primary:hover { background-color: var(--primary-hover); } .btn-danger { background-color: #fee2e2; color: var(--danger-hover); } .btn-danger:hover { background-color: #fca5a5; color: white; } .btn-success { background-color: var(--success-color); color: white; } .btn-success:hover { background-color: #059669; }
+        .btn-primary { background-color: var(--primary-color); color: white; } .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-danger { background-color: #fee2e2; color: var(--danger-hover); } .btn-danger:hover { background-color: #fca5a5; color: white; }
+        .btn-success { background-color: var(--success-color); color: white; } .btn-success:hover { background-color: #059669; }
 
         .content-area { padding: 25px 30px; max-width: 1400px; width: 100%; margin: 0 auto; padding-bottom: 80px; }
         .tab-pane { display: none; animation: fadeIn 0.3s ease; } .tab-pane.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* Operasional */
         .controls { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
         .status-tabs { display: flex; gap: 10px; overflow-x: auto; border-bottom: 2px solid var(--border-color); flex-grow: 1; scrollbar-width: none; }
-        .tab-btn { padding: 8px 16px; border: none; background: none; font-size: 0.95em; font-weight: 500; color: var(--text-light); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s; white-space: nowrap; } .tab-btn:hover { color: var(--primary-color); } .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
-        .search-wrapper { position: relative; width: 100%; max-width: 300px; } .search-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-light); }
-        .searchInput { width: 100%; padding: 10px 15px 10px 40px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 0.9em; background: var(--secondary-color); font-family: inherit; } .searchInput:focus { outline: none; border-color: var(--primary-color); background: #fff; }
+        .tab-btn { padding: 8px 16px; border: none; background: none; font-size: 0.95em; font-weight: 500; color: var(--text-light); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: 0.2s; white-space: nowrap; }
+        .tab-btn:hover { color: var(--primary-color); } .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        .search-wrapper { position: relative; width: 100%; max-width: 300px; }
+        .search-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-light); }
+        .searchInput { width: 100%; padding: 10px 15px 10px 40px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 0.9em; background: var(--secondary-color); font-family: inherit; }
+        .searchInput:focus { outline: none; border-color: var(--primary-color); background: #fff; }
 
         .table-responsive { overflow-x: auto; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); background: #fff; margin-bottom: 20px;}
-        table { width: 100%; border-collapse: collapse; text-align: left; } th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); white-space: nowrap; font-size: 0.9em; } th { background: var(--secondary-color); color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; } tbody tr { transition: 0.2s; } tbody tr:hover { background: var(--secondary-hover); }
-        .status-column { position: sticky; right: 130px; z-index: 5; background-color: inherit; } .action-column { position: sticky; right: 0; z-index: 10; background-color: inherit; box-shadow: -4px 0 10px rgba(0,0,0,0.03); } th.status-column, th.action-column { background-color: var(--secondary-color); z-index: 11; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); white-space: nowrap; font-size: 0.9em; }
+        th { background: var(--secondary-color); color: var(--text-light); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        tbody tr { transition: 0.2s; } tbody tr:hover { background: var(--secondary-hover); }
         
-        .status-badge { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 20px; font-weight: 600; font-size: 0.8em; } .status-waiting { background-color: var(--status-waiting-bg); color: var(--status-waiting-text); } .status-process { background-color: var(--status-process-bg); color: var(--status-process-text); } .status-finished { background-color: var(--primary-color); color: white; } .status-picked-up { background-color: var(--status-picked-up-bg); color: var(--status-picked-up-text); }
-        .action-buttons { display: flex; gap: 6px; } .icon-btn { width: 30px; height: 30px; border-radius: 6px; border: none; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; color: white; font-size: 0.85em;} .whatsapp-button { background-color: #25D366; } .whatsapp-button:hover { background-color: #16a34a; } .edit-button { background-color: var(--info-color); } .edit-button:hover { background-color: #2563eb; } .delete-button { background-color: var(--danger-color); } .delete-button:hover { background-color: #dc2626; } .print-button { background-color: #6366f1; } .print-button:hover { background-color: #4f46e5; } .biaya-text { font-family: monospace; font-weight: 600; color: var(--primary-color); font-size: 1.05em; }
+        .status-column { position: sticky; right: 130px; z-index: 5; background-color: inherit; }
+        .action-column { position: sticky; right: 0; z-index: 10; background-color: inherit; box-shadow: -4px 0 10px rgba(0,0,0,0.03); }
+        th.status-column, th.action-column { background-color: var(--secondary-color); z-index: 11; }
+        
+        .status-badge { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 20px; font-weight: 600; font-size: 0.8em; }
+        .status-waiting { background-color: var(--status-waiting-bg); color: var(--status-waiting-text); }
+        .status-process { background-color: var(--status-process-bg); color: var(--status-process-text); }
+        .status-finished { background-color: var(--primary-color); color: white; }
+        .status-picked-up { background-color: var(--status-picked-up-bg); color: var(--status-picked-up-text); }
 
-        .finance-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 25px; } .finance-card { background: #fff; padding: 20px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow-sm); } .finance-card .icon { width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.4em; flex-shrink: 0;} .card-income .icon { background: #dcfce7; color: #15803d; } .card-expense .icon { background: #fee2e2; color: #dc2626; } .card-profit .icon { background: #e0e7ff; color: #4338ca; } .finance-card h3 { margin: 0; font-size: 0.8em; color: var(--text-light); text-transform: uppercase; } .finance-card .amount { margin: 5px 0 0 0; font-size: 1.4em; font-weight: 700; color: var(--text-color); }
+        .action-buttons { display: flex; gap: 6px; }
+        .icon-btn { width: 30px; height: 30px; border-radius: 6px; border: none; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; color: white; font-size: 0.85em;}
+        .whatsapp-button { background-color: #25D366; } .whatsapp-button:hover { background-color: #16a34a; }
+        .edit-button { background-color: var(--info-color); } .edit-button:hover { background-color: #2563eb; }
+        .delete-button { background-color: var(--danger-color); } .delete-button:hover { background-color: #dc2626; }
+        .print-button { background-color: #6366f1; } .print-button:hover { background-color: #4f46e5; }
+        .biaya-text { font-family: monospace; font-weight: 600; color: var(--primary-color); font-size: 1.05em; }
+
+        .finance-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .finance-card { background: #fff; padding: 20px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow-sm); }
+        .finance-card .icon { width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.4em; flex-shrink: 0;}
+        .card-income .icon { background: #dcfce7; color: #15803d; } .card-expense .icon { background: #fee2e2; color: #dc2626; } .card-profit .icon { background: #e0e7ff; color: #4338ca; }
+        .finance-card h3 { margin: 0; font-size: 0.8em; color: var(--text-light); text-transform: uppercase; } .finance-card .amount { margin: 5px 0 0 0; font-size: 1.4em; font-weight: 700; color: var(--text-color); }
+        
         .chart-card { background: #fff; padding: 20px; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); margin-bottom: 25px; }
 
-        .settings-card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); margin-bottom: 20px; max-width: 800px;} .settings-card h3 { margin-top: 0; font-size: 1.1em; color: var(--primary-color); border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; margin-bottom: 20px; } .form-group { margin-bottom: 15px; } .form-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9em; color: var(--text-color); } .form-group input[type="text"], .form-group input[type="url"], .form-group input[type="tel"], .form-group input[type="number"], .form-group textarea, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; background: var(--secondary-color); font-size: 0.95em; box-sizing: border-box; transition: 0.2s;} .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-color); background: #fff; } .color-picker-wrapper { display: flex; align-items: center; gap: 15px; } input[type="color"] { width: 45px; height: 45px; padding: 0; border: none; border-radius: 8px; cursor: pointer; } input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; } input[type="color"]::-webkit-color-swatch { border: none; border-radius: 8px; }
+        /* Pengaturan (Settings) */
+        .settings-card { background: #fff; padding: 25px; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); margin-bottom: 20px; max-width: 800px;}
+        .settings-card h3 { margin-top: 0; font-size: 1.1em; color: var(--primary-color); border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9em; color: var(--text-color); }
+        .form-group input[type="text"], .form-group input[type="url"], .form-group input[type="tel"], .form-group input[type="number"], .form-group textarea, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-family: inherit; background: var(--secondary-color); font-size: 0.95em; box-sizing: border-box; transition: 0.2s;}
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-color); background: #fff; }
+        .color-picker-wrapper { display: flex; align-items: center; gap: 15px; }
+        input[type="color"] { width: 45px; height: 45px; padding: 0; border: none; border-radius: 8px; cursor: pointer; } input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; } input[type="color"]::-webkit-color-swatch { border: none; border-radius: 8px; }
         .logo-preview { width: 120px; height: 120px; border-radius: 12px; object-fit: contain; border: 2px dashed var(--primary-color); margin-top: 10px; display: block; background: var(--bg-color); padding: 5px;}
 
-        .dynamic-item { background: var(--secondary-color); padding: 15px; border-radius: 8px; position: relative; border: 1px solid var(--border-color); margin-bottom: 10px; } .dynamic-item .btn-remove-item { position: absolute; top: 10px; right: 10px; background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-weight: bold; } .dynamic-item .btn-remove-item:hover { background: var(--danger-hover); }
-        .floating-action { position: fixed; bottom: 30px; right: 40px; z-index: 50; display: none; } .floating-action.show { display: block; } .btn-save-settings { background: var(--primary-color); color: white; border: none; padding: 15px 30px; border-radius: 50px; font-size: 1.05em; font-weight: 600; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.4); display: flex; align-items: center; gap: 10px; transition: 0.3s; } .btn-save-settings:hover { background: var(--primary-hover); transform: translateY(-3px); }
+        /* CSS KHUSUS DYNAMIC LIST (LAYANAN, TESTIMONI, KATALOG) */
+        .dynamic-item { background: var(--secondary-color); padding: 15px; border-radius: 8px; position: relative; border: 1px solid var(--border-color); margin-bottom: 10px; }
+        .dynamic-item .btn-remove-item { position: absolute; top: 10px; right: 10px; background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-weight: bold; }
+        .dynamic-item .btn-remove-item:hover { background: var(--danger-hover); }
 
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); align-items: center; justify-content: center; backdrop-filter: blur(4px); } .modal-content { background: var(--container-bg); padding: 30px; border-radius: var(--border-radius-md); width: 90%; max-width: 500px; position: relative; max-height: 90vh; overflow-y: auto; } #editModal .modal-content { max-width: 600px; } .close-button { position: absolute; top: 15px; right: 20px; font-size: 24px; color: var(--text-light); cursor: pointer; } .close-button:hover { color: var(--danger-color); } .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; position: sticky; bottom: -30px; background: var(--container-bg); padding: 15px 0 0 0; border-top: 1px solid var(--border-color); z-index: 10;}
+        .floating-action { position: fixed; bottom: 30px; right: 40px; z-index: 50; display: none; }
+        .floating-action.show { display: block; }
+        .btn-save-settings { background: var(--primary-color); color: white; border: none; padding: 15px 30px; border-radius: 50px; font-size: 1.05em; font-weight: 600; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.4); display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+        .btn-save-settings:hover { background: var(--primary-hover); transform: translateY(-3px); }
 
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-content { background: var(--container-bg); padding: 30px; border-radius: var(--border-radius-md); width: 90%; max-width: 500px; position: relative; max-height: 90vh; overflow-y: auto; }
+        #editModal .modal-content { max-width: 600px; }
+        .close-button { position: absolute; top: 15px; right: 20px; font-size: 24px; color: var(--text-light); cursor: pointer; } .close-button:hover { color: var(--danger-color); }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; position: sticky; bottom: -30px; background: var(--container-bg); padding: 15px 0 0 0; border-top: 1px solid var(--border-color); z-index: 10;}
+
+        /* PREVIEW FOTO DIPERBESAR */
         #previewFotoContainer, #previewSliderContainer { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 10px; }
         .photo-preview-item { position: relative; width: 130px; height: 130px; border-radius: 8px; border: 1px solid var(--border-color); overflow: hidden; }
         .photo-preview-item.slider-box { width: 180px; height: 100px; }
@@ -116,6 +172,7 @@
         </div>
 
         <div class="content-area">
+            
             <div id="tab-services" class="tab-pane active">
                 <section class="controls">
                     <div class="status-tabs" id="statusTabs">
@@ -125,25 +182,56 @@
                         <button class="tab-btn" onclick="filterByTab('Selesai', this)">Selesai</button>
                         <button class="tab-btn" onclick="filterByTab('Diambil', this)">Diambil</button>
                     </div>
-                    <div class="search-wrapper"><i class="fas fa-search"></i><input type="text" id="searchInputServices" class="searchInput" placeholder="Cari Kode, Nama, Device..." onkeyup="filterTableServices()"></div>
+                    <div class="search-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInputServices" class="searchInput" placeholder="Cari Kode, Nama, Device..." onkeyup="filterTableServices()">
+                    </div>
                 </section>
                 <div class="table-responsive">
-                    <table id="serviceTable"><thead><tr><th>Invoice</th> <th>Nama Pelanggan</th> <th>Device</th> <th>Kerusakan</th> <th>No HP</th><th>Biaya</th> <th class="status-column">Status</th> <th>Keterangan</th> <th class="action-column">Aksi</th></tr></thead><tbody></tbody></table>
+                    <table id="serviceTable">
+                        <thead><tr><th>Invoice</th> <th>Nama Pelanggan</th> <th>Device</th> <th>Kerusakan</th> <th>No HP</th><th>Biaya</th> <th class="status-column">Status</th> <th>Keterangan</th> <th class="action-column">Aksi</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
                 <a href="admin.html" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1.05em;"><i class="fas fa-plus-circle"></i> Tambah Antrian Servis Baru</a>
             </div>
 
             <div id="tab-customers" class="tab-pane">
-                <section class="controls" style="justify-content: flex-end;"><div class="search-wrapper"><i class="fas fa-search"></i><input type="text" id="searchInputCustomers" class="searchInput" placeholder="Cari Nama atau No HP..." onkeyup="filterTableCustomers()"></div></section>
-                <div class="table-responsive"><table id="customerTable"><thead><tr><th>Nama Pelanggan</th> <th>Nomor WhatsApp</th> <th style="text-align: center;">Total Servis</th> <th>Total Transaksi</th> <th>Riwayat Device</th> <th class="action-column">Aksi</th></tr></thead><tbody></tbody></table></div>
+                <section class="controls" style="justify-content: flex-end;">
+                    <div class="search-wrapper"><i class="fas fa-search"></i><input type="text" id="searchInputCustomers" class="searchInput" placeholder="Cari Nama atau No HP..." onkeyup="filterTableCustomers()"></div>
+                </section>
+                <div class="table-responsive">
+                    <table id="customerTable">
+                        <thead><tr><th>Nama Pelanggan</th> <th>Nomor WhatsApp</th> <th style="text-align: center;">Total Servis</th> <th>Total Transaksi</th> <th>Riwayat Device</th> <th class="action-column">Aksi</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
 
             <div id="tab-finance" class="tab-pane">
-                <section class="controls finance-controls-wrapper" style="border-bottom: 2px solid var(--border-color); padding-bottom: 15px;"><div style="display: flex; align-items: center; gap: 10px;"><label style="margin: 0; font-weight: bold;">Bulan / Tahun:</label><input type="month" id="financeMonthPicker" class="searchInput" style="width: auto; padding: 8px 12px; margin: 0;" onchange="calculateFinance()"></div><button class="btn btn-success" onclick="openExpenseModal()"><i class="fas fa-plus"></i> Tambah Pengeluaran</button></section>
-                <div class="finance-cards"><div class="finance-card card-income"><div class="icon"><i class="fas fa-arrow-down"></i></div><div><h3>Pendapatan Bulan Ini</h3><p class="amount" id="totalPendapatan">Rp 0</p></div></div><div class="finance-card card-expense"><div class="icon"><i class="fas fa-arrow-up"></i></div><div><h3>Pengeluaran Bulan Ini</h3><p class="amount" id="totalPengeluaran">Rp 0</p></div></div><div class="finance-card card-profit"><div class="icon"><i class="fas fa-coins"></i></div><div><h3>Laba Bersih Bulan Ini</h3><p class="amount" id="labaBersih">Rp 0</p></div></div></div>
-                <div class="chart-card"><h3><i class="fas fa-chart-line text-primary" style="color: var(--primary-color);"></i> Analitik Keuangan Tahun <span id="chartYearDisplay"></span></h3><div style="position: relative; height: 350px; width: 100%;"><canvas id="financeChart"></canvas></div></div>
+                <section class="controls finance-controls-wrapper" style="border-bottom: 2px solid var(--border-color); padding-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <label style="margin: 0; font-weight: bold;">Bulan / Tahun:</label>
+                        <input type="month" id="financeMonthPicker" class="searchInput" style="width: auto; padding: 8px 12px; margin: 0;" onchange="calculateFinance()">
+                    </div>
+                    <button class="btn btn-success" onclick="openExpenseModal()"><i class="fas fa-plus"></i> Tambah Pengeluaran</button>
+                </section>
+                <div class="finance-cards">
+                    <div class="finance-card card-income"><div class="icon"><i class="fas fa-arrow-down"></i></div><div><h3>Pendapatan Bulan Ini</h3><p class="amount" id="totalPendapatan">Rp 0</p></div></div>
+                    <div class="finance-card card-expense"><div class="icon"><i class="fas fa-arrow-up"></i></div><div><h3>Pengeluaran Bulan Ini</h3><p class="amount" id="totalPengeluaran">Rp 0</p></div></div>
+                    <div class="finance-card card-profit"><div class="icon"><i class="fas fa-coins"></i></div><div><h3>Laba Bersih Bulan Ini</h3><p class="amount" id="labaBersih">Rp 0</p></div></div>
+                </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-line text-primary" style="color: var(--primary-color);"></i> Analitik Keuangan Tahun <span id="chartYearDisplay"></span></h3>
+                    <div style="position: relative; height: 350px; width: 100%;"><canvas id="financeChart"></canvas></div>
+                </div>
                 <h2 style="font-size: 1.1em; font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Rincian Pengeluaran Toko</h2>
-                <div class="table-responsive"><table id="expenseTable"><thead><tr><th>Tanggal</th> <th>Keterangan</th> <th>Nominal</th> <th class="action-column">Aksi</th></tr></thead><tbody></tbody></table></div>
+                <div class="table-responsive">
+                    <table id="expenseTable">
+                        <thead><tr><th>Tanggal</th> <th>Keterangan</th> <th>Nominal</th> <th class="action-column">Aksi</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
 
             <form id="settingsForm">
@@ -163,7 +251,10 @@
                             <input type="text" id="setNib" placeholder="Contoh: 1234567890123">
                             <small style="color: var(--text-light); display:block; margin-top:5px;">Isi jika toko sudah memiliki NIB. Akan ditampilkan di Beranda pelanggan di atas Peta Lokasi.</small>
                         </div>
-                        <div class="form-group"><label>Deskripsi Legalitas</label><textarea id="setLegalitasDesc" rows="2" placeholder="Contoh: Usaha ini telah terdaftar resmi secara hukum."></textarea></div>
+                        <div class="form-group">
+                            <label>Deskripsi Legalitas</label>
+                            <textarea id="setLegalitasDesc" rows="2" placeholder="Contoh: Usaha ini telah terdaftar resmi secara hukum."></textarea>
+                        </div>
                     </div>
                     <div class="settings-card">
                         <h3><i class="fas fa-map-marked-alt"></i> Kontak & Lokasi</h3>
@@ -179,20 +270,24 @@
                         <div class="form-group"><label>Judul Utama (Teks Besar)</label><input type="text" id="setHeadline"></div>
                         <div class="form-group"><label>Sub-Judul (Deskripsi Singkat)</label><textarea id="setSubHeadline" rows="2"></textarea></div>
                     </div>
+
                     <div class="settings-card">
                         <h3><i class="fas fa-images"></i> Foto Slider (Beranda)</h3>
                         <input type="file" id="setSliderFile" accept="image/*" multiple style="background: #fff; padding: 10px; width: 100%; border: 1px solid var(--border-color); border-radius: 8px;">
                         <div id="previewSliderContainer"></div>
                     </div>
+
                     <div class="settings-card">
                         <h3><i class="fas fa-list"></i> Daftar Layanan Kami</h3>
                         <p style="color: var(--text-light); font-size: 0.9em; margin-bottom: 10px;">
                             Ketik kode icon dari FontAwesome. <b>Cukup ketik kodenya saja, harus pakai awalan fa-</b>.<br>
-                            Contoh: <b>fa-laptop, fa-mobile-alt, fa-desktop, fa-hdd, fa-print, fa-microchip</b>.
+                            Contoh: <b>fa-laptop, fa-mobile-alt, fa-desktop, fa-hdd, fa-print, fa-microchip</b>. <br>
+                            <a href="https://fontawesome.com/v5/search?o=r&m=free" target="_blank" style="color: var(--primary-color); text-decoration: underline;">Klik di sini untuk cari nama ikon lainnya</a>.
                         </p>
                         <div id="layananWrapper"></div>
                         <button type="button" onclick="addLayananUI()" class="btn btn-primary" style="margin-top:10px;"><i class="fas fa-plus"></i> Tambah Layanan</button>
                     </div>
+
                     <div class="settings-card">
                         <h3><i class="fas fa-star"></i> Testimoni Pelanggan</h3>
                         <div id="testimoniWrapper"></div>
@@ -220,7 +315,10 @@
                 <div id="tab-sistem" class="tab-pane">
                     <div class="settings-card">
                         <h3><i class="fas fa-palette"></i> Personalisasi Warna</h3>
-                        <div class="form-group"><label>Warna Tema Utama</label><div class="color-picker-wrapper"><input type="color" id="setWarnaUtama" value="#0d9488"><span id="hexWarnaTeks" style="font-family: monospace; font-weight: bold; color: var(--text-light);">#0d9488</span></div></div>
+                        <div class="form-group">
+                            <label>Warna Tema Utama</label>
+                            <div class="color-picker-wrapper"><input type="color" id="setWarnaUtama" value="#0d9488"><span id="hexWarnaTeks" style="font-family: monospace; font-weight: bold; color: var(--text-light);">#0d9488</span></div>
+                        </div>
                     </div>
                     <div class="settings-card">
                         <h3><i class="fas fa-print"></i> Pengaturan Nota / Invoice</h3>
@@ -233,7 +331,9 @@
                 </div>
 
                 <div id="floatingSaveBtn" class="floating-action">
-                    <button type="submit" class="btn-save-settings" id="btnSaveSettings"><i class="fas fa-save"></i> Simpan Pengaturan CMS</button>
+                    <button type="submit" class="btn-save-settings" id="btnSaveSettings">
+                        <i class="fas fa-save"></i> Simpan Pengaturan CMS
+                    </button>
                 </div>
             </form>
         </div>
@@ -256,7 +356,10 @@
                 <div class="form-group"><label>Biaya (Rp)</label><input type="number" id="editBiaya" min="0"></div>
                 <div class="form-group">
                     <label>Status</label>
-                    <select id="editStatus" required><option value="Menunggu">Menunggu</option><option value="Proses">Proses</option><option value="Selesai">Selesai</option><option value="Diambil">Diambil</option></select>
+                    <select id="editStatus" required>
+                        <option value="Menunggu">Menunggu</option><option value="Proses">Proses</option>
+                        <option value="Selesai">Selesai</option><option value="Diambil">Diambil</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Upload Foto Device (Bisa Lebih dari 1)</label>
@@ -303,6 +406,15 @@
         const app = initializeApp(firebaseConfig); const db = getDatabase(app); const auth = getAuth(app);
         const adminEmail = "dayatkemal16@gmail.com";
         
+        // JURUS ANTI BLOKIR IMGBB 
+        const antiBlokir = (url) => {
+            if(!url) return '';
+            if(url.includes('ibb.co')) {
+                return 'https://wsrv.nl/?url=' + encodeURIComponent(url);
+            }
+            return url;
+        };
+
         let servicesData = {}; let customersData = {}; let expensesData = {};
         window.financeChartInstance = null;
 
@@ -359,7 +471,7 @@
                 let f = await compressImage(file, 600, 600, 0.8); 
                 const fd = new FormData(); fd.append('image', f);
                 const res = await (await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: fd })).json();
-                if(res.success) textInput.value = res.data.url;
+                if(res.success) textInput.value = res.data.url; // Simpan URL asli ke input
             } catch(e) { alert("Gagal upload foto."); console.log(e); }
             btn.innerHTML = '<i class="fas fa-upload"></i> Foto'; btn.disabled = false; inputElem.value = '';
         };
@@ -397,7 +509,18 @@
         };
 
         document.getElementById('setSliderFile').addEventListener('change', function(e) { if(e.target.files.length === 0) return; window.pendingSliders = window.pendingSliders.concat(Array.from(e.target.files)); renderSliderPreviews(); this.value = ''; });
-        window.renderSliderPreviews = async () => { const c = document.getElementById('previewSliderContainer'); c.innerHTML = ''; window.existingSliders.forEach((url, i) => { c.innerHTML += `<div class="photo-preview-item slider-box"><img src="${url}"><button type="button" class="remove-btn" onclick="remExSlider(${i})">×</button></div>`; }); for(let i=0; i<window.pendingSliders.length; i++) { const reader = new FileReader(); const res = await new Promise(r => { reader.onload = e => r(e.target.result); reader.readAsDataURL(window.pendingSliders[i]); }); c.innerHTML += `<div class="photo-preview-item slider-box"><img src="${res}" style="opacity:0.6"><div class="badge-new">BARU</div><button type="button" class="remove-btn" onclick="remPenSlider(${i})">×</button></div>`; } };
+        
+        // PENGGUNAAN JURUS ANTI BLOKIR SAAT RENDER PREVIEW SLIDER DARI DB
+        window.renderSliderPreviews = async () => { 
+            const c = document.getElementById('previewSliderContainer'); c.innerHTML = ''; 
+            window.existingSliders.forEach((url, i) => { 
+                c.innerHTML += `<div class="photo-preview-item slider-box"><img src="${antiBlokir(url)}"><button type="button" class="remove-btn" onclick="remExSlider(${i})">×</button></div>`; 
+            }); 
+            for(let i=0; i<window.pendingSliders.length; i++) { 
+                const reader = new FileReader(); const res = await new Promise(r => { reader.onload = e => r(e.target.result); reader.readAsDataURL(window.pendingSliders[i]); }); 
+                c.innerHTML += `<div class="photo-preview-item slider-box"><img src="${res}" style="opacity:0.6"><div class="badge-new">BARU</div><button type="button" class="remove-btn" onclick="remPenSlider(${i})">×</button></div>`; 
+            } 
+        };
         window.remExSlider = i => { window.existingSliders.splice(i,1); renderSliderPreviews(); }; window.remPenSlider = i => { window.pendingSliders.splice(i,1); renderSliderPreviews(); };
 
         async function loadWebsiteSettings() {
@@ -407,19 +530,11 @@
                     const data = snapshot.val();
                     
                     if(data.namaToko) window.tokoSettings.namaToko = data.namaToko;
-                    if(data.logoUrl) window.tokoSettings.logoUrl = data.logoUrl;
-                    if(data.wa) window.tokoSettings.wa = data.wa;
-                    if(data.alamat) window.tokoSettings.alamat = data.alamat;
-                    if(data.teksGaransi) window.tokoSettings.teksGaransi = data.teksGaransi;
-                    if(data.pesanWa) window.tokoSettings.pesanWa = data.pesanWa;
-                    if(data.warnaUtama) window.tokoSettings.warnaUtama = data.warnaUtama;
+                    if(data.warnaUtama) document.documentElement.style.setProperty('--primary-color', data.warnaUtama);
 
                     document.getElementById('adminTitle').innerText = `Super Admin - ${window.tokoSettings.namaToko}`;
                     document.getElementById('sidebarNamaToko').innerText = window.tokoSettings.namaToko;
-                    document.getElementById('sidebarLogo').src = window.tokoSettings.logoUrl;
-                    document.getElementById('faviconImg').href = window.tokoSettings.logoUrl;
-                    if(data.warnaUtama) { document.documentElement.style.setProperty('--primary-color', data.warnaUtama); document.documentElement.style.setProperty('--primary-hover', data.warnaUtama); }
-
+                    
                     document.getElementById('setNamaToko').value = data.namaToko || '';
                     document.getElementById('setWa').value = data.wa || '';
                     document.getElementById('setAlamat').value = data.alamat || '';
@@ -438,7 +553,14 @@
                     document.getElementById('setNib').value = data.nib || '';
                     document.getElementById('setLegalitasDesc').value = data.legalitasDesc || '';
 
-                    if(data.logoUrl) { document.getElementById('previewLogo').src = data.logoUrl; document.getElementById('setLogoUrl').value = data.logoUrl; }
+                    // PENGGUNAAN JURUS ANTI BLOKIR UNTUK LOGO
+                    if(data.logoUrl) { 
+                        let logoAman = antiBlokir(data.logoUrl);
+                        document.getElementById('previewLogo').src = logoAman; 
+                        document.getElementById('sidebarLogo').src = logoAman; 
+                        document.getElementById('faviconImg').href = logoAman; 
+                        document.getElementById('setLogoUrl').value = data.logoUrl; // Tetap simpan url asli ke form
+                    }
 
                     if(data.sliders) { window.existingSliders = data.sliders; } else { window.existingSliders = []; }
                     window.pendingSliders = []; renderSliderPreviews();
@@ -448,6 +570,7 @@
                         data.layanans.forEach(l => addLayananUI(l.icon, l.title, l.desc));
                     } else {
                         addLayananUI('fa-desktop', 'Menjual & Perakitan Komputer', 'Sesuai budget...');
+                        addLayananUI('fa-laptop-medical', 'Servis Laptop & PC', 'Perbaikan mati total...');
                     }
 
                     document.getElementById('testimoniWrapper').innerHTML = '';
@@ -623,7 +746,18 @@
         };
         window.closeEditModal = () => document.getElementById('editModal').style.display = 'none';
         document.getElementById('editFoto').addEventListener('change', function(e) { if (e.target.files.length === 0) return; window.pendingFiles = window.pendingFiles.concat(Array.from(e.target.files)); renderPhotoPreviewsEdit(); this.value = ''; });
-        window.renderPhotoPreviewsEdit = async () => { const c = document.getElementById('previewFotoContainer'); c.innerHTML = ''; window.existingPhotos.forEach((url, i) => { c.innerHTML += `<div class="photo-preview-item"><img src="${url}"><button type="button" class="remove-btn" onclick="removeExistingPhoto(${i})">×</button></div>`; }); for (let i = 0; i < window.pendingFiles.length; i++) { const reader = new FileReader(); const res = await new Promise(r => { reader.onload = e => r(e.target.result); reader.readAsDataURL(window.pendingFiles[i]); }); c.innerHTML += `<div class="photo-preview-item"><img src="${res}" style="opacity: 0.6;"><div class="badge-new">BARU</div><button type="button" class="remove-btn" onclick="removePendingPhoto(${i})">×</button></div>`; } };
+        
+        // PENGGUNAAN JURUS ANTI BLOKIR SAAT RENDER FOTO SERVIS DARI DB
+        window.renderPhotoPreviewsEdit = async () => { 
+            const c = document.getElementById('previewFotoContainer'); c.innerHTML = ''; 
+            window.existingPhotos.forEach((url, i) => { 
+                c.innerHTML += `<div class="photo-preview-item"><img src="${antiBlokir(url)}"><button type="button" class="remove-btn" onclick="removeExistingPhoto(${i})">×</button></div>`; 
+            }); 
+            for (let i = 0; i < window.pendingFiles.length; i++) { 
+                const reader = new FileReader(); const res = await new Promise(r => { reader.onload = e => r(e.target.result); reader.readAsDataURL(window.pendingFiles[i]); }); 
+                c.innerHTML += `<div class="photo-preview-item"><img src="${res}" style="opacity: 0.6;"><div class="badge-new">BARU</div><button type="button" class="remove-btn" onclick="removePendingPhoto(${i})">×</button></div>`; 
+            } 
+        };
         window.removeExistingPhoto = (i) => { window.existingPhotos.splice(i, 1); renderPhotoPreviewsEdit(); }; window.removePendingPhoto = (i) => { window.pendingFiles.splice(i, 1); renderPhotoPreviewsEdit(); };
         
         window.saveEdit = async () => { 
