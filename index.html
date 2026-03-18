@@ -238,6 +238,14 @@
             databaseURL: "https://website-track-service-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "website-track-service",
             storageBucket: "website-track-service.firebasestorage.app", messagingSenderId: "87573564376", appId: "1:87573564376:web:c93c07f0506d00535a00ad"
         };
+        const antiBlokir = (url) => {
+            if(!url) return '';
+            // Jika link-nya dari ImgBB, kita selubungi pakai server Weserv
+            if(url.includes('ibb.co')) {
+                return 'https://wsrv.nl/?url=' + url;
+            }
+            return url;
+        };
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
         import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
@@ -275,8 +283,11 @@
                     document.getElementById('mapsNamaToko').innerText = nama; document.getElementById('copyrightText').innerText = `© ${new Date().getFullYear()} ${nama}. All Rights Reserved.`;
 
                     if(data.logoUrl) {
-                        document.getElementById('faviconImg').href = data.logoUrl; document.getElementById('headerLogo').src = data.logoUrl;
-                        document.getElementById('footerLogo').src = data.logoUrl; document.getElementById('resultLogo').src = data.logoUrl;
+                    let logoAman = antiBlokir(data.logoUrl);
+                    document.getElementById('faviconImg').href = logoAman; 
+                    document.getElementById('headerLogo').src = logoAman;
+                    document.getElementById('footerLogo').src = logoAman; 
+                    document.getElementById('resultLogo').src = logoAman;
                     }
 
                     if(data.headline) document.getElementById('heroHeadline').innerText = data.headline;
@@ -310,7 +321,7 @@
                     if(data.sliders && data.sliders.length > 0) {
                         sliderWrapper.innerHTML = data.sliders.map(url => `<img src="${url}" class="h-full w-full object-cover flex-shrink-0" alt="Banner">`).join('');
                     } else {
-                        sliderWrapper.innerHTML = `<img src="images/servislaptop.jpg" class="h-full w-full object-cover flex-shrink-0"><img src="images/servishp.jpg" class="h-full w-full object-cover flex-shrink-0">`;
+                        sliderWrapper.innerHTML = data.sliders.map(url => `<img src="${antiBlokir(url)}" class="h-full w-full object-cover flex-shrink-0" alt="Banner">`).join('');
                     }
                     slides = sliderWrapper.querySelectorAll('img'); if(slides.length > 1) startSlider();
 
@@ -355,7 +366,7 @@
                     const katalogProduk = (data.katalog && data.katalog.length > 0) ? data.katalog : [];
 
                     katalogGrid.innerHTML = katalogProduk.map(p => {
-                        const mediaHtml = p.img ? `<img src="${p.img}" alt="${p.nama}" class="w-full h-full object-cover">` : `<i class="fas fa-desktop text-5xl text-slate-300"></i>`;
+                        const mediaHtml = p.img ? `<img src="${antiBlokir(p.img)}" alt="${p.nama}" class="w-full h-full object-cover">` : `<i class="fas fa-desktop text-5xl text-slate-300"></i>`;
                         const hargaHtml = p.harga > 0 ? `Rp ${p.harga.toLocaleString('id-ID')}` : `Menyesuaikan Budget`;
                         
                         return `
