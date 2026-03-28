@@ -233,7 +233,7 @@
                         <h3><i class="fas fa-print"></i> Pengaturan Nota / Invoice</h3>
                         <div class="form-group"><label>Teks Info Garansi (Muncul di bawah Nota PDF)</label><textarea id="setTeksGaransi" rows="2"></textarea></div>
                     </div>
-                    <div class="settings-card">
+                    <div class="settings-card" style="display:none;">
                         <h3><i class="fab fa-whatsapp text-green-500"></i> Template Pesan WhatsApp</h3>
                         <div class="form-group"><label>Format Pesan</label><textarea id="setPesanWa" rows="5"></textarea></div>
                     </div>
@@ -326,7 +326,7 @@
         // Variabel CMS
         window.existingPhotos = []; window.pendingFiles = []; 
         window.existingSliders = []; window.pendingSliders = [];
-        window.tokoSettings = { namaToko: "Manajemen Servis", logoUrl: "images/logo.png", wa: "-", alamat: "-", warnaUtama: "#0d9488", teksGaransi: "*Garansi 1 minggu", pesanWa: "Halo Kak {nama},\nIni update servisan Anda:" };
+        window.tokoSettings = { namaToko: "Manajemen Servis", logoUrl: "images/logo.png", wa: "-", alamat: "-", warnaUtama: "#0d9488", teksGaransi: "*Garansi 1 minggu" };
 
         document.getElementById('financeMonthPicker').value = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
 
@@ -450,7 +450,6 @@
                     document.getElementById('setWarnaUtama').value = data.warnaUtama || '#0d9488';
                     document.getElementById('hexWarnaTeks').innerText = data.warnaUtama || '#0d9488';
                     document.getElementById('setTeksGaransi').value = data.teksGaransi || '';
-                    document.getElementById('setPesanWa').value = data.pesanWa || '';
                     
                     document.getElementById('setNib').value = data.nib || '';
                     document.getElementById('setLegalitasDesc').value = data.legalitasDesc || '';
@@ -539,7 +538,7 @@
                 namaToko: document.getElementById('setNamaToko').value.trim(), logoUrl: document.getElementById('setLogoUrl').value || 'images/logo.png', nib: document.getElementById('setNib').value.trim(), legalitasDesc: document.getElementById('setLegalitasDesc').value.trim(),
                 wa: document.getElementById('setWa').value.trim(), alamat: document.getElementById('setAlamat').value.trim(), maps: document.getElementById('setMaps').value.trim(), headline: document.getElementById('setHeadline').value.trim(), subHeadline: document.getElementById('setSubHeadline').value.trim(),
                 ig: document.getElementById('setIg').value.trim(), tiktok: document.getElementById('setTiktok').value.trim(), youtube: document.getElementById('setYoutube').value.trim(), warnaUtama: document.getElementById('setWarnaUtama').value, teksGaransi: document.getElementById('setTeksGaransi').value.trim(),
-                pesanWa: document.getElementById('setPesanWa').value.trim(), sliders: finalSliders, layanans: layanansArr, testimonis: testimoniArr, katalog: katalogArr
+                sliders: finalSliders, layanans: layanansArr, testimonis: testimoniArr, katalog: katalogArr
             };
 
             try {
@@ -630,12 +629,25 @@
         };
 
         window.contactCustomer = (hp, nama) => { if(hp === 'Tanpa Nomor') return showModal('Nomor HP tidak tercatat.', 'info'); window.open(`https://wa.me/${hp}?text=${encodeURIComponent(`Halo Kak ${nama},\nTerima kasih sudah mempercayakan servis di ${window.tokoSettings.namaToko}...`)}`, '_blank'); };
-        window.sendWhatsappNotification = (code) => { const s = servicesData[code]; if (!s) return; let sts = (s.status === 'Selesai' || s.status === 'Diambil') ? `Selesai pengerjaan` : (s.status === 'Proses') ? `Sedang diproses` : `Menunggu antrian`; let bya = s.biaya > 0 ? `Rp ${new Intl.NumberFormat('id-ID').format(s.biaya)}` : `Menunggu pengecekan`; let link = `${window.location.origin}/?code=${code}`; let tpl = window.tokoSettings.pesanWa.replace(/{nama}/g, s.nama).replace(/{status}/g, sts).replace(/{biaya}/g, bya).replace(/{link}/g, link); window.open(`https://wa.me/${s.nomorHp}?text=${encodeURIComponent(`*Notifikasi ${window.tokoSettings.namaToko}*\n==================\n${tpl}`)}`, '_blank'); };
+        
+        // PENGIRIMAN WHATSAPP CUSTOM KEMAL COMPUTER
+        window.sendWhatsappNotification = (code) => { 
+            const s = servicesData[code]; if (!s) return; 
+            
+            let pesanStatus = '';
+            if (s.status === 'Menunggu') pesanStatus = 'masih menunggu antrean pengecekan.';
+            else if (s.status === 'Proses') pesanStatus = 'saat ini sedang dalam proses pengerjaan oleh teknisi kami.';
+            else if (s.status === 'Selesai') pesanStatus = 'sudah selesai dikerjakan dan siap untuk diambil.';
+            else if (s.status === 'Diambil') pesanStatus = 'telah diambil. Terima kasih telah mempercayakan servis pada kami!';
+
+            let pesanWA = `*Notifikasi |Kemal Computer| Service*\n*==============================*\nKepada Yth. ${s.nama},\nService-an anda ${s.device || 'Perangkat Elektronik'} dengan nomor invoice ${code}, ${pesanStatus}\n*==============================*\nUntuk Proses Tracking, Kamu bisa memantau melalui link dibawah ini. Terimakasih 🙏🙏😊\n_https://kemalcomputer.vercel.app/?code=${code}_`;
+            
+            window.open(`https://wa.me/${s.nomorHp}?text=${encodeURIComponent(pesanWA)}`, '_blank'); 
+        };
 
         window.openExpenseModal = () => { document.getElementById('expenseForm').reset(); document.getElementById('expTanggal').value = new Date().toISOString().split('T')[0]; document.getElementById('expenseModal').style.display = 'flex'; }; window.closeExpenseModal = () => { document.getElementById('expenseModal').style.display = 'none'; };
         window.saveExpense = async () => { const t = document.getElementById('expTanggal').value, k = document.getElementById('expKeterangan').value.trim(), n = document.getElementById('expNominal').value; if(!t || !k || !n) return; try { await set(ref(db, `pengeluaran/EXP-${Date.now()}`), { tanggal: t, keterangan: k, nominal: Number(n) }); closeExpenseModal(); showModal('Tersimpan!', 'info'); } catch (e) {} };
         
-        // FUNGSI HAPUS YANG SUDAH DIPERBAIKI!
         window.deleteExpense = (id) => { showModal(`Yakin hapus pengeluaran ini?`, "confirm", async () => { try { await remove(ref(db, `pengeluaran/${id}`)); showModal('Dihapus!', 'info'); } catch(e){} });}; 
         window.deleteService = (code) => { showModal(`Yakin hapus antrian ${code}?`, "confirm", async () => { try { await remove(ref(db, `antrian/${code}`)); showModal('Dihapus!', 'info'); } catch(e){} });};
 
@@ -673,7 +685,6 @@
             } catch (e) { showModal("Gagal", "info"); } finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Simpan Data'; } 
         };
 
-        // FUNGSI FILTER TAB YANG SUDAH DIPERBAIKI ANTI MACET
         window.filterByTab = (status, el) => { 
             currentTabFilter = status; 
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); 
@@ -715,7 +726,6 @@
         window.filterTableCustomers = () => { const t = document.getElementById('searchInputCustomers').value.toLowerCase(), r = document.getElementById('customerTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr'); let f = false, h = false; document.querySelector('#customerTable .no-data-row')?.remove(); for (let i=0; i<r.length; i++) if (!r[i].classList.contains('no-data-row')) h = true; for (let i=0; i<r.length; i++) { if (r[i].classList.contains('no-data-row')) continue; if (r[i].textContent.toLowerCase().includes(t)) { r[i].style.display = ""; f = true; } else r[i].style.display = "none"; } if (!f && h) renderNoDataRow(document.getElementById('customerTable').getElementsByTagName('tbody')[0], 'Tidak ditemukan.', 6, true); };
         const renderNoDataRow = (tb, msg, col, isS = false) => { tb.innerHTML += `<tr class="no-data-row"><td colspan="${col}" style="text-align:center; padding:30px; color:${isS?'var(--danger-color)':'var(--text-light)'};">${isS?'<i class="fas fa-search"></i>':'<i class="fas fa-box-open fa-2x" style="display:block;margin-bottom:10px"></i>'} ${msg}</td></tr>`; };
 
-        // SISTEM MODAL POPUP YANG SUDAH DIPERBAIKI!
         const customModal = document.getElementById('customModal');
         window.showModal = (msg, type, cb) => { 
             document.getElementById('modalMessage').textContent = msg; 
