@@ -21,10 +21,7 @@
         .status-waiting { background-color: #f59e0b; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3); } .status-process { background-color: #10b981; } .status-finished { background-color: var(--color-primary); } .status-picked-up { background-color: #6366f1; }
         .slider-container { position: relative; overflow: hidden; border-radius: 1rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); }
         .slider-wrapper { display: flex; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        
-        /* PERBAIKAN CSS TINGGI SLIDER AGAR MUNCUL DI HP */
         .slider-wrapper img { width: 100%; height: 100%; flex-shrink: 0; object-fit: cover;}
-        
         .page-transition { opacity: 0; transition: opacity 0.4s ease-in-out; } .page-transition.active { opacity: 1; }
         .page-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.9); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; visibility: hidden; transition: 0.3s; }
         .page-loader.show { opacity: 1; visibility: visible; }
@@ -43,7 +40,7 @@
     <header class="bg-white/95 backdrop-blur-md shadow-sm py-4 sticky top-0 z-50 border-b border-gray-100">
         <div class="container mx-auto px-4 lg:px-8 max-w-7xl flex items-center justify-between">
             <div class="flex items-center space-x-3 cursor-pointer group" onclick="showPage('home-page')">
-                <img id="headerLogo" src="images/logo.png" alt="Logo Toko" class="w-10 h-10 rounded-lg shadow-sm object-cover">
+                <img id="headerLogo" src="images/logo.png" alt="Logo Toko" class="w-10 h-10 rounded-lg shadow-sm object-cover bg-white p-1 border border-slate-100">
                 <span id="headerNamaToko" class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">Memuat...</span>
             </div>
             <nav class="hidden md:flex space-x-8">
@@ -242,7 +239,7 @@
         const antiBlokir = (url) => {
             if(!url) return '';
             if(url.includes('ibb.co')) {
-                return 'https://wsrv.nl/?url=' + url;
+                return 'https://wsrv.nl/?url=' + encodeURIComponent(url);
             }
             return url;
         };
@@ -314,12 +311,10 @@
                     document.getElementById('linkIg').href = data.ig || '#'; document.getElementById('linkTiktok').href = data.tiktok || '#'; document.getElementById('linkYoutube').href = data.youtube || '#';
                     if(!data.ig) document.getElementById('linkIg').style.display = 'none'; if(!data.tiktok) document.getElementById('linkTiktok').style.display = 'none'; if(!data.youtube) document.getElementById('linkYoutube').style.display = 'none';
 
-                    // RENDER SLIDER (PERBAIKAN LOGIKA)
                     const sliderWrapper = document.getElementById('image-slider');
                     if(data.sliders && data.sliders.length > 0) {
                         sliderWrapper.innerHTML = data.sliders.map(url => `<img src="${antiBlokir(url)}" class="h-full w-full object-cover flex-shrink-0" alt="Banner">`).join('');
                     } else {
-                        // DEFAULT GAMBAR LOKAL JIKA ADMIN BELUM UPLOAD
                         sliderWrapper.innerHTML = `<img src="images/servislaptop.jpg" class="h-full w-full object-cover flex-shrink-0" alt="Banner"><img src="images/servishp.jpg" class="h-full w-full object-cover flex-shrink-0" alt="Banner">`;
                     }
                     slides = sliderWrapper.querySelectorAll('img'); if(slides.length > 1) startSlider();
@@ -383,10 +378,7 @@
 
                 }
             } catch (error) { console.error("Error CMS:", error); } 
-            finally { showPage('home-page'); }
         }
-
-        document.addEventListener('DOMContentLoaded', () => { loadWebsiteSettings(); });
 
         const pages = document.querySelectorAll('.page-content');
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
@@ -423,49 +415,88 @@
             printWindow.document.write(htmlString); printWindow.document.close();
         };
 
+        window.trackService = async (kodeParam = null) => {
+            const searchButton = document.getElementById('searchButton'); 
+            const searchButtonText = document.getElementById('searchButtonText'); 
+            const searchSpinner = document.getElementById('searchSpinner'); 
+            const resultContainer = document.getElementById('resultContainer'); 
+            const trackingContent = document.getElementById('trackingContent');
+            
+            const code = kodeParam || document.getElementById('serviceCode').value.trim().toUpperCase();
+            if(!code) return;
+
+            searchButtonText.textContent = 'Mencari...'; 
+            searchSpinner.style.display = 'inline-block'; 
+            searchButton.disabled = true;
+            
+            if (!resultContainer.classList.contains('hidden')) { 
+                resultContainer.style.opacity = '0'; 
+                await new Promise(resolve => setTimeout(resolve, 300)); 
+            }
+            resultContainer.classList.add('hidden');
+
+            try {
+                const snapshot = await get(child(ref(db), `antrian/${code}`));
+                if (snapshot.exists()) {
+                    const service = snapshot.val(); window.currentTrackedService = service; window.currentTrackedCode = code;
+                    let statusBadgeClass = '';
+                    switch (service.status) { case 'Menunggu': statusBadgeClass = 'status-waiting'; break; case 'Proses': statusBadgeClass = 'status-process'; break; case 'Selesai': statusBadgeClass = 'status-finished'; break; case 'Diambil': statusBadgeClass = 'status-picked-up'; break; default: statusBadgeClass = 'bg-gray-400'; }
+                    
+                    let fotoHtml = ''; let rawFotos = service.fotoUrls || service.fotoUrl; let safeFotoArray = [];
+                    if (Array.isArray(rawFotos)) safeFotoArray = rawFotos; else if (typeof rawFotos === 'object' && rawFotos !== null) safeFotoArray = Object.values(rawFotos); else if (typeof rawFotos === 'string') safeFotoArray = [rawFotos];
+
+                    if (safeFotoArray.length > 0) {
+                        let galleryHtml = safeFotoArray.map(url => `<a href="${antiBlokir(url)}" target="_blank" title="Klik untuk memperbesar" class="block"><img src="${antiBlokir(url)}" alt="Foto Service" class="w-full h-32 object-cover rounded-xl shadow-sm border border-slate-200 hover:opacity-80 transition cursor-pointer"></a>`).join('');
+                        fotoHtml = `<div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-3 md:mb-0"><div class="w-8 h-8 rounded-full bg-slate-100 text-primary flex items-center justify-center"><i class="fas fa-camera"></i></div> Lampiran Foto</div><div class="md:w-2/3"><div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${galleryHtml}</div></div></div>`;
+                    }
+                    
+                    trackingContent.innerHTML = `
+                        <div class="space-y-4">
+                            <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-user"></i></div> Nama Pelanggan</div><span class="md:w-2/3 text-slate-800 font-medium md:pt-1">${service.nama}</span></div>
+                            <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-laptop"></i></div> Jenis Device</div><span class="md:w-2/3 text-slate-800 md:pt-1">${service.device || '-'}</span></div>
+                            <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-red-50 text-red-400 flex items-center justify-center"><i class="fas fa-tools"></i></div> Keluhan/Kerusakan</div><span class="md:w-2/3 text-slate-800 md:pt-1">${service.kerusakan}</span></div>
+                            ${service.keterangan ? `<div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-blue-50 text-blue-400 flex items-center justify-center"><i class="fas fa-info-circle"></i></div> Catatan Teknisi</div><span class="md:w-2/3 text-slate-800 md:pt-1">${service.keterangan}</span></div>` : ''}
+                            ${fotoHtml}
+                            <div class="flex flex-col md:flex-row md:items-center pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-green-50 text-green-500 flex items-center justify-center"><i class="fas fa-money-bill-wave"></i></div> Total Biaya</div><span class="md:w-2/3 font-bold text-xl text-primary md:pt-1">${formatRupiah(service.biaya)}</span></div>
+                            <div class="flex flex-col md:flex-row md:items-center pt-2"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-2 md:mb-0"><div class="w-8 h-8 rounded-full bg-purple-50 text-purple-400 flex items-center justify-center"><i class="fas fa-tasks"></i></div> Status Saat Ini</div><span class="md:w-2/3"><span class="status-badge ${statusBadgeClass} px-4 py-1.5">${service.status}</span></span></div>
+                        </div>
+                        <div class="mt-8 pt-6 border-t border-slate-200"><button onclick="printCustomerInvoice()" class="w-full bg-slate-800 text-white font-bold py-3.5 px-6 rounded-xl shadow-md hover:bg-slate-900 transition-all flex items-center justify-center gap-2"><i class="fas fa-file-download text-lg"></i> Download / Cetak Nota (PDF)</button></div>
+                    `;
+                } else { trackingContent.innerHTML = `<div class="bg-red-50 text-red-600 p-4 rounded-xl flex items-center gap-3"><i class="fas fa-search-minus text-xl"></i> <span>Invoice <b>${code}</b> tidak ditemukan.</span></div>`; }
+            } catch (error) { trackingContent.innerHTML = `<div class="bg-yellow-50 text-yellow-600 p-4 rounded-xl flex items-center gap-3"><i class="fas fa-wifi text-xl"></i> <span>Gangguan koneksi.</span></div>`; } 
+            finally { resultContainer.style.opacity = '0'; resultContainer.classList.remove('hidden'); await new Promise(resolve => setTimeout(resolve, 50)); resultContainer.style.opacity = '1'; searchButtonText.textContent = 'Lacak Sekarang'; searchSpinner.style.display = 'none'; searchButton.disabled = false; }
+        };
+
         const checkStatusForm = document.getElementById('checkStatusForm');
         if (checkStatusForm) {
-            checkStatusForm.addEventListener('submit', async (e) => { 
+            checkStatusForm.addEventListener('submit', (e) => { 
                 e.preventDefault(); 
-                const searchButton = document.getElementById('searchButton'); const searchButtonText = document.getElementById('searchButtonText'); const searchSpinner = document.getElementById('searchSpinner'); const resultContainer = document.getElementById('resultContainer'); const trackingContent = document.getElementById('trackingContent');
-                const code = document.getElementById('serviceCode').value.trim().toUpperCase();
-
-                searchButtonText.textContent = 'Mencari...'; searchSpinner.style.display = 'inline-block'; searchButton.disabled = true;
-                if (!resultContainer.classList.contains('hidden')) { resultContainer.style.opacity = '0'; await new Promise(resolve => setTimeout(resolve, 300)); }
-                resultContainer.classList.add('hidden');
-
-                try {
-                    const snapshot = await get(child(ref(db), `antrian/${code}`));
-                    if (snapshot.exists()) {
-                        const service = snapshot.val(); window.currentTrackedService = service; window.currentTrackedCode = code;
-                        let statusBadgeClass = '';
-                        switch (service.status) { case 'Menunggu': statusBadgeClass = 'status-waiting'; break; case 'Proses': statusBadgeClass = 'status-process'; break; case 'Selesai': statusBadgeClass = 'status-finished'; break; case 'Diambil': statusBadgeClass = 'status-picked-up'; break; default: statusBadgeClass = 'bg-gray-400'; }
-                        
-                        let fotoHtml = ''; let rawFotos = service.fotoUrls || service.fotoUrl; let safeFotoArray = [];
-                        if (Array.isArray(rawFotos)) safeFotoArray = rawFotos; else if (typeof rawFotos === 'object' && rawFotos !== null) safeFotoArray = Object.values(rawFotos); else if (typeof rawFotos === 'string') safeFotoArray = [rawFotos];
-
-                        if (safeFotoArray.length > 0) {
-                            let galleryHtml = safeFotoArray.map(url => `<a href="${antiBlokir(url)}" target="_blank" title="Klik untuk memperbesar" class="block"><img src="${antiBlokir(url)}" alt="Foto Service" class="w-full h-32 object-cover rounded-xl shadow-sm border border-slate-200 hover:opacity-80 transition cursor-pointer"></a>`).join('');
-                            fotoHtml = `<div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-3 md:mb-0"><div class="w-8 h-8 rounded-full bg-slate-100 text-primary flex items-center justify-center"><i class="fas fa-camera"></i></div> Lampiran Foto</div><div class="md:w-2/3"><div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${galleryHtml}</div></div></div>`;
-                        }
-                        
-                        trackingContent.innerHTML = `
-                            <div class="space-y-4">
-                                <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-user"></i></div> Nama Pelanggan</div><span class="md:w-2/3 text-slate-800 font-medium md:pt-1">${service.nama}</span></div>
-                                <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center"><i class="fas fa-laptop"></i></div> Jenis Device</div><span class="md:w-2/3 text-slate-800 md:pt-1">${service.device || '-'}</span></div>
-                                <div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-red-50 text-red-400 flex items-center justify-center"><i class="fas fa-tools"></i></div> Keluhan/Kerusakan</div><span class="md:w-2/3 text-slate-800 md:pt-1">${service.kerusakan}</span></div>
-                                ${service.keterangan ? `<div class="flex flex-col md:flex-row md:items-start pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-blue-50 text-blue-400 flex items-center justify-center"><i class="fas fa-info-circle"></i></div> Catatan Teknisi</div><span class="md:w-2/3 text-slate-800 md:pt-1">${service.keterangan}</span></div>` : ''}
-                                ${fotoHtml}
-                                <div class="flex flex-col md:flex-row md:items-center pb-4 border-b border-slate-100"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-1 md:mb-0"><div class="w-8 h-8 rounded-full bg-green-50 text-green-500 flex items-center justify-center"><i class="fas fa-money-bill-wave"></i></div> Total Biaya</div><span class="md:w-2/3 font-bold text-xl text-primary md:pt-1">${formatRupiah(service.biaya)}</span></div>
-                                <div class="flex flex-col md:flex-row md:items-center pt-2"><div class="font-semibold text-slate-500 md:w-1/3 flex items-center gap-2 mb-2 md:mb-0"><div class="w-8 h-8 rounded-full bg-purple-50 text-purple-400 flex items-center justify-center"><i class="fas fa-tasks"></i></div> Status Saat Ini</div><span class="md:w-2/3"><span class="status-badge ${statusBadgeClass} px-4 py-1.5">${service.status}</span></span></div>
-                            </div>
-                            <div class="mt-8 pt-6 border-t border-slate-200"><button onclick="printCustomerInvoice()" class="w-full bg-slate-800 text-white font-bold py-3.5 px-6 rounded-xl shadow-md hover:bg-slate-900 transition-all flex items-center justify-center gap-2"><i class="fas fa-file-download text-lg"></i> Download / Cetak Nota (PDF)</button></div>
-                        `;
-                    } else { trackingContent.innerHTML = `<div class="bg-red-50 text-red-600 p-4 rounded-xl flex items-center gap-3"><i class="fas fa-search-minus text-xl"></i> <span>Invoice <b>${code}</b> tidak ditemukan.</span></div>`; }
-                } catch (error) { trackingContent.innerHTML = `<div class="bg-yellow-50 text-yellow-600 p-4 rounded-xl flex items-center gap-3"><i class="fas fa-wifi text-xl"></i> <span>Gangguan koneksi.</span></div>`; } 
-                finally { resultContainer.style.opacity = '0'; resultContainer.classList.remove('hidden'); await new Promise(resolve => setTimeout(resolve, 50)); resultContainer.style.opacity = '1'; searchButtonText.textContent = 'Cek Status'; searchSpinner.style.display = 'none'; searchButton.disabled = false; }
+                window.trackService();
             });
         }
+
+        // ==========================================
+        // FITUR AUTO-TRACKING LINK: ?code=KC-xxx
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', async () => { 
+            await loadWebsiteSettings(); // Tunggu pengaturan web beres ditarik dari database
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const codeFromUrl = urlParams.get('code');
+            
+            if (codeFromUrl) {
+                showPage('tracking-page');
+                document.getElementById('serviceCode').value = codeFromUrl.toUpperCase();
+                // Beri jeda sebentar agar halaman tampil dulu, baru pencarian berjalan
+                setTimeout(() => { 
+                    if(typeof window.trackService === 'function') {
+                        window.trackService(codeFromUrl.toUpperCase()); 
+                    }
+                }, 600); 
+            } else {
+                showPage('home-page'); 
+            }
+        });
     </script>
 </body>
 </html>
