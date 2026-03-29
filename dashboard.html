@@ -630,7 +630,7 @@
 
         window.contactCustomer = (hp, nama) => { if(hp === 'Tanpa Nomor') return showModal('Nomor HP tidak tercatat.', 'info'); window.open(`https://wa.me/${hp}?text=${encodeURIComponent(`Halo Kak ${nama},\nTerima kasih sudah mempercayakan servis di ${window.tokoSettings.namaToko}...`)}`, '_blank'); };
         
-        // PENGIRIMAN WHATSAPP CUSTOM KEMAL COMPUTER (FIX EMOTICON)
+        // PENGIRIMAN WHATSAPP CUSTOM KEMAL COMPUTER (ULTIMATE FIX EMOTICON)
         window.sendWhatsappNotification = (code) => { 
             const s = servicesData[code]; if (!s) return; 
             
@@ -640,12 +640,18 @@
             else if (s.status === 'Selesai') pesanStatus = 'sudah selesai dikerjakan dan siap untuk diambil.';
             else if (s.status === 'Diambil') pesanStatus = 'telah diambil. Terima kasih telah mempercayakan servis pada kami!';
 
-            // Trik Anti-Error Tanda Tanya: Menggunakan kode rahasia URL untuk emoticon 🙏🙏😊
-            const emotMakasih = decodeURIComponent('%F0%9F%99%8F%F0%9F%99%8F%F0%9F%98%8A');
-
-            let pesanWA = `*Notifikasi |Kemal Computer| Service*\n*==============================*\nKepada Yth. ${s.nama},\nService-an anda ${s.device || 'Perangkat Elektronik'} dengan nomor invoice ${code}, ${pesanStatus}\n*==============================*\nUntuk Proses Tracking, Kamu bisa memantau melalui link dibawah ini. Terimakasih ${emotMakasih}\n_https://kemalcomputer.vercel.app/?code=${code}_`;
+            // Pisah pesan menjadi 2 bagian untuk diselipkan kode murni emoji di tengahnya
+            let pesanBagian1 = `*Notifikasi |Kemal Computer| Service*\n*==============================*\nKepada Yth. ${s.nama},\nService-an anda ${s.device || 'Perangkat Elektronik'} dengan nomor invoice ${code}, ${pesanStatus}\n*==============================*\nUntuk Proses Tracking, Kamu bisa memantau melalui link dibawah ini. Terimakasih `;
             
-            window.open(`https://wa.me/${s.nomorHp}?text=${encodeURIComponent(pesanWA)}`, '_blank'); 
+            let pesanBagian2 = `\n_https://kemalcomputer.vercel.app/?code=${code}_`;
+
+            // Kode murni URL untuk emoji 🙏🙏😊 (Browser tidak akan merusaknya karena berupa teks biasa)
+            let emotAman = "%F0%9F%99%8F%F0%9F%99%8F%F0%9F%98%8A";
+
+            // Rakit link URL secara paksa
+            let linkWA = `https://wa.me/${s.nomorHp}?text=${encodeURIComponent(pesanBagian1)}${emotAman}${encodeURIComponent(pesanBagian2)}`;
+            
+            window.open(linkWA, '_blank'); 
         };
 
         window.openExpenseModal = () => { document.getElementById('expenseForm').reset(); document.getElementById('expTanggal').value = new Date().toISOString().split('T')[0]; document.getElementById('expenseModal').style.display = 'flex'; }; window.closeExpenseModal = () => { document.getElementById('expenseModal').style.display = 'none'; };
