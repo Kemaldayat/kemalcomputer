@@ -630,7 +630,7 @@
 
         window.contactCustomer = (hp, nama) => { if(hp === 'Tanpa Nomor') return showModal('Nomor HP tidak tercatat.', 'info'); window.open(`https://wa.me/${hp}?text=${encodeURIComponent(`Halo Kak ${nama},\nTerima kasih sudah mempercayakan servis di ${window.tokoSettings.namaToko}...`)}`, '_blank'); };
         
-        // PENGIRIMAN WHATSAPP CUSTOM KEMAL COMPUTER
+        // PENGIRIMAN WHATSAPP CUSTOM KEMAL COMPUTER (FIX EMOTICON)
         window.sendWhatsappNotification = (code) => { 
             const s = servicesData[code]; if (!s) return; 
             
@@ -640,7 +640,10 @@
             else if (s.status === 'Selesai') pesanStatus = 'sudah selesai dikerjakan dan siap untuk diambil.';
             else if (s.status === 'Diambil') pesanStatus = 'telah diambil. Terima kasih telah mempercayakan servis pada kami!';
 
-            let pesanWA = `*Notifikasi |Kemal Computer| Service*\n*==============================*\nKepada Yth. ${s.nama},\nService-an anda ${s.device || 'Perangkat Elektronik'} dengan nomor invoice ${code}, ${pesanStatus}\n*==============================*\nUntuk Proses Tracking, Kamu bisa memantau melalui link dibawah ini. Terimakasih 🙏🙏😊\n_https://kemalcomputer.vercel.app/?code=${code}_`;
+            // Trik Anti-Error Tanda Tanya: Menggunakan kode rahasia URL untuk emoticon 🙏🙏😊
+            const emotMakasih = decodeURIComponent('%F0%9F%99%8F%F0%9F%99%8F%F0%9F%98%8A');
+
+            let pesanWA = `*Notifikasi |Kemal Computer| Service*\n*==============================*\nKepada Yth. ${s.nama},\nService-an anda ${s.device || 'Perangkat Elektronik'} dengan nomor invoice ${code}, ${pesanStatus}\n*==============================*\nUntuk Proses Tracking, Kamu bisa memantau melalui link dibawah ini. Terimakasih ${emotMakasih}\n_https://kemalcomputer.vercel.app/?code=${code}_`;
             
             window.open(`https://wa.me/${s.nomorHp}?text=${encodeURIComponent(pesanWA)}`, '_blank'); 
         };
