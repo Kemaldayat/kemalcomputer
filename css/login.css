@@ -1,0 +1,183 @@
+/* [STYLES UTAMA LOGIN] */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--bg-color, #f4f4f4); 
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+.login-container {
+    background-color: var(--container-bg, #ffffff);
+    padding: 40px;
+    border-radius: var(--border-radius-lg, 8px);
+    box-shadow: var(--shadow-md, 0 4px 8px rgba(0,0,0,0.1));
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.login-container h1 {
+    color: var(--primary-color, #007bff);
+    margin-bottom: 30px;
+    font-size: 2.2em;
+}
+
+.login-form div {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-color, #333);
+}
+
+.login-form input {
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box; 
+    border: 1px solid var(--border-color, #ccc);
+    border-radius: var(--border-radius-sm, 4px);
+    font-size: 1em;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    transition: border-color 0.3s ease;
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: var(--primary-color, #007bff);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2); 
+}
+
+.login-form button {
+    width: 100%;
+    padding: 12px 20px;
+    background-color: var(--primary-color, #007bff);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm, 4px);
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: 0.3s ease;
+    margin-top: 10px;
+}
+
+.login-form button:hover {
+    background-color: var(--primary-hover, #0056b3);
+    transform: translateY(-2px);
+}
+
+#errorMessage {
+    color: var(--danger-color, #dc3545);
+    margin-top: 15px;
+    font-size: 0.95em;
+    font-weight: bold;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: #888;
+}
+
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #ccc;
+}
+
+.divider span {
+    padding: 0 10px;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+.btn-login-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px 20px;
+    background-color: white !important;
+    color: #444 !important;
+    border: 1px solid #ddd !important;
+    border-radius: var(--border-radius-sm, 4px);
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.btn-login-google:hover {
+    background-color: #f9f9f9 !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.google-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+}
+/* [END STYLES UTAMA] */
+
+/* [STYLE NATIVE POP-UP TENGAH] */
+#customToast {
+    position: fixed;
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%) scale(0.8); 
+    
+    color: white;
+    padding: 25px 40px; 
+    min-width: 280px;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    opacity: 0; 
+    visibility: hidden;
+    
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; 
+    
+    display: flex;
+    align-items: center;
+    flex-direction: column; 
+    text-align: center;
+}
+
+#customToast.success-toast {
+    background-color: #4CAF50;
+}
+
+#customToast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+#customToast i {
+    margin-right: 0; 
+    margin-bottom: 10px; 
+    font-size: 2.2em; 
+}
+/* [END STYLE NATIVE POP-UP] */
+
+/* Responsiveness */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 30px 20px;
+    }
+    .login-container h1 {
+        font-size: 1.8em;
+    }
+}
