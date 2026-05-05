@@ -694,3 +694,33 @@ input[type="color"]::-webkit-color-swatch { border: none; border-radius: 8px; bo
         justify-content: center;
     }
 }
+
+/* Inventory table mobile: hide non-essential columns so action buttons reach the right edge */
+@media (max-width: 768px) {
+    /* Sembunyikan Kategori (kolom 2) dan Harga Modal (kolom 4) di mobile */
+    #inventoryTable th:nth-child(2),
+    #inventoryTable td:nth-child(2),
+    #inventoryTable th:nth-child(4),
+    #inventoryTable td:nth-child(4) {
+        display: none;
+    }
+    /* Hapus min-width bawaan agar tabel muat di layar */
+    #inventoryTable {
+        min-width: unset !important;
+        width: 100%;
+    }
+    /* Kolom nama barang dapat meregang */
+    #inventoryTable td:first-child,
+    #inventoryTable th:first-child {
+        width: 100%;
+        white-space: normal;
+        word-break: break-word;
+    }
+    /* Kolom Aksi tetap di kanan, tidak merenggang */
+    #inventoryTable .action-column {
+        white-space: nowrap;
+        text-align: right;
+    }
+}
+
+
