@@ -7,45 +7,7 @@
     <link rel="icon" type="image/png" href="images/logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-color: #0d9488;
-            --primary-hover: #0f766e;
-            --secondary-color: #f8fafc;
-            --bg-color: #f1f5f9;
-            --container-bg: #ffffff;
-            --text-color: #334155;
-            --text-color-light: #64748b;
-            --border-color: #e2e8f0;
-            --border-radius-sm: 8px;
-            --border-radius-md: 12px;
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --transition-ease: all 0.2s ease-in-out;
-        }
-
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; margin: 0; padding: 40px 20px; display: flex; justify-content: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 600px; background-color: var(--container-bg); border-radius: var(--border-radius-md); box-shadow: var(--shadow-md); padding: 35px; }
-        
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid var(--border-color); }
-        header h1 { color: var(--primary-color); font-size: 1.8em; font-weight: 600; margin: 0; }
-        
-        .back-button { background-color: var(--secondary-color); color: var(--text-color); border: 1px solid var(--border-color); padding: 8px 15px; border-radius: var(--border-radius-sm); cursor: pointer; font-size: 0.9em; font-weight: 500; transition: var(--transition-ease); display: flex; align-items: center; gap: 8px; }
-        .back-button:hover { background-color: var(--border-color); }
-
-        form div { margin-bottom: 18px; position: relative; }
-        label { display: block; margin-bottom: 6px; font-weight: 500; color: var(--text-color); font-size: 0.95em; }
-        input[type="text"], input[type="tel"], input[type="number"], textarea, select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-family: inherit; font-size: 0.95em; transition: var(--transition-ease); background-color: var(--secondary-color); box-sizing: border-box; }
-        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary-color); background-color: #fff; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15); }
-        
-        /* Auto Fill Notification */
-        .autofill-badge { position: absolute; right: 10px; top: 38px; background-color: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 20px; font-size: 0.75em; font-weight: 600; display: none; align-items: center; gap: 5px; animation: fadeIn 0.3s ease-in-out; }
-        
-        button[type="submit"] { width: 100%; background-color: var(--primary-color); color: white; border: none; padding: 14px; border-radius: var(--border-radius-sm); font-size: 1.1em; font-weight: 600; cursor: pointer; transition: var(--transition-ease); margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; }
-        button[type="submit"]:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        @media (max-width: 600px) { header { flex-direction: column; align-items: flex-start; gap: 15px; } .back-button { width: 100%; justify-content: center; } }
-    </style>
+    <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
     <div class="container">
@@ -74,13 +36,18 @@
             </div>
 
             <div>
-                <label for="inputKerusakan">Deskripsi Keluhan/Kerusakan:</label>
+                <label for="inputKerusakan">Deskripsi Kerusakan:</label>
                 <textarea id="inputKerusakan" rows="3" placeholder="Contoh: Mati total kena air" required></textarea>
             </div>
             
             <div>
-                <label for="inputBiaya">Estimasi Biaya (Rp):</label>
+                <label for="inputBiaya">Estimasi Biaya / Total Tagihan (Rp):</label>
                 <input type="number" id="inputBiaya" placeholder="Contoh: 150000" min="0">
+            </div>
+
+            <div>
+                <label for="inputModalKomponen">Modal Komponen / Sparepart (Rp):</label>
+                <input type="number" id="inputModalKomponen" placeholder="Opsional (misal: 50000)" min="0">
             </div>
 
             <div>
@@ -102,150 +69,7 @@
         </form>
     </div>
 
-    <script type="module">
-        const firebaseConfig = {
-            apiKey: "AIzaSyDRvkYXHUb42q2H8F_2687CTihtDDNuYQ4",
-            authDomain: "website-track-service.firebaseapp.com",
-            databaseURL: "https://website-track-service-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "website-track-service",
-            storageBucket: "website-track-service.firebasestorage.app",
-            messagingSenderId: "87573564376",
-            appId: "1:87573564376:web:c93c07f0506d00535a00ad",
-            measurementId: "G-64T8XNWK5F"
-        };
-
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
-
-        // Pengecekan Akses Admin
-        onAuthStateChanged(auth, (user) => {
-            if (!user || user.email !== "dayatkemal16@gmail.com") {
-                alert("Anda tidak memiliki izin akses ke halaman ini.");
-                window.location.href = 'login.html';
-            } else {
-                // Begitu berhasil login, langsung tarik data pelanggan
-                loadCustomerDatabase();
-            }
-        });
-
-        // -------------------------------------------------------------
-        // LOGIKA AUTO-FILL (DARI NAMA -> NOMOR HP) + DROPDOWN LIST
-        // -------------------------------------------------------------
-        let databasePelanggan = {}; // Menyimpan data dengan key = nama huruf kecil
-        const datalistPelanggan = document.getElementById('listPelangganLama');
-        const inputNama = document.getElementById('inputNama');
-        const inputNomorHp = document.getElementById('inputNomorHp');
-        const badgeAutofill = document.getElementById('badgeAutofill');
-
-        // Fungsi mengambil seluruh nama & no HP dari Firebase
-        async function loadCustomerDatabase() {
-            try {
-                const snapshot = await get(ref(db, 'antrian'));
-                if (snapshot.exists()) {
-                    snapshot.forEach((child) => {
-                        const data = child.val();
-                        if (data.nama && data.nomorHp) {
-                            const nameKey = data.nama.toLowerCase().trim();
-                            // Menyimpan data terbaru ke dalam object (supaya unik)
-                            databasePelanggan[nameKey] = {
-                                namaAsli: data.nama,
-                                nomorHp: data.nomorHp
-                            };
-                        }
-                    });
-
-                    // Memasukkan nama-nama tersebut ke dalam datalist
-                    for (const key in databasePelanggan) {
-                        const option = document.createElement('option');
-                        option.value = databasePelanggan[key].namaAsli;
-                        datalistPelanggan.appendChild(option);
-                    }
-                }
-            } catch (error) {
-                console.error("Gagal load data pelanggan:", error);
-            }
-        }
-
-        // Listener saat Abang mengetik atau memilih nama
-        inputNama.addEventListener('input', () => {
-            const namaDiketik = inputNama.value.toLowerCase().trim();
-            badgeAutofill.style.display = 'none';
-
-            // Cek apakah nama yang diketik persis ada di databasePelanggan
-            if (databasePelanggan[namaDiketik]) {
-                // Jika ketemu, otomatis isi nomor HP-nya
-                inputNomorHp.value = databasePelanggan[namaDiketik].nomorHp;
-                
-                // Tampilkan badge hijau & kasih animasi background
-                badgeAutofill.style.display = 'inline-flex';
-                inputNomorHp.style.backgroundColor = '#dcfce7';
-                setTimeout(() => { inputNomorHp.style.backgroundColor = '#fff'; }, 1000);
-            }
-        });
-        // -------------------------------------------------------------
-
-
-        function generateServiceCode() {
-            const now = new Date();
-            const year = now.getFullYear().toString().substring(2);
-            const month = (now.getMonth() + 1).toString().padStart(2, '0');
-            const day = now.getDate().toString().padStart(2, '0');
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-            return `KC-${year}${month}${day}-${hours}${minutes}${seconds}-${random}`;
-        }
-
-        document.getElementById('addServiceForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const btnSubmit = document.getElementById('btnSubmit');
-            const nama = document.getElementById('inputNama').value.trim();
-            const device = document.getElementById('inputDevice').value.trim();
-            const kerusakan = document.getElementById('inputKerusakan').value.trim();
-            const nomorHp = inputNomorHp.value.trim();
-            const status = document.getElementById('inputStatus').value;
-            const biaya = document.getElementById('inputBiaya').value.trim();
-            const keterangan = document.getElementById('inputKeterangan').value.trim();
-
-            if (!/^\d+$/.test(nomorHp) || !nomorHp.startsWith('62')) {
-                alert('Nomor HP tidak valid. Wajib diawali 62 dan hanya angka (Contoh: 62812...).');
-                inputNomorHp.focus();
-                return;
-            }
-
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-
-            const serviceCode = generateServiceCode();
-
-            try {
-                await set(ref(db, `antrian/${serviceCode}`), {
-                    nama: nama,
-                    device: device,
-                    kerusakan: kerusakan,
-                    nomorHp: nomorHp,
-                    status: status,
-                    biaya: Number(biaya) || 0,
-                    keterangan: keterangan,
-                    timestamp: new Date().toISOString()
-                });
-                
-                alert(`Data sukses disimpan! Nomor Invoice: ${serviceCode}`);
-                window.location.href = 'dashboard.html';
-
-            } catch (error) {
-                alert('Gagal menambahkan layanan. Periksa koneksi internet Anda.');
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = '<i class="fas fa-save"></i> Simpan Data Servis';
-            }
-        });
-    </script>
+    <script src="js/ui-utils.js"></script>
+    <script type="module" src="js/admin.js"></script>
 </body>
 </html>

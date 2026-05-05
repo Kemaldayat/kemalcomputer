@@ -6,129 +6,7 @@
     <title>Login Admin - Kemal Computer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        /* [STYLES UTAMA LOGIN] */
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: var(--bg-color, #f4f4f4); 
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .login-container {
-            background-color: var(--container-bg, #ffffff);
-            padding: 40px;
-            border-radius: var(--border-radius-lg, 8px);
-            box-shadow: var(--shadow-md, 0 4px 8px rgba(0,0,0,0.1));
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .login-container h1 {
-            color: var(--primary-color, #007bff);
-            margin-bottom: 30px;
-            font-size: 2.2em;
-        }
-
-        .login-form div {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .login-form label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: var(--text-color, #333);
-        }
-
-        .login-form input {
-            width: 100%;
-            padding: 12px;
-            box-sizing: border-box; 
-            border: 1px solid var(--border-color, #ccc);
-            border-radius: var(--border-radius-sm, 4px);
-            font-size: 1em;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-            transition: border-color 0.3s ease;
-        }
-        .login-form input:focus {
-            outline: none;
-            border-color: var(--primary-color, #007bff);
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2); 
-        }
-
-        .login-form button {
-            width: 100%;
-            padding: 12px 20px;
-            background-color: var(--primary-color, #007bff);
-            color: white;
-            border: none;
-            border-radius: var(--border-radius-sm, 4px);
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: 0.3s ease;
-            margin-top: 10px;
-        }
-
-        .login-form button:hover {
-            background-color: var(--primary-hover, #0056b3);
-            transform: translateY(-2px);
-        }
-
-        #errorMessage {
-            color: var(--danger-color, #dc3545);
-            margin-top: 15px;
-            font-size: 0.95em;
-            font-weight: bold;
-        }
-        /* [END STYLES UTAMA] */
-
-        /* [STYLE NATIVE POP-UP TENGAH] */
-        #customToast {
-            position: fixed;
-            top: 50%; 
-            left: 50%; 
-            transform: translate(-50%, -50%) scale(0.8); 
-            
-            color: white;
-            padding: 25px 40px; 
-            min-width: 280px;
-            border-radius: 8px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            opacity: 0; 
-            visibility: hidden;
-            
-            /* Durasi Transisi 0.5s untuk animasi lebih lambat */
-            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; 
-            
-            display: flex;
-            align-items: center;
-            flex-direction: column; 
-            text-align: center;
-        }
-
-        #customToast.success-toast {
-            background-color: #4CAF50; /* Hijau untuk sukses */
-        }
-        
-        #customToast.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translate(-50%, -50%) scale(1); /* Pindah ke posisi akhir (tengah) */
-        }
-        
-        #customToast i {
-            margin-right: 0; 
-            margin-bottom: 10px; 
-            font-size: 2.2em; 
-        }
-        /* [END STYLE NATIVE POP-UP] */
-    </style>
+    <link rel="stylesheet" href="css/login.css">
 </head>
 <body>
     <div class="login-container">
@@ -142,10 +20,17 @@
                 <label for="password">Password:</label>
                 <input type="password" id="password" required>
             </div>
-            <button type="submit">Login</button>
-            <div id="errorMessage" style="display: none;"></div> 
+            <button type="submit" class="btn-login-email"><i class="fas fa-sign-in-alt"></i> Login</button>
+            <div class="divider"><span>ATAU</span></div>
+            <button type="button" id="btnGoogleLogin" class="btn-login-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo" class="google-icon">
+                Masuk dengan Google
+            </button>
         </form>
     </div>
+
+    <!-- Script UI Utilities (SweetAlert) -->
+    <script src="js/ui-utils.js"></script>
 
     <div id="customToast" class="success-toast">
         <i class="fas fa-check-circle"></i> 
@@ -153,97 +38,73 @@
     </div>
 
     <script type="module">
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDRvkYXHUb42q2H8F_2687CTihtDDNuYQ4",
-            authDomain: "website-track-service.firebaseapp.com",
-            databaseURL: "https://website-track-service-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "website-track-service",
-            storageBucket: "website-track-service.firebasestorage.app",
-            messagingSenderId: "87573564376",
-            appId: "1:87573564376:web:c93c07f0506d00535a00ad",
-            measurementId: "G-64T8XNWK5F"
-        };
+        import { auth, adminEmail, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, db, dbRef, set } from "./js/firebase-config.js";
 
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-        // import onAuthStateChanged dihapus karena menyebabkan masalah
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
-        const adminEmail = "dayatkemal16@gmail.com"; 
-
-        const errorMessageDiv = document.getElementById('errorMessage');
-        const customToast = document.getElementById('customToast');
-        const toastMessage = document.getElementById('toastMessage');
-
-        // Fungsi Native Pop-up (Menangani display 3 detik dan redirect)
-        function showToast(message) {
-            toastMessage.textContent = message;
-            customToast.classList.add('show');
-            
-            // Atur timer untuk menghilangkan pop-up dan melakukan redirect
-            setTimeout(() => {
-                customToast.classList.remove('show');
-                
-                // Lakukan redirect setelah transisi CSS selesai (0.5 detik)
-                setTimeout(() => {
-                     window.location.href = 'dashboard.html'; 
-                }, 500); 
-            }, 1000); // Tampilkan selama 1 detik
-        }
-        
-        // Fungsi Error 
-        function displayError(message) {
-            errorMessageDiv.textContent = message;
-            errorMessageDiv.style.display = 'block';
+        // Fungsi mencatat riwayat login ke Firebase
+        async function catatRiwayatLogin(email, metode) {
+            try {
+                const logId = 'LOG-' + Date.now();
+                await set(dbRef(db, 'riwayat_login/' + logId), {
+                    email: email,
+                    waktu: new Date().toISOString(),
+                    metode: metode
+                });
+            } catch(e) { console.error("Gagal mencatat log", e); }
         }
 
-        function hideError() {
-            errorMessageDiv.textContent = '';
-            errorMessageDiv.style.display = 'none';
-        }
-
-        // EVENT LISTENER LOGIKA UTAMA
+        // EVENT LISTENER LOGIKA UTAMA (EMAIL & PASSWORD)
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            hideError(); 
-
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
             
-            if (!email || !password) {
-                 displayError("Email dan Password wajib diisi.");
-                 return;
-            }
+            if (!email || !password) return window.showSweetAlert("Email dan Password wajib diisi.", "error");
 
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
                 if (user.email === adminEmail) {
-                    
-                    // --- AKTIVASI NATIVE POP-UP TENGAH ---
-                    showToast('Login berhasil! Mengarahkan ke Dashboard...');
-                    // ------------------------------------
+                    await catatRiwayatLogin(user.email, "Email/Password");
+                    window.showSweetAlert('Login berhasil! Mengarahkan ke Dashboard...', 'success');
+                    setTimeout(() => window.location.href = 'dashboard.html', 1500);
                 } else {
-                    displayError("Email ini tidak memiliki izin akses admin.");
                     await signOut(auth); 
+                    window.showSweetAlert("Email ini tidak memiliki izin akses admin.", "error");
                 }
             } catch (error) {
-                console.error("Error logging in:", error);
-                
                 let errorMessage = "Login gagal. Periksa email dan password Anda.";
-                if (error.code === 'auth/wrong-password') {
-                    errorMessage = "Password salah.";
-                } else if (error.code === 'auth/user-not-found') {
-                    errorMessage = "Email tidak terdaftar.";
-                } else if (error.code === 'auth/too-many-requests') {
-                    errorMessage = "Terlalu banyak percobaan login gagal. Coba lagi nanti.";
-                }
+                if (error.code === 'auth/wrong-password') errorMessage = "Password salah.";
+                else if (error.code === 'auth/user-not-found') errorMessage = "Email tidak terdaftar.";
+                else if (error.code === 'auth/too-many-requests') errorMessage = "Terlalu banyak percobaan login gagal. Coba lagi nanti.";
+                window.showSweetAlert(errorMessage, "error"); 
+            }
+        });
+
+        // EVENT LISTENER LOGIN GOOGLE
+        document.getElementById('btnGoogleLogin').addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
                 
-                displayError(errorMessage); 
+                if (user.email === adminEmail) {
+                    await catatRiwayatLogin(user.email, "Google");
+                    window.showSweetAlert('Login Google berhasil! Mengarahkan...', 'success');
+                    setTimeout(() => window.location.href = 'dashboard.html', 1500);
+                } else {
+                    await signOut(auth);
+                    window.showSweetAlert("Akun Google ini tidak memiliki akses admin.", "error");
+                }
+            } catch (error) {
+                console.error("Google Sign-In Error:", error.code, error.message);
+                let msg = "Login Google gagal.";
+                if (error.code === 'auth/popup-blocked') msg = "Popup diblokir oleh browser. Izinkan popup untuk halaman ini.";
+                else if (error.code === 'auth/popup-closed-by-user') msg = "Jendela login Google ditutup. Silakan coba lagi.";
+                else if (error.code === 'auth/unauthorized-domain') msg = "Domain ini belum diizinkan di Firebase. Tambahkan '127.0.0.1' ke Authorized Domains di Firebase Console.";
+                else if (error.code === 'auth/cancelled-popup-request') return; // Diabaikan jika klik ganda
+                else msg = `Login Google gagal (${error.code || 'unknown'}).`;
+                window.showSweetAlert(msg, "error");
             }
         });
     </script>
