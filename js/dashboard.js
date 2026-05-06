@@ -105,9 +105,12 @@
             w.insertAdjacentHTML('beforeend', html);
         };
 
-        window.addTestimoniUI = (nama = '', role = '', teks = '') => {
+        window.addTestimoniUI = (nama = '', role = '', teks = '', rating = 5) => {
             const w = document.getElementById('testimoniWrapper');
-            const html = `<div class="dynamic-item"><button type="button" onclick="this.parentElement.remove()" class="btn-remove-item" title="Hapus">×</button><div style="display:flex; gap:10px;"><input type="text" class="test-nama" placeholder="Nama Pelanggan" value="${nama}" style="width:50%; padding:8px; border:1px solid var(--border-color); border-radius:5px;"><input type="text" class="test-role" placeholder="Pekerjaan" value="${role}" style="width:50%; padding:8px; border:1px solid var(--border-color); border-radius:5px;"></div><textarea class="test-teks" placeholder="Isi Ulasan/Review" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:5px; margin-top:10px;">${teks}</textarea></div>`;
+            const stars = [1,2,3,4,5].map(i =>
+                `<label style="cursor:pointer; font-size:1.4rem; color: ${i <= rating ? '#f59e0b' : '#d1d5db'}; transition:color 0.15s;" title="${i} bintang" onclick="this.parentElement.dataset.rating='${i}'; this.parentElement.querySelectorAll('label').forEach((l,idx)=>l.style.color=idx<${i}?'#f59e0b':'#d1d5db')">&#9733;</label>`
+            ).join('');
+            const html = `<div class="dynamic-item"><button type="button" onclick="this.parentElement.remove()" class="btn-remove-item" title="Hapus">×</button><div style="display:flex; gap:10px; margin-bottom:10px;"><input type="text" class="test-nama" placeholder="Nama Pelanggan" value="${escapeHTML(nama)}" style="width:50%; padding:8px; border:1px solid var(--border-color); border-radius:5px;"><input type="text" class="test-role" placeholder="Pekerjaan" value="${escapeHTML(role)}" style="width:50%; padding:8px; border:1px solid var(--border-color); border-radius:5px;"></div><div class="test-rating-wrap" data-rating="${rating}" style="margin-bottom:8px;">${stars}</div><textarea class="test-teks" placeholder="Isi Ulasan/Review" style="width:100%; padding:8px; border:1px solid var(--border-color); border-radius:5px; margin-top:4px;">${escapeHTML(teks)}</textarea></div>`;
             w.insertAdjacentHTML('beforeend', html);
         };
 
@@ -194,8 +197,15 @@
 
                     document.getElementById('testimoniWrapper').innerHTML = '';
                     if (data.testimonis && data.testimonis.length > 0) {
-                        data.testimonis.forEach(t => addTestimoniUI(t.nama, t.role, t.teks));
+                        data.testimonis.forEach(t => addTestimoniUI(t.nama, t.role, t.teks, t.rating || 5));
                     }
+
+                    // Fix 7: Load stats fields
+                    const stats = data.stats || {};
+                    if (document.getElementById('setStatTahun'))     document.getElementById('setStatTahun').value     = stats.tahun     || '';
+                    if (document.getElementById('setStatPelanggan')) document.getElementById('setStatPelanggan').value = stats.pelanggan || '';
+                    if (document.getElementById('setStatRating'))    document.getElementById('setStatRating').value    = stats.rating    || '';
+                    if (document.getElementById('setStatGaransi'))   document.getElementById('setStatGaransi').value   = stats.garansi   || '';
 
                     document.getElementById('katalogWrapper').innerHTML = '';
                     if (data.katalog && data.katalog.length > 0) {
@@ -246,7 +256,15 @@
             });
 
             const testimoniArr = [];
-            document.querySelectorAll('#testimoniWrapper .dynamic-item').forEach(el => { testimoniArr.push({ nama: el.querySelector('.test-nama').value.trim(), role: el.querySelector('.test-role').value.trim(), teks: el.querySelector('.test-teks').value.trim() }); });
+            document.querySelectorAll('#testimoniWrapper .dynamic-item').forEach(el => {
+                const ratingVal = parseInt(el.querySelector('.test-rating-wrap')?.dataset.rating || 5);
+                testimoniArr.push({
+                    nama: el.querySelector('.test-nama').value.trim(),
+                    role: el.querySelector('.test-role').value.trim(),
+                    teks: el.querySelector('.test-teks').value.trim(),
+                    rating: ratingVal
+                });
+            });
 
             const katalogArr = [];
             document.querySelectorAll('#katalogWrapper .dynamic-item').forEach(el => {
@@ -257,7 +275,13 @@
                 namaToko: document.getElementById('setNamaToko').value.trim(), logoUrl: document.getElementById('setLogoUrl').value || 'images/logo.png', nib: document.getElementById('setNib').value.trim(), legalitasDesc: document.getElementById('setLegalitasDesc').value.trim(),
                 wa: document.getElementById('setWa').value.trim(), alamat: document.getElementById('setAlamat').value.trim(), maps: document.getElementById('setMaps').value.trim(), headline: document.getElementById('setHeadline').value.trim(), subHeadline: document.getElementById('setSubHeadline').value.trim(),
                 ig: document.getElementById('setIg').value.trim(), tiktok: document.getElementById('setTiktok').value.trim(), youtube: document.getElementById('setYoutube').value.trim(), warnaUtama: document.getElementById('setWarnaUtama').value, teksGaransi: document.getElementById('setTeksGaransi').value.trim(),
-                sliders: finalSliders, layanans: layanansArr, testimonis: testimoniArr, katalog: katalogArr
+                sliders: finalSliders, layanans: layanansArr, testimonis: testimoniArr, katalog: katalogArr,
+                stats: {
+                    tahun:     document.getElementById('setStatTahun')?.value.trim()     || '5+',
+                    pelanggan: document.getElementById('setStatPelanggan')?.value.trim() || '500+',
+                    rating:    document.getElementById('setStatRating')?.value.trim()    || '4.9★',
+                    garansi:   document.getElementById('setStatGaransi')?.value.trim()   || '30H',
+                }
             };
 
             try {
