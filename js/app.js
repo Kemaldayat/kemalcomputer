@@ -1,4 +1,4 @@
-import { db, dbRef as ref, get, child } from "./firebase-config.js";
+import { db, dbRef as ref, get, child, push } from "./firebase-config.js";
 
 // Utility: Anti-blocker for ImgBB
 const antiBlokir = (url) => {
@@ -52,6 +52,20 @@ if (mobileMenuBtn && mobileMenu) {
 }
 
 // Slider Logic
+function createDots() {
+    const dotsContainer = document.getElementById('slider-dots');
+    if (!dotsContainer || slides.length <= 1) return;
+    dotsContainer.innerHTML = Array.from(slides).map((_, i) =>
+        `<button class="slider-dot${i === 0 ? ' active' : ''}" onclick="goToSlide(${i})" aria-label="Slide ${i+1}"></button>`
+    ).join('');
+}
+window.goToSlide = (index) => {
+    stopSlider(); currentSlide = index; updateSlider(); startSlider();
+};
+function updateDots() {
+    const dots = document.querySelectorAll('.slider-dot');
+    dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+}
 function startSlider() { 
     slideInterval = setInterval(() => { 
         currentSlide = (currentSlide + 1) % slides.length; 
@@ -63,6 +77,7 @@ function updateSlider() {
     const slider = document.getElementById('image-slider'); 
     if (slider && slides.length > 0) {
         slider.style.transform = `translateX(-${currentSlide * 100}%)`; 
+        updateDots();
     }
 }
 
@@ -78,6 +93,17 @@ document.getElementById('next-btn')?.addEventListener('click', () => {
     updateSlider(); 
     startSlider(); 
 });
+
+// Scroll Reveal
+const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+            revealObserver.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
 // WA Order Logic
 window.beliViaWa = (namaProduk, harga) => {
@@ -107,6 +133,11 @@ async function loadWebsiteSettings() {
             // Apply Texts
             const nama = data.namaToko || 'Toko Servis';
             document.title = `Lacak Servis - ${nama}`;
+            // Fix 5: Update meta OG title dynamically
+            const ogTitle = document.querySelector('meta[property="og:title"]');
+            if (ogTitle) ogTitle.content = `${nama} - Cek Status Servis`;
+            const ogDesc = document.querySelector('meta[property="og:description"]');
+            if (ogDesc && data.subHeadline) ogDesc.content = data.subHeadline;
             const headerNamaElements = document.querySelectorAll('.headerNamaToko');
             headerNamaElements.forEach(el => el.innerText = nama);
             
@@ -176,13 +207,15 @@ async function loadWebsiteSettings() {
                     sliderWrapper.innerHTML = `<img src="images/servislaptop.jpg" style="width:100%; height:100%; object-fit:cover; flex-shrink:0;" alt="Banner"><img src="images/servishp.jpg" style="width:100%; height:100%; object-fit:cover; flex-shrink:0;" alt="Banner">`;
                 }
                 slides = sliderWrapper.querySelectorAll('img'); 
-                if (slides.length > 1) startSlider();
+                if (slides.length > 1) { createDots(); startSlider(); }
             }
 
             // Layanan
             const layananGrid = document.getElementById('layanan-grid');
+            const layananSection = layananGrid ? layananGrid.closest('.section') : null;
             if (layananGrid) {
                 if (data.layanans && data.layanans.length > 0) {
+                    if (layananSection) layananSection.style.display = '';
                     layananGrid.innerHTML = data.layanans.map(l => {
                         let safeIcon = l.icon ? l.icon.trim() : 'fa-tools';
                         safeIcon = safeIcon.replace('fas ', '').replace('fab ', '');
@@ -194,32 +227,52 @@ async function loadWebsiteSettings() {
                         </div>
                         `;
                     }).join('');
+                } else {
+                    if (layananSection) layananSection.style.display = 'none';
                 }
             }
 
-            // Testimoni
-            const testimoniGrid = document.getElementById('testimoni-grid');
+            // Testimoni (Infinite Slider)
+            const testimoniTrack = document.getElementById('testimoni-track');
             const testimoniSection = document.getElementById('testimoni-section');
-            if (testimoniSection && testimoniGrid) {
+            if (testimoniSection && testimoniTrack) {
                 if (data.testimonis && data.testimonis.length > 0) {
                     testimoniSection.style.display = 'block';
-                    testimoniGrid.innerHTML = data.testimonis.map(t => `
-                        <div class="card p-6" style="padding: 2rem; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: white;">
+                    
+                    // Buat HTML ulasan
+                    const testimoniHTML = data.testimonis.map(t => `
+                        <div class="testimoni-card-slider">
                             <div style="color: #fbbf24; margin-bottom: 1rem;">
                                 <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
                             </div>
-                            <p style="font-style: italic; margin-bottom: 1.5rem; opacity: 0.9;">"${t.teks}"</p>
+                            <p style="font-style: italic; margin-bottom: 1.5rem; opacity: 0.9; color: #e2e8f0; min-height: 80px;">"${t.teks}"</p>
                             <div class="flex items-center gap-4">
-                                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">
                                     ${t.nama.charAt(0).toUpperCase()}
                                 </div>
                                 <div>
                                     <h4 style="margin:0; color: white;">${t.nama}</h4>
-                                    <span style="font-size: 0.85rem; opacity: 0.7;">${t.role}</span>
+                                    <span style="font-size: 0.85rem; opacity: 0.7; color: #94a3b8;">${t.role}</span>
                                 </div>
                             </div>
                         </div>
                     `).join('');
+
+                    // Gandakan isi agar slider tidak terputus (Infinite effect)
+                    testimoniTrack.innerHTML = testimoniHTML + testimoniHTML + testimoniHTML;
+                    
+                    // Sesuaikan kecepatan berdasarkan jumlah ulasan
+                    const count = data.testimonis.length;
+                    const duration = count * 10; // 10 detik per ulasan
+                    testimoniTrack.style.animationDuration = `${duration}s`;
+                    
+                    // Update keyframe 100% agar pas sesuai jumlah ulasan
+                    const style = document.createElement('style');
+                    style.innerHTML = `@keyframes scrollTestimoni { 
+                        0% { transform: translateX(0); } 
+                        100% { transform: translateX(calc(-370px * ${count})); } 
+                    }`;
+                    document.head.appendChild(style);
                 } else { 
                     testimoniSection.style.display = 'none'; 
                 }
@@ -227,27 +280,44 @@ async function loadWebsiteSettings() {
 
             // Katalog
             const katalogGrid = document.getElementById('katalog-grid');
+            const katalogSection = katalogGrid ? katalogGrid.closest('.section') : null;
             if (katalogGrid) {
-                const katalogProduk = (data.katalog && data.katalog.length > 0) ? data.katalog : [];
-                katalogGrid.innerHTML = katalogProduk.map(p => {
-                    const mediaHtml = p.img ? `<img src="${antiBlokir(p.img)}" alt="${p.nama}" style="width: 100%; height: 200px; object-fit: cover;">` : `<div style="height: 200px; display:flex; align-items:center; justify-content:center; background:#f1f5f9;"><i class="fas fa-desktop" style="font-size: 3rem; color:#cbd5e1;"></i></div>`;
-                    const hargaHtml = p.harga > 0 ? `Rp ${p.harga.toLocaleString('id-ID')}` : `Menyesuaikan Budget`;
-                    
-                    return `
-                    <div class="card flex-col flex">
-                        ${mediaHtml}
-                        <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
-                            <h3 style="margin-bottom: 0.5rem;">${p.nama}</h3>
-                            <p style="color: var(--color-text-muted); font-size: 0.875rem; flex: 1; margin-bottom: 1rem;">${p.desc}</p>
-                            <div style="color: var(--color-primary); font-weight: 700; font-size: 1.25rem; margin-bottom: 1rem;">${hargaHtml}</div>
-                            <button onclick="beliViaWa('${p.nama}', ${p.harga})" class="btn btn-primary w-full" style="background-color: var(--color-success);">
-                                <i class="fab fa-whatsapp"></i> Pesan via WA
-                            </button>
+                if (data.katalog && data.katalog.length > 0) {
+                    if (katalogSection) katalogSection.style.display = '';
+                    katalogGrid.innerHTML = data.katalog.map(p => {
+                        const mediaHtml = p.img ? `<img src="${antiBlokir(p.img)}" alt="${p.nama}" style="width: 100%; height: 200px; object-fit: cover;">` : `<div style="height: 200px; display:flex; align-items:center; justify-content:center; background:#f1f5f9;"><i class="fas fa-desktop" style="font-size: 3rem; color:#cbd5e1;"></i></div>`;
+                        const hargaHtml = p.harga > 0 ? `Rp ${p.harga.toLocaleString('id-ID')}` : `Menyesuaikan Budget`;
+                        return `
+                        <div class="card flex-col flex katalog-card">
+                            ${mediaHtml}
+                            <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
+                                <h3 style="margin-bottom: 0.5rem;">${p.nama}</h3>
+                                <p style="color: var(--color-text-muted); font-size: 0.875rem; flex: 1; margin-bottom: 1rem;">${p.desc}</p>
+                                <div style="color: var(--color-primary); font-weight: 700; font-size: 1.25rem; margin-bottom: 1rem;">${hargaHtml}</div>
+                                <button onclick="beliViaWa('${p.nama}', ${p.harga})" class="btn btn-primary w-full" style="background-color: var(--color-success);">
+                                    <i class="fab fa-whatsapp"></i> Pesan via WA
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    `;
-                }).join('');
+                        `;
+                    }).join('');
+                } else {
+                    if (katalogSection) katalogSection.style.display = 'none';
+                }
             }
+
+            // Fix 7: Stats CMS-editable
+            const stats = data.stats || {};
+            const statEls = [
+                { id: 'statTahun',     val: stats.tahun     || '5+',   label: null },
+                { id: 'statPelanggan', val: stats.pelanggan || '500+', label: null },
+                { id: 'statRating',    val: stats.rating    || '4.9★', label: null },
+                { id: 'statGaransi',   val: stats.garansi   || '30H',  label: null },
+            ];
+            statEls.forEach(s => {
+                const el = document.getElementById(s.id);
+                if (el) el.textContent = s.val;
+            });
         }
     } catch (error) { 
         console.error("Error CMS:", error); 
@@ -420,3 +490,97 @@ if (darkModeToggle) {
     });
 }
 
+
+// ═══════════════════════════════
+// FORM TESTIMONI PELANGGAN
+// ═══════════════════════════════
+
+// Star Rating Interaction
+const starBtns = document.querySelectorAll('.star-btn');
+const ratingInput = document.getElementById('ratingValue');
+if (starBtns.length && ratingInput) {
+    starBtns.forEach(btn => {
+        btn.addEventListener('mouseenter', () => {
+            const val = parseInt(btn.dataset.val);
+            starBtns.forEach((b, i) => b.classList.toggle('active', i < val));
+        });
+        btn.addEventListener('click', () => {
+            ratingInput.value = btn.dataset.val;
+        });
+    });
+    document.getElementById('starRating')?.addEventListener('mouseleave', () => {
+        const selected = parseInt(ratingInput.value);
+        starBtns.forEach((b, i) => b.classList.toggle('active', i < selected));
+    });
+}
+
+// Char Counter untuk textarea
+const teksArea = document.getElementById('testimoniTeks');
+const charCount = document.getElementById('charCount');
+if (teksArea && charCount) {
+    teksArea.addEventListener('input', () => {
+        charCount.textContent = `${teksArea.value.length} / 300`;
+        charCount.style.color = teksArea.value.length > 270
+            ? 'var(--color-warning)' : 'var(--color-text-muted)';
+    });
+}
+
+// Submit Form Testimoni → Firebase
+const testimoniForm = document.getElementById('testimoniForm');
+if (testimoniForm) {
+    testimoniForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const rating = parseInt(document.getElementById('ratingValue').value);
+        if (!rating || rating < 1) {
+            if (window.showSweetAlert) window.showSweetAlert('Silakan pilih rating bintang terlebih dahulu.', 'info');
+            else alert('Silakan pilih rating bintang terlebih dahulu.');
+            return;
+        }
+        const nama  = document.getElementById('testimoniNama').value.trim();
+        const role  = document.getElementById('testimoniRole').value.trim() || 'Pelanggan';
+        const teks  = document.getElementById('testimoniTeks').value.trim();
+        const btn   = document.getElementById('submitTestimoniBtn');
+        const btnTxt = document.getElementById('submitTestimoniBtnText');
+        const spinner = document.getElementById('submitTestimoniSpinner');
+
+        btn.disabled = true;
+        btnTxt.innerHTML = 'Mengirim...';
+        spinner.classList.remove('hidden');
+
+        try {
+            await push(ref(db, 'testimoni_pending'), {
+                nama,
+                role,
+                teks,
+                rating,
+                timestamp: Date.now(),
+                approved: false
+            });
+            // Tampilkan sukses
+            testimoniForm.classList.add('hidden');
+            document.getElementById('testimoniSuccess').classList.remove('hidden');
+        } catch (err) {
+            console.error('Error kirim testimoni:', err);
+            if (window.showSweetAlert) window.showSweetAlert('Gagal mengirim ulasan. Coba lagi.', 'error');
+            else alert('Gagal mengirim ulasan. Silakan coba lagi.');
+        } finally {
+            btn.disabled = false;
+            btnTxt.innerHTML = '<i class="fas fa-paper-plane"></i> Kirim Ulasan';
+            spinner.classList.add('hidden');
+        }
+    });
+}
+
+// Reset Form Testimoni
+window.resetTestimoniForm = () => {
+    const form = document.getElementById('testimoniForm');
+    const success = document.getElementById('testimoniSuccess');
+    if (form && success) {
+        form.reset();
+        document.getElementById('ratingValue').value = '0';
+        document.querySelectorAll('.star-btn').forEach(b => b.classList.remove('active'));
+        if (charCount) charCount.textContent = '0 / 300';
+        success.classList.add('hidden');
+        form.classList.remove('hidden');
+    }
+};
