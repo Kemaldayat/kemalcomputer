@@ -34,6 +34,10 @@
                     class="fas fa-boxes"></i> Inventaris</button>
             <button class="menu-item" onclick="openTab('tab-finance', this, 'Laporan Keuangan')"><i
                     class="fas fa-wallet"></i> Keuangan</button>
+            <button class="menu-item" id="menuUlasanPending" onclick="openTab('tab-ulasan-pending', this, 'Ulasan Pending')"
+                style="position: relative;"><i class="fas fa-star"></i> Ulasan Pending
+                <span id="badgePending" style="display:none; position: absolute; top: 6px; right: 10px; background: #ef4444; color: white; font-size: 0.7rem; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; text-align: center; line-height: 18px; padding: 0 4px;">0</span>
+            </button>
         </div>
 
         <div class="sidebar-category" style="margin-top: 25px;">Pengaturan CMS</div>
@@ -229,6 +233,23 @@
                 </div>
             </div>
 
+            <!-- TAB ULASAN PENDING -->
+            <div id="tab-ulasan-pending" class="tab-pane">
+                <section class="controls" style="justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.1rem;">Ulasan Menunggu Persetujuan</h3>
+                        <p style="margin: 4px 0 0; font-size: 0.85rem; color: var(--text-light);">Approve untuk menampilkan di beranda, Tolak untuk menghapus permanen.</p>
+                    </div>
+                    <span id="pendingCountBadge" style="background: var(--primary-color); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">0 ulasan</span>
+                </section>
+                <div id="pendingTestimoniContainer" style="display: grid; gap: 16px; padding: 16px 0;">
+                    <div style="text-align: center; padding: 40px; color: var(--text-light);">
+                        <i class="fas fa-spinner fa-spin fa-2x" style="display: block; margin-bottom: 10px;"></i>
+                        Memuat ulasan...
+                    </div>
+                </div>
+            </div>
+
             <!-- TAB RIWAYAT LOGIN -->
             <div id="tab-login-log" class="tab-pane">
                 <section class="controls" style="justify-content: flex-end;">
@@ -291,6 +312,29 @@
                                 id="setHeadline"></div>
                         <div class="form-group"><label>Sub-Judul (Deskripsi Singkat)</label><textarea
                                 id="setSubHeadline" rows="2"></textarea></div>
+                    </div>
+                    <!-- Fix 7: Stats CMS Card -->
+                    <div class="settings-card">
+                        <h3><i class="fas fa-chart-bar"></i> Statistik Beranda</h3>
+                        <p style="color: var(--text-light); font-size: 0.9em; margin-bottom: 15px;">Angka-angka yang tampil di baris statistik halaman utama.</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Tahun Pengalaman</label>
+                                <input type="text" id="setStatTahun" placeholder="Contoh: 5+">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Pelanggan Puas</label>
+                                <input type="text" id="setStatPelanggan" placeholder="Contoh: 500+">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Rating</label>
+                                <input type="text" id="setStatRating" placeholder="Contoh: 4.9★">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Garansi Servis</label>
+                                <input type="text" id="setStatGaransi" placeholder="Contoh: 30H">
+                            </div>
+                        </div>
                     </div>
                     <div class="settings-card">
                         <h3><i class="fas fa-images"></i> Foto Slider (Beranda)</h3>
@@ -515,6 +559,7 @@
 
     <script src="js/ui-utils.js"></script>
     <script type="module" src="js/dashboard.js"></script>
+    <script type="module" src="js/pending-testimoni.js"></script>
 </body>
 
 </html>
