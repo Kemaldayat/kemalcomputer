@@ -9,6 +9,37 @@
             }
             return url;
         };
+        
+        // UPLOAD KE IMGBB DENGAN PROGRESS PERSENTASE
+        const uploadToImgBBWithProgress = (file, onProgress) => {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`);
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = Math.round((e.loaded / e.total) * 100);
+                        if (onProgress) onProgress(percentComplete);
+                    }
+                };
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            resolve(response);
+                        } catch (err) {
+                            reject(new Error('Gagal memproses respons server.'));
+                        }
+                    } else {
+                        reject(new Error(`Status error: ${xhr.status}`));
+                    }
+                };
+                xhr.onerror = () => reject(new Error('Koneksi internet bermasalah.'));
+                const fd = new FormData();
+                fd.append('image', file);
+                xhr.send(fd);
+            });
+        };
+
         // Utility: Escape HTML
         window.escapeHTML = (str) => String(str || '').replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
 
@@ -88,11 +119,12 @@
         window.uploadProductImage = async (inputElem) => {
             if (inputElem.files.length === 0) return;
             const file = inputElem.files[0]; const btn = inputElem.nextElementSibling; const textInput = inputElem.previousElementSibling;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 0%'; btn.disabled = true;
             try {
                 let f = await compressImage(file, 600, 600, 0.8);
-                const fd = new FormData(); fd.append('image', f);
-                const res = await (await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: fd })).json();
+                const res = await uploadToImgBBWithProgress(f, (pct) => {
+                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${pct}%`;
+                });
                 if (res.success) textInput.value = res.data.url; // Simpan URL asli ke input
             } catch (e) { window.showSweetAlert("Gagal upload foto.", "error"); console.log(e); }
             btn.innerHTML = '<i class="fas fa-upload"></i> Foto'; btn.disabled = false; inputElem.value = '';
@@ -113,12 +145,13 @@
             const textInput = document.getElementById('setQrisUrl');
             const previewImg = document.getElementById('previewQris');
             
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 0%';
             btn.disabled = true;
             try {
                 let f = await compressImage(file, 800, 800, 0.8);
-                const fd = new FormData(); fd.append('image', f);
-                const res = await (await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: fd })).json();
+                const res = await uploadToImgBBWithProgress(f, (pct) => {
+                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${pct}%`;
+                });
                 if (res.success) {
                     textInput.value = res.data.url;
                     previewImg.src = antiBlokir(res.data.url);
@@ -269,11 +302,12 @@
         document.getElementById('setLogoFile').addEventListener('change', async function (e) {
             if (e.target.files.length > 0) {
                 const file = e.target.files[0]; document.getElementById('previewLogo').src = URL.createObjectURL(file);
-                const btnSave = document.getElementById('btnSaveSettings'); btnSave.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Upload Logo..."; btnSave.disabled = true;
+                const btnSave = document.getElementById('btnSaveSettings'); btnSave.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Upload Logo (0%)..."; btnSave.disabled = true;
                 try {
                     let f = await compressImage(file, 800, 800, 0.8);
-                    const fd = new FormData(); fd.append('image', f);
-                    const res = await (await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: fd })).json();
+                    const res = await uploadToImgBBWithProgress(f, (pct) => {
+                        btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Upload Logo (${pct}%)...`;
+                    });
                     if (res.success) document.getElementById('setLogoUrl').value = res.data.url;
                 } catch (err) { console.log(err); }
                 btnSave.innerHTML = "<i class='fas fa-save'></i> Simpan Pengaturan CMS"; btnSave.disabled = false;
@@ -289,8 +323,9 @@
             for (let i = 0; i < window.pendingSliders.length; i++) {
                 try {
                     let f = await compressImage(window.pendingSliders[i], 1200, 800, 0.8);
-                    const fd = new FormData(); fd.append('image', f);
-                    const res = await (await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: fd })).json();
+                    const res = await uploadToImgBBWithProgress(f, (pct) => {
+                        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Slider ${i + 1}/${window.pendingSliders.length} (${pct}%)...`;
+                    });
                     if (res.success) finalSliders.push(res.data.url);
                 } catch (e) { console.log(e); }
             }
@@ -641,12 +676,11 @@
             try {
                 let fUrls = [...window.existingPhotos];
                 for (let i = 0; i < window.pendingFiles.length; i++) {
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Foto ${i + 1}...`;
                     try {
                         let f = await compressImage(window.pendingFiles[i], 800, 800, 0.7);
-                        const fd = new FormData(); fd.append('image', f);
-                        const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: fd });
-                        const result = await response.json();
+                        const result = await uploadToImgBBWithProgress(f, (pct) => {
+                            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Foto ${i + 1}/${window.pendingFiles.length} (${pct}%)...`;
+                        });
                         if (result.success) fUrls.push(result.data.url);
                     } catch (e) { console.log(e); }
                 }
