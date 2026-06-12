@@ -243,10 +243,20 @@ async function loadWebsiteSettings() {
                     testimoniSection.style.display = 'block';
                     
                     // Buat HTML ulasan
-                    const testimoniHTML = data.testimonis.map(t => `
+                    const testimoniHTML = data.testimonis.map(t => {
+                        const rating = Number(t.rating) || 5;
+                        let starsHtml = '';
+                        for (let i = 1; i <= 5; i++) {
+                            if (i <= rating) {
+                                starsHtml += '<i class="fas fa-star"></i>';
+                            } else {
+                                starsHtml += '<i class="far fa-star"></i>';
+                            }
+                        }
+                        return `
                         <div class="testimoni-card-slider">
                             <div style="color: #fbbf24; margin-bottom: 1rem;">
-                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                                ${starsHtml}
                             </div>
                             <p style="font-style: italic; margin-bottom: 1.5rem; opacity: 0.9; color: #e2e8f0; min-height: 80px;">"${t.teks}"</p>
                             <div class="flex items-center gap-4">
@@ -259,7 +269,8 @@ async function loadWebsiteSettings() {
                                 </div>
                             </div>
                         </div>
-                    `).join('');
+                        `;
+                    }).join('');
 
                     // Gandakan isi agar slider tidak terputus (Infinite effect)
                     testimoniTrack.innerHTML = testimoniHTML + testimoniHTML + testimoniHTML;
@@ -651,24 +662,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// --- Dark Mode Logic ---
-const darkModeToggle = document.getElementById('darkModeToggle');
-if (darkModeToggle) {
-    if (localStorage.getItem('darkMode') === 'enabled') {
-        document.body.classList.add('dark-mode');
-        darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-    }
-    darkModeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-        if (document.body.classList.contains('dark-mode')) {
-            localStorage.setItem('darkMode', 'enabled');
-            darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-        } else {
-            localStorage.setItem('darkMode', 'disabled');
-            darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-        }
-    });
-}
+// --- Dark Mode Logic (Forced Dark Mode Only) ---
+document.body.classList.add('dark-mode');
 
 
 // ═══════════════════════════════

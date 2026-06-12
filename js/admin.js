@@ -1,9 +1,7 @@
 import { db, auth, adminEmail, onAuthStateChanged, dbRef as ref, get, set } from "./firebase-config.js";
 
-// Sinkronisasi Tema (Dark Mode)
-if (localStorage.getItem('darkMode') === 'enabled') {
-    document.body.classList.add('dark-mode');
-}
+// Sinkronisasi Tema (Forced Dark Mode Only)
+document.body.classList.add('dark-mode');
 
 // Pengecekan Akses Admin
 onAuthStateChanged(auth, (user) => {
@@ -68,8 +66,8 @@ if (inputNama && badgeAutofill && inputNomorHp) {
             
             // Tampilkan badge hijau & kasih animasi background
             badgeAutofill.style.display = 'inline-flex';
-            inputNomorHp.style.backgroundColor = '#dcfce7';
-            setTimeout(() => { inputNomorHp.style.backgroundColor = 'var(--secondary-color)'; }, 1000);
+            inputNomorHp.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+            setTimeout(() => { inputNomorHp.style.backgroundColor = ''; }, 1000);
         }
     });
 }
@@ -89,8 +87,8 @@ if (inputNomorHp) {
         const val = inputNomorHp.value.trim();
         if (val === '') {
             waValidationMsg.style.display = 'none';
-            inputNomorHp.style.borderColor = 'var(--border-color)';
-            inputNomorHp.style.boxShadow = 'none';
+            inputNomorHp.style.borderColor = '';
+            inputNomorHp.style.boxShadow = '';
             return;
         }
 

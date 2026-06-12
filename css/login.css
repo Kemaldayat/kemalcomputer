@@ -32,19 +32,20 @@ body {
     margin: 0;
     padding: 20px;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
     transition: background-color 0.3s ease;
 }
 
 /* Background Blobs */
 .bg-blobs {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     overflow: hidden;
     z-index: 1;
+    pointer-events: none;
 }
 
 .blob {

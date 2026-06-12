@@ -93,7 +93,8 @@ window.approveTestimoni = async (key) => {
         arr.push({
             nama: t.nama || 'Pelanggan',
             role: t.role || 'Pelanggan',
-            teks: t.teks || ''
+            teks: t.teks || '',
+            rating: Number(t.rating) || 5
         });
         // Simpan balik ke pengaturan_toko/testimonis
         await set(ref(db, 'pengaturan_toko/testimonis'), arr);
