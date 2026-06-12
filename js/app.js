@@ -17,6 +17,7 @@ const formatRupiah = (angka) => {
 
 // Utility: Escape HTML
 const escapeHTML = (str) => String(str || '').replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
+window.escapeHTML = escapeHTML;
 
 let globalWaNumber = "";
 let currentSlide = 0; 

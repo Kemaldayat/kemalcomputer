@@ -100,14 +100,12 @@ window.approveTestimoni = async (key) => {
         await set(ref(db, 'pengaturan_toko/testimonis'), arr);
         // Hapus dari pending
         await remove(ref(db, 'testimoni_pending/' + key));
-        if (window.showSweetAlert) {
-            window.showSweetAlert('Ulasan disetujui dan tampil di beranda!', 'success');
-        } else if (window.showModal) {
-            window.showModal('✅ Ulasan disetujui dan ditampilkan di beranda!', 'info');
+        if (window.showModal) {
+            window.showModal('Ulasan disetujui dan tampil di beranda!', 'success');
         }
     } catch (err) {
         console.error(err);
-        if (window.showModal) window.showModal('Gagal approve: ' + err.message, 'info');
+        if (window.showModal) window.showModal('Gagal approve: ' + err.message, 'error');
     }
 };
 
@@ -115,9 +113,9 @@ window.rejectTestimoni = (key) => {
     const confirmFn = async () => {
         try {
             await remove(ref(db, 'testimoni_pending/' + key));
-            if (window.showModal) window.showModal('Ulasan ditolak dan dihapus.', 'info');
+            if (window.showModal) window.showModal('Ulasan ditolak dan dihapus.', 'success');
         } catch (err) {
-            if (window.showModal) window.showModal('Gagal: ' + err.message, 'info');
+            if (window.showModal) window.showModal('Gagal: ' + err.message, 'error');
         }
     };
     if (window.showModal) {
