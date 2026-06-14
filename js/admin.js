@@ -84,12 +84,26 @@ if (inputNomorHp) {
     inputNomorHp.parentElement.appendChild(waValidationMsg);
 
     inputNomorHp.addEventListener('input', () => {
-        const val = inputNomorHp.value.trim();
+        let val = inputNomorHp.value.trim();
         if (val === '') {
             waValidationMsg.style.display = 'none';
             inputNomorHp.style.borderColor = '';
             inputNomorHp.style.boxShadow = '';
             return;
+        }
+
+        // Normalisasi otomatis: bersihkan dari spasi, strip, tanda tambah
+        let cleaned = val.replace(/[\s\-\+]/g, '');
+        if (cleaned.startsWith('0')) {
+            cleaned = '62' + cleaned.substring(1);
+        } else if (cleaned.startsWith('8')) {
+            cleaned = '62' + cleaned;
+        }
+
+        // Terapkan balik ke input jika ada perubahan format
+        if (cleaned !== inputNomorHp.value) {
+            inputNomorHp.value = cleaned;
+            val = cleaned;
         }
 
         const isValid = /^\d+$/.test(val) && val.startsWith('62') && val.length >= 10;

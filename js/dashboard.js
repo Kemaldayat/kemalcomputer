@@ -359,6 +359,26 @@
 
         document.getElementById('setWarnaUtama').addEventListener('input', e => { document.getElementById('hexWarnaTeks').innerText = e.target.value; });
 
+        // --- Normalisasi Otomatis Nomor WhatsApp / HP ---
+        const autoCleanPhone = (el) => {
+            if (!el) return;
+            el.addEventListener('input', () => {
+                let val = el.value.trim();
+                if (val === '') return;
+                let cleaned = val.replace(/[\s\-\+]/g, '');
+                if (cleaned.startsWith('0')) {
+                    cleaned = '62' + cleaned.substring(1);
+                } else if (cleaned.startsWith('8')) {
+                    cleaned = '62' + cleaned;
+                }
+                if (cleaned !== el.value) {
+                    el.value = cleaned;
+                }
+            });
+        };
+        autoCleanPhone(document.getElementById('setWa'));
+        autoCleanPhone(document.getElementById('editNomorHp'));
+
         document.getElementById('setLogoFile').addEventListener('change', async function (e) {
             if (e.target.files.length > 0) {
                 const file = e.target.files[0]; document.getElementById('previewLogo').src = URL.createObjectURL(file);
