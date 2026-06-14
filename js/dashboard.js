@@ -928,10 +928,10 @@
             }
         };
 
-        // --- Memuat Daftar Staf (Khusus Owner) ---
         window.loadStaffList = () => {
             onValue(ref(db, 'staff'), (snapshot) => {
                 const tbody = document.getElementById('staffTable').getElementsByTagName('tbody')[0];
+                if (!tbody) return;
                 tbody.innerHTML = '';
                 let count = 0;
                 if (snapshot.exists()) {
@@ -953,6 +953,12 @@
                     tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 20px; color: var(--text-light);">Belum ada staf terdaftar.</td></tr>`;
                 }
                 if (window.applyRoleGating) window.applyRoleGating(window.currentUserRole);
+            }, (error) => {
+                console.error("Gagal memuat daftar staf:", error);
+                const tbody = document.getElementById('staffTable').getElementsByTagName('tbody')[0];
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 20px; color: #ef4444;">Gagal memuat data: ${error.message} (Periksa Rules Firebase Anda)</td></tr>`;
+                }
             });
         };
 
