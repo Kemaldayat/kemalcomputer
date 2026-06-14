@@ -82,6 +82,24 @@
             if (settingsTabs.includes(tabId)) document.getElementById('floatingSaveBtn').classList.add('show');
             else document.getElementById('floatingSaveBtn').classList.remove('show');
             
+            // update back to top button visibility on tab switch
+            const backToTopBtn = document.getElementById('backToTopBtn');
+            if (backToTopBtn) {
+                if (settingsTabs.includes(tabId)) {
+                    backToTopBtn.classList.remove('show');
+                } else {
+                    const isMobile = window.innerWidth <= 768;
+                    const scrollTop = isMobile 
+                        ? (window.scrollY || document.documentElement.scrollTop) 
+                        : (document.querySelector('.main-content')?.scrollTop || 0);
+                    if (scrollTop > 300) {
+                        backToTopBtn.classList.add('show');
+                    } else {
+                        backToTopBtn.classList.remove('show');
+                    }
+                }
+            }
+
             // Close sidebar on mobile after clicking a tab
             if(window.innerWidth <= 768) {
                 document.querySelector('.sidebar').classList.remove('open');
@@ -388,8 +406,15 @@
                 servicesData = {}; customersData = {};
 
                 if (snapshot.exists()) {
+                    const servicesList = [];
                     snapshot.forEach((child) => {
-                        const code = child.key; const s = child.val(); servicesData[code] = s;
+                        servicesList.push({ code: child.key, s: child.val() });
+                    });
+                    // Balik urutan: antrian terbaru ditaruh paling atas
+                    servicesList.reverse();
+
+                    servicesList.forEach(({ code, s }) => {
+                        servicesData[code] = s;
                         let bClass = '';
                         switch (s.status) { case 'Menunggu': bClass = 'status-waiting'; break; case 'Proses': bClass = 'status-process'; break; case 'Selesai': bClass = 'status-finished'; break; case 'Diambil': bClass = 'status-picked-up'; break; }
                         let safeFotoArray = Array.isArray(s.fotoUrls) ? s.fotoUrls : (s.fotoUrls ? Object.values(s.fotoUrls) : (s.fotoUrl ? [s.fotoUrl] : []));
@@ -810,3 +835,39 @@
 
         // --- Dark Mode Logic (Forced Dark Mode Only) ---
         document.body.classList.add('dark-mode');
+
+        // --- Logika Tombol Kembali ke Atas (Back to Top) ---
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        const mainContent = document.querySelector('.main-content');
+
+        const handleScroll = (scrollTop) => {
+            // Cek apakah tab pengaturan sedang aktif (tombol simpan melayang tampil)
+            const isSaveBtnVisible = document.getElementById('floatingSaveBtn')?.classList.contains('show');
+            if (scrollTop > 300 && !isSaveBtnVisible) {
+                backToTopBtn.classList.add('show');
+            } else {
+                backToTopBtn.classList.remove('show');
+            }
+        };
+
+        if (backToTopBtn) {
+            // Deteksi scroll di desktop (scrollable container .main-content)
+            if (mainContent) {
+                mainContent.addEventListener('scroll', () => {
+                    handleScroll(mainContent.scrollTop);
+                });
+            }
+            // Deteksi scroll di mobile (scrollable window)
+            window.addEventListener('scroll', () => {
+                handleScroll(window.scrollY || document.documentElement.scrollTop);
+            });
+
+            // Aksi kembali ke atas dengan scroll halus
+            backToTopBtn.addEventListener('click', () => {
+                if (mainContent && window.innerWidth > 768) {
+                    mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+        }
