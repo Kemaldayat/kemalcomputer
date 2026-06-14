@@ -760,3 +760,19 @@ window.resetTestimoniForm = () => {
         form.classList.remove('hidden');
     }
 };
+
+// --- Logika Tombol Kembali ke Atas (Back to Top) ---
+const backToTopBtn = document.getElementById('backToTopBtn');
+if (backToTopBtn) {
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        if (scrollTop > 300) {
+            backToTopBtn.classList.add('show');
+        } else {
+            backToTopBtn.classList.remove('show');
+        }
+    });
+    backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
