@@ -1,4 +1,6 @@
-        import { db, auth, adminEmail, signOut, onAuthStateChanged, dbRef as ref, get, set, remove, onValue } from "./firebase-config.js";
+        import { db, auth, adminEmail, firebaseConfig, signOut, onAuthStateChanged, dbRef as ref, get, set, remove, onValue } from "./firebase-config.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
         const IMGBB_API_KEY = "0f505a6d586e11b597f5a191a8c76f9f"; // Variabel harus di bawah import
 
         // JURUS ANTI BLOKIR IMGBB 
@@ -54,23 +56,63 @@
 
         document.getElementById('financeMonthPicker').value = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
 
+        window.currentUserRole = '';
+
         onAuthStateChanged(auth, async (user) => {
-            if (user && user.email === adminEmail) {
-                await loadWebsiteSettings();
-                loadServices(); loadExpenses();
-                if(window.loadInventory) window.loadInventory();
+            if (user) {
+                let isAuthorized = false;
+                let userRole = '';
 
-                // Catat setiap sesi akses dashboard ke Firebase
-                try {
-                    const logId = 'LOG-' + Date.now();
-                    await set(ref(db, 'riwayat_login/' + logId), {
-                        email: user.email,
-                        waktu: new Date().toISOString(),
-                        metode: user.providerData?.[0]?.providerId === 'google.com' ? 'Google' : 'Email/Password'
-                    });
-                } catch(e) { console.warn("Gagal mencatat log akses:", e.code, e.message); }
+                if (user.email === adminEmail) {
+                    isAuthorized = true;
+                    userRole = 'Owner';
+                } else {
+                    try {
+                        const staffSnap = await get(ref(db, 'staff'));
+                        if (staffSnap.exists()) {
+                            staffSnap.forEach((child) => {
+                                const val = child.val();
+                                if (val.email && val.email.toLowerCase() === user.email.toLowerCase()) {
+                                    isAuthorized = true;
+                                    userRole = val.role;
+                                }
+                            });
+                        }
+                    } catch(e) {
+                        console.error("Gagal verifikasi data staf:", e);
+                    }
+                }
 
-            } else { window.location.href = 'login.html'; }
+                if (isAuthorized) {
+                    window.currentUserRole = userRole;
+                    applyRoleGating(userRole);
+
+                    await loadWebsiteSettings();
+                    loadServices(); 
+                    loadExpenses();
+                    if(window.loadInventory) window.loadInventory();
+                    
+                    if (userRole === 'Owner') {
+                        loadStaffList();
+                    }
+
+                    // Catat setiap sesi akses dashboard ke Firebase
+                    try {
+                        const logId = 'LOG-' + Date.now();
+                        await set(ref(db, 'riwayat_login/' + logId), {
+                            email: user.email,
+                            waktu: new Date().toISOString(),
+                            metode: user.providerData?.[0]?.providerId === 'google.com' ? 'Google' : 'Email/Password'
+                        });
+                    } catch(e) { console.warn("Gagal mencatat log akses:", e.code, e.message); }
+
+                } else {
+                    await signOut(auth);
+                    window.location.href = 'login.html';
+                }
+            } else {
+                window.location.href = 'login.html';
+            }
         });
 
         window.openTab = (tabId, element, titleText) => {
@@ -437,8 +479,9 @@
                         rBody.innerHTML = `<td><strong>${escapeHTML(c.nama)}</strong></td><td>${escapeHTML(c.hp)}</td><td style="text-align: center;"><span class="status-badge" style="background-color:var(--info-color)">${c.totSrv} Kali</span></td><td class="biaya-text">${formatRupiah(c.totB)}</td><td style="white-space: normal; min-width: 200px;">${rBadges || '-'}</td><td class="action-column"><button class="btn btn-primary" style="padding: 8px 12px; font-size: 0.85em;" onclick="contactCustomer('${escapeHTML(c.hp)}', '${escapeHTML(c.nama)}')"><i class="fab fa-whatsapp"></i> Chat</button></td>`;
                     }
                 }
-                filterTableServices(); filterTableCustomers(); calculateFinance();
-            });
+                 filterTableServices(); filterTableCustomers(); calculateFinance();
+                 if (window.applyRoleGating) window.applyRoleGating(window.currentUserRole);
+             });
         };
 
         window.loadExpenses = () => { onValue(ref(db, 'pengeluaran'), (snap) => { expensesData = {}; if (snap.exists()) { snap.forEach((c) => { expensesData[c.key] = c.val(); }); } calculateFinance(); }); };
@@ -835,6 +878,280 @@
 
         // --- Dark Mode Logic (Forced Dark Mode Only) ---
         document.body.classList.add('dark-mode');
+
+        // --- Logika Manajemen Hak Akses (Role Gating) ---
+        window.applyRoleGating = (role) => {
+            window.currentUserRole = role;
+            
+            // 1. Visibilitas Menu Sidebar
+            const ownerOnlyElements = document.querySelectorAll('.owner-only');
+            ownerOnlyElements.forEach(el => {
+                if (role === 'Owner') {
+                    if (el.tagName === 'BUTTON' || el.classList.contains('menu-list')) {
+                        el.style.setProperty('display', 'flex', 'important');
+                    } else {
+                        el.style.setProperty('display', 'block', 'important');
+                    }
+                } else {
+                    el.style.setProperty('display', 'none', 'important');
+                }
+            });
+
+            // 2. Kolom Harga Modal (cost-column)
+            const costColumns = document.querySelectorAll('.cost-column');
+            costColumns.forEach(el => {
+                if (role === 'Owner') {
+                    el.style.display = ''; // Tampil default
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+
+            // 3. Tombol Hapus (delete-button) di tabel
+            const deleteButtons = document.querySelectorAll('.delete-button');
+            deleteButtons.forEach(el => {
+                if (role === 'Owner') {
+                    el.style.display = ''; // Tampil default
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+            
+            // 4. Form Harga Modal di Edit Modal
+            const modalKomponenGroup = document.getElementById('editModalKomponen')?.parentElement;
+            if (modalKomponenGroup) {
+                if (role === 'Owner') {
+                    modalKomponenGroup.style.display = 'block';
+                } else {
+                    modalKomponenGroup.style.display = 'none';
+                }
+            }
+        };
+
+        // --- Memuat Daftar Staf (Khusus Owner) ---
+        window.loadStaffList = () => {
+            onValue(ref(db, 'staff'), (snapshot) => {
+                const tbody = document.getElementById('staffTable').getElementsByTagName('tbody')[0];
+                tbody.innerHTML = '';
+                let count = 0;
+                if (snapshot.exists()) {
+                    snapshot.forEach((child) => {
+                        const key = child.key;
+                        const data = child.val();
+                        count++;
+                        const row = tbody.insertRow();
+                        row.innerHTML = `
+                            <td><strong>${escapeHTML(data.email)}</strong></td>
+                            <td><span class="status-badge ${data.role === 'Kasir' ? 'status-process' : 'status-waiting'}">${data.role}</span></td>
+                            <td class="action-column">
+                                <button class="icon-btn delete-button" onclick="deleteStaff('${key}', '${escapeHTML(data.email)}')"><i class="fas fa-trash"></i></button>
+                            </td>
+                        `;
+                    });
+                }
+                if (count === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 20px; color: var(--text-light);">Belum ada staf terdaftar.</td></tr>`;
+                }
+                if (window.applyRoleGating) window.applyRoleGating(window.currentUserRole);
+            });
+        };
+
+        // --- Hapus Akses Staf ---
+        window.deleteStaff = (key, email) => {
+            showModal(`Yakin ingin menonaktifkan akses staf ${email}?`, "confirm", async () => {
+                try {
+                    await remove(ref(db, `staff/${key}`));
+                    showModal('Akses staf dinonaktifkan!', 'info');
+                } catch (e) {
+                    showModal('Gagal menghapus: ' + e.message, 'info');
+                }
+            });
+        };
+
+        // --- Event Listener Form Registrasi Staf Baru ---
+        const staffForm = document.getElementById('staffForm');
+        if (staffForm) {
+            staffForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('staffEmail').value.trim();
+                const password = document.getElementById('staffPassword').value.trim();
+                const role = document.getElementById('staffRole').value;
+
+                if (!email || !password || password.length < 6) {
+                    return showModal("Email dan Password (min. 6 karakter) wajib diisi.", "info");
+                }
+
+                const btnSubmit = staffForm.querySelector('button[type="submit"]');
+                const origHtml = btnSubmit.innerHTML;
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mendaftarkan...';
+
+                let tempApp;
+                try {
+                    // Trick inisialisasi Firebase App temporer
+                    tempApp = initializeApp(firebaseConfig, "TempAppStaf");
+                    const tempAuth = getAuth(tempApp);
+
+                    // Daftarkan staf di Authentication
+                    const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
+                    const uid = userCredential.user.uid;
+
+                    // Simpan mapping email & role di Realtime Database utama
+                    await set(ref(db, `staff/${uid}`), {
+                        uid: uid,
+                        email: email,
+                        role: role,
+                        registeredAt: new Date().toISOString()
+                    });
+
+                    staffForm.reset();
+                    showModal(`Staf ${email} berhasil terdaftar sebagai ${role}!`, 'info');
+
+                } catch (error) {
+                    console.error("Gagal mendaftarkan staf:", error);
+                    let errMsg = "Gagal mendaftarkan staf.";
+                    if (error.code === 'auth/email-already-in-use') errMsg = "Email sudah digunakan.";
+                    else if (error.code === 'auth/weak-password') errMsg = "Password terlalu lemah (min. 6 karakter).";
+                    showModal(errMsg, 'info');
+                } finally {
+                    if (tempApp) {
+                        try {
+                            await tempApp.delete();
+                        } catch (e) { console.warn(e); }
+                    }
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = origHtml;
+                }
+            });
+        }
+
+        // --- Ekspor Data ke Excel/CSV ---
+        const downloadCSV = (rows, filename) => {
+            const csvContent = "\uFEFF" + rows.map(e => e.map(val => {
+                let cell = String(val === null || val === undefined ? '' : val);
+                if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
+                    cell = `"${cell.replace(/"/g, '""')}"`;
+                }
+                return cell;
+            }).join(',')).join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        };
+
+        window.exportServicesToCSV = () => {
+            const rows = [];
+            rows.push(['Nama Pelanggan', 'Device', 'Kerusakan', 'No HP', 'Biaya', 'Modal Komponen', 'Status', 'Pembayaran', 'Keterangan', 'Invoice']);
+
+            const tableRows = document.querySelectorAll('#serviceTable tbody tr');
+            let exportCount = 0;
+            tableRows.forEach(row => {
+                if (row.style.display !== 'none' && !row.classList.contains('no-data-row')) {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length >= 10) {
+                        exportCount++;
+                        const nama = cells[0].textContent.trim();
+                        const device = cells[1].childNodes[0] ? cells[1].childNodes[0].textContent.trim() : cells[1].textContent.trim(); 
+                        const kerusakan = cells[2].textContent.trim();
+                        const noHp = cells[3].textContent.trim();
+                        
+                        const parseRupiah = (text) => {
+                            const clean = text.replace(/[^0-9]/g, '');
+                            return clean ? clean : '0';
+                        };
+                        const biaya = parseRupiah(cells[4].textContent);
+                        const modal = parseRupiah(cells[5].textContent);
+                        const status = cells[6].textContent.trim();
+                        const pembayaran = cells[7].textContent.trim();
+                        const keterangan = cells[8].textContent.trim();
+                        const invoice = cells[9].textContent.trim();
+
+                        rows.push([nama, device, kerusakan, noHp, biaya, modal, status, pembayaran, keterangan, invoice]);
+                    }
+                }
+            });
+
+            if (exportCount === 0) {
+                return showModal('Tidak ada data antrian yang tampil untuk diekspor.', 'info');
+            }
+            downloadCSV(rows, `Laporan-Antrian-Servis-${new Date().toISOString().slice(0,10)}.csv`);
+        };
+
+        window.exportFinanceToCSV = () => {
+            const monthPickerVal = document.getElementById('financeMonthPicker').value;
+            if (!monthPickerVal) return showModal('Pilih bulan dan tahun terlebih dahulu.', 'info');
+
+            const [year, month] = monthPickerVal.split('-');
+            const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            const monthName = monthNames[parseInt(month) - 1];
+
+            const rows = [];
+            rows.push([`LAPORAN KEUANGAN KEMAL COMPUTER - ${monthName.toUpperCase()} ${year}`]);
+            rows.push([]);
+
+            const totalPendapatanText = document.getElementById('totalPendapatan').textContent;
+            const totalModalText = document.getElementById('totalModal')?.textContent || 'Rp 0';
+            const totalPengeluaranText = document.getElementById('totalPengeluaran').textContent;
+            const labaBersihText = document.getElementById('labaBersih').textContent;
+
+            const cleanNum = (text) => text.replace(/[^0-9-]/g, '');
+
+            rows.push(['RINGKASAN']);
+            rows.push(['Total Pendapatan', cleanNum(totalPendapatanText)]);
+            rows.push(['Total Modal Komponen', cleanNum(totalModalText)]);
+            rows.push(['Total Pengeluaran Toko', cleanNum(totalPengeluaranText)]);
+            rows.push(['Laba/Rugi Bersih', cleanNum(labaBersihText)]);
+            rows.push([]);
+
+            rows.push(['RINCIAN TRANSAKSI']);
+            rows.push(['Tanggal', 'Tipe', 'Keterangan', 'Nominal (Rp)']);
+
+            const incomeTx = [];
+            for (const key in servicesData) {
+                const s = servicesData[key];
+                if ((s.status === 'Selesai' || s.status === 'Diambil') && s.biaya && s.timestamp && s.timestamp.startsWith(monthPickerVal)) {
+                    const dateOnly = s.timestamp.substring(0, 10);
+                    incomeTx.push({
+                        date: dateOnly,
+                        type: 'Pendapatan (Servis)',
+                        desc: `Servis ${s.device} - ${s.nama} (${key})`,
+                        amount: Number(s.biaya)
+                    });
+                }
+            }
+
+            const expenseTx = [];
+            for (const key in expensesData) {
+                const e = expensesData[key];
+                if (e.tanggal && e.tanggal.startsWith(monthPickerVal)) {
+                    expenseTx.push({
+                        date: e.tanggal,
+                        type: 'Pengeluaran Toko',
+                        desc: e.keterangan,
+                        amount: Number(e.nominal)
+                    });
+                }
+            }
+
+            const allTx = [...incomeTx, ...expenseTx].sort((a, b) => new Date(a.date) - new Date(b.date));
+            allTx.forEach(tx => {
+                rows.push([tx.date, tx.type, tx.desc, tx.amount]);
+            });
+
+            if (allTx.length === 0) {
+                return showModal(`Tidak ada transaksi keuangan pada bulan ${monthName} ${year}.`, 'info');
+            }
+            downloadCSV(rows, `Laporan-Keuangan-${monthPickerVal}.csv`);
+        };
 
         // --- Logika Tombol Kembali ke Atas (Back to Top) ---
         const backToTopBtn = document.getElementById('backToTopBtn');

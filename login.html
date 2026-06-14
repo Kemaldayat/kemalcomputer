@@ -135,6 +135,29 @@
             } catch(e) { console.error("Gagal mencatat log", e); }
         }
 
+        // Fungsi mengecek otorisasi pengguna di Firebase Database
+        async function checkAuthorizedUser(user) {
+            if (user.email === adminEmail) {
+                return { authorized: true, role: 'Owner' };
+            }
+            try {
+                const snapshot = await get(dbRef(db, 'staff'));
+                if (snapshot.exists()) {
+                    let authData = { authorized: false, role: '' };
+                    snapshot.forEach((child) => {
+                        const val = child.val();
+                        if (val.email && val.email.toLowerCase() === user.email.toLowerCase()) {
+                            authData = { authorized: true, role: val.role };
+                        }
+                    });
+                    return authData;
+                }
+            } catch (e) {
+                console.error("Gagal verifikasi data staf:", e);
+            }
+            return { authorized: false, role: '' };
+        }
+
         // EVENT LISTENER LOGIKA UTAMA (EMAIL & PASSWORD)
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -157,13 +180,14 @@
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                if (user.email === adminEmail) {
-                    await catatRiwayatLogin(user.email, "Email/Password");
+                const authCheck = await checkAuthorizedUser(user);
+                if (authCheck.authorized) {
+                    await catatRiwayatLogin(user.email, `Email/Password (${authCheck.role})`);
                     window.showSweetAlert('Login berhasil! Mengarahkan ke Dashboard...', 'success');
                     setTimeout(() => window.location.href = 'dashboard.html', 1500);
                 } else {
                     await signOut(auth); 
-                    window.showSweetAlert("Email ini tidak memiliki izin akses admin.", "error");
+                    window.showSweetAlert("Akun Anda tidak terdaftar sebagai staf atau admin.", "error");
                     resetButton(btn, icon, text, spinner, "Masuk Sekarang");
                 }
             } catch (error) {
@@ -193,13 +217,14 @@
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
                 
-                if (user.email === adminEmail) {
-                    await catatRiwayatLogin(user.email, "Google");
+                const authCheck = await checkAuthorizedUser(user);
+                if (authCheck.authorized) {
+                    await catatRiwayatLogin(user.email, `Google (${authCheck.role})`);
                     window.showSweetAlert('Login Google berhasil! Mengarahkan...', 'success');
                     setTimeout(() => window.location.href = 'dashboard.html', 1500);
                 } else {
                     await signOut(auth);
-                    window.showSweetAlert("Akun Google ini tidak memiliki akses admin.", "error");
+                    window.showSweetAlert("Akun Google Anda tidak terdaftar sebagai staf atau admin.", "error");
                     resetGoogleButton(btn, icon, text, spinner);
                 }
             } catch (error) {

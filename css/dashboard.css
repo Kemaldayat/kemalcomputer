@@ -811,6 +811,9 @@ input[type="color"]::-webkit-color-swatch { border: none; border-radius: 8px; bo
         height: 44px;
         font-size: 1.1rem;
     }
+    .staff-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 
