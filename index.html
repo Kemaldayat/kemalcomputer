@@ -162,11 +162,39 @@
             animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* Tombol Kembali ke Atas */
-        .back-to-top {
+        /* ── Floating Action Group (Combined & Sync) ── */
+        .floating-action-group {
             position: fixed;
-            bottom: 6.5rem;
+            bottom: 2rem;
             right: 2rem;
+            width: 60px;
+            height: 60px;
+            z-index: 100;
+        }
+
+        .floating-wa-wrap {
+            position: absolute !important;
+            bottom: 0 !important;
+            right: 0 !important;
+            margin: 0 !important;
+            width: 60px;
+            height: 60px;
+        }
+
+        .floating-wa {
+            position: relative !important;
+            bottom: auto !important;
+            right: auto !important;
+            margin: 0 !important;
+            width: 60px !important;
+            height: 60px !important;
+            box-shadow: var(--shadow-lg) !important;
+        }
+
+        .back-to-top {
+            position: absolute !important;
+            bottom: 4.5rem; /* 60px + 12px gap */
+            right: 0;
             background: var(--color-primary);
             color: white;
             width: 60px;
@@ -178,29 +206,46 @@
             font-size: 1.5rem;
             box-shadow: var(--shadow-lg);
             transition: var(--transition-normal);
-            z-index: 100;
             cursor: pointer;
             opacity: 0;
             visibility: hidden;
             transform: translateY(15px);
             border: none;
+            margin: 0 !important;
         }
+        
         .back-to-top.show {
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
         }
+        
         .back-to-top:hover {
             background: var(--color-primary-dark);
             transform: translateY(-5px);
         }
+        
         @media (max-width: 768px) {
-            .back-to-top {
-                bottom: 6.5rem;
+            .floating-action-group {
+                bottom: 1.5rem;
                 right: 1.5rem;
                 width: 50px;
                 height: 50px;
-                font-size: 1.25rem;
+            }
+            .floating-wa-wrap {
+                width: 50px;
+                height: 50px;
+            }
+            .floating-wa {
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 1.6rem !important;
+            }
+            .back-to-top {
+                bottom: 3.625rem; /* 50px + 8px gap */
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 1.25rem !important;
             }
         }
 </style>
@@ -486,18 +531,21 @@
 
     </main>
 
-    <!-- Floating WhatsApp -->
-    <div class="floating-wa-wrap">
-        <span class="floating-wa-tooltip">💬 Chat Kami</span>
-        <a id="btnFloatingWa" href="#" target="_blank" class="floating-wa animate-float" title="Chat WhatsApp Sekarang">
-            <i class="fab fa-whatsapp"></i>
-        </a>
-    </div>
+    <!-- Floating Action Group (WA + Back to Top) -->
+    <div class="floating-action-group animate-float">
+        <!-- Tombol Kembali ke Atas -->
+        <button id="backToTopBtn" class="back-to-top" title="Kembali ke Atas">
+            <i class="fas fa-chevron-up"></i>
+        </button>
 
-    <!-- Tombol Kembali ke Atas -->
-    <button id="backToTopBtn" class="back-to-top" title="Kembali ke Atas">
-        <i class="fas fa-chevron-up"></i>
-    </button>
+        <!-- Floating WhatsApp -->
+        <div class="floating-wa-wrap">
+            <span class="floating-wa-tooltip">💬 Chat Kami</span>
+            <a id="btnFloatingWa" href="#" target="_blank" class="floating-wa" title="Chat WhatsApp Sekarang">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
