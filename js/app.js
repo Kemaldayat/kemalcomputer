@@ -776,3 +776,138 @@ if (backToTopBtn) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 }
+
+// ═══════════════════════════════
+// FORM KONSULTASI & DIAGNOSA PINTAR
+// ═══════════════════════════════
+const consultationForm = document.getElementById('consultationForm');
+if (consultationForm) {
+    consultationForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const nama = document.getElementById('consNama').value.trim();
+        const type = document.getElementById('consDeviceType').value;
+        const brand = document.getElementById('consDeviceBrand').value.trim();
+        const symptoms = document.getElementById('consSymptoms').value.trim().toLowerCase();
+        
+        const btn = document.getElementById('btnAnalisisAi');
+        const btnText = document.getElementById('btnAnalisisAiText');
+        const spinner = document.getElementById('aiSpinner');
+        const resultContainer = document.getElementById('consResultContainer');
+        
+        // Setup Loading
+        btn.disabled = true;
+        btnText.innerHTML = 'Menganalisis...';
+        spinner.classList.remove('hidden');
+        resultContainer.classList.add('hidden');
+        
+        // Pura-pura load 1.2 detik agar ada efek komputasi AI premium
+        await new Promise(r => setTimeout(r, 1200));
+        
+        let cause = "Kerusakan belum teridentifikasi secara spesifik.";
+        let solution = `<ul class="ai-solution-list">
+            <li>Kerusakan komponen kelistrikan di motherboard, IC power, baterai drop, atau OS corrupt.</li>
+            <li>Saran Tindakan: Silakan bawa perangkat Anda ke Kemal Computer untuk pemeriksaan fisik secara presisi oleh teknisi kami.</li>
+        </ul>`;
+        
+        // Core Rules Engine
+        const hasKeyword = (keywords) => keywords.some(kw => symptoms.includes(kw));
+        
+        if (hasKeyword(['mati total', 'matot', 'tidak menyala', 'tidak hidup', 'mati', 'no power'])) {
+            cause = "Masalah suplai daya (Power Supply), baterai drop, atau sirkuit motherboard mengalami konsleting (short circuit).";
+            solution = `<ul class="ai-solution-list">
+                <li><b>Cek Charger/Adaptor:</b> Coba gunakan charger/adaptor cadangan yang dipastikan normal untuk memastikan adaptor lama tidak mati.</li>
+                <li><b>Pengecekan Motherboard:</b> Teknisi kami perlu mengukur sirkuit IC Power menggunakan multimeter untuk menemukan titik komponen yang konslet.</li>
+                <li><b>Estimasi Waktu:</b> 1 - 3 hari kerja (tergantung ketersediaan sparepart motherboard).</li>
+            </ul>`;
+        } else if (hasKeyword(['panas', 'overheat', 'mati sendiri', 'kipas bising', 'suara keras', 'kipas berisik', 'overheating'])) {
+            cause = "Sistem pembuangan panas tersumbat debu, kipas CPU bermasalah, atau Thermal Paste pada processor telah kering/mengeras.";
+            solution = `<ul class="ai-solution-list">
+                <li><b>Thermal Cleaning:</b> Pembersihan debu pada kipas exhaust dan heatsink laptop/PC.</li>
+                <li><b>Repaste Thermal:</b> Penggantian Thermal Paste kering dengan pasta thermal berkualitas tinggi (seperti Arctic/Noctua) agar penyaluran panas kembali optimal.</li>
+                <li><b>Estimasi Waktu:</b> 1 - 2 Jam (Bisa ditunggu).</li>
+            </ul>`;
+        } else if (hasKeyword(['lemot', 'lambat', 'loading lama', 'lola', 'lelet', 'lama', 'lamban'])) {
+            cause = "Kondisi Harddisk (HDD) sudah melemah/bad sector, kapasitas RAM terlalu kecil untuk multitasking, atau sistem operasi dipenuhi file sampah/virus.";
+            solution = `<ul class="ai-solution-list">
+                <li><b>Upgrade ke SSD:</b> Mengganti Harddisk lama dengan SSD (Solid State Drive) akan meningkatkan kecepatan laptop/PC Anda hingga 10x lipat.</li>
+                <li><b>Upgrade RAM:</b> Menambah RAM (misal menjadi 8GB atau 16GB) agar aktivitas multitasking berjalan lancar.</li>
+                <li><b>Instal Ulang OS & Tuning:</b> Menyegarkan kembali Windows untuk menghapus bloatware, file sampah, dan mengoptimalkan registry.</li>
+                <li><b>Estimasi Waktu:</b> 1 - 3 Jam (Bisa ditunggu).</li>
+            </ul>`;
+        } else if (hasKeyword(['layar', 'lcd', 'pecah', 'bergaris', 'kedip', 'flicker', 'gelap', 'blank', 'retak'])) {
+            cause = "Kerusakan pada panel LCD/LED, soket kabel fleksibel layar longgar/korosi, atau kerusakan chipset grafis (GPU/VGA).";
+            solution = `<ul class="ai-solution-list">
+                <li><b>Ganti Panel LCD:</b> Jika layar pecah dalam, terdapat garis warna-warni permanen, atau tompel hitam, solusi satu-satunya adalah ganti panel baru.</li>
+                <li><b>Pembersihan/Reposition Soket:</b> Jika layar berkedip hanya saat layar digerakkan (buka-tutup laptop), kemungkinan kabel fleksibel longgar.</li>
+                <li><b>Estimasi Waktu:</b> 1 - 2 Jam (jika tipe LCD ready stock).</li>
+            </ul>`;
+        } else if (hasKeyword(['baterai', 'battery', 'drop', 'cepat habis', 'kembung', 'batre', 'charge', 'cas', 'ngecas'])) {
+            cause = "Penurunan kesehatan sel baterai (Life cycle baterai telah habis) atau kendala pada modul IC Charging motherboard.";
+            solution = `<ul class="ai-solution-list">
+                <li><b>Ganti Baterai:</b> Penggantian unit baterai baru (original / premium) bergaransi resmi.</li>
+                <li><b>Kalibrasi Daya:</b> Pengecekan arus pengisian daya dari adaptor ke baterai untuk memastikan IC charger normal.</li>
+                <li><b>Estimasi Waktu:</b> 30 - 60 Menit.</li>
+            </ul>`;
+        } else if (hasKeyword(['keyboard', 'pencet sendiri', 'tombol macet', 'tuts', 'eror', 'ketik'])) {
+            cause = "Jalur sirkuit membran keyboard mengalami korsleting (sering disebabkan kelembapan atau kemasukan air/kotoran).";
+            solution = `<ul class="ai-solution-list">
+                <li><b>Ganti Keyboard Unit:</b> Keyboard laptop yang korslet sebagian besar harus diganti satu set baru karena sirkuit membran tidak bisa disolder sebagian.</li>
+                <li><b>Pembersihan Kontak:</b> Jika hanya satu tombol macet karena kotoran, teknisi akan mencoba membersihkan switch di bawah tuts keyboard.</li>
+                <li><b>Estimasi Waktu:</b> 1 - 2 Jam.</li>
+            </ul>`;
+        } else if (hasKeyword(['virus', 'iklan', 'hacker', 'ransomware', 'malware', 'pop-up'])) {
+            cause = "Sistem terinfeksi malware, ransomware, atau adware berbahaya akibat mengunduh file/aplikasi bajakan secara sembarangan.";
+            solution = `<ul class="ai-solution-list">
+                <li><b>Pembersihan Malware:</b> Deep scanning sistem dan pembersihan menggunakan software pembersih malware profesional.</li>
+                <li><b>Instal Ulang Sistem Operasi:</b> Langkah paling aman agar sistem benar-benar bersih dari virus tersembunyi yang merusak file registry.</li>
+                <li><b>Estimasi Waktu:</b> 1 - 2 Jam.</li>
+            </ul>`;
+        } else if (type === "Smartphone") {
+            cause = "Masalah umum pada smartphone seperti baterai bocor, port charger USB longgar/kotor, atau kaca touchscreen pecah.";
+            solution = `<ul class="ai-solution-list">
+                <li><b>Service Port/Konektor:</b> Pembersihan port charger USB dari debu atau ganti papan konektor pengisian daya.</li>
+                <li><b>Ganti LCD Touchscreen:</b> Pergantian panel layar baru jika kaca pecah atau tidak merespon sentuhan jari.</li>
+                <li><b>Estimasi Waktu:</b> 1 - 3 Jam.</li>
+            </ul>`;
+        }
+        
+        // Tampilkan Hasil di UI
+        document.getElementById('aiResultCause').innerText = cause;
+        document.getElementById('aiResultSolution').innerHTML = solution;
+        
+        // Rancang WhatsApp Link
+        const cleanCause = cause.replace(/<b>|<\/b>/g, '');
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = solution;
+        const cleanSolutionText = Array.from(tempDiv.querySelectorAll('li'))
+                                       .map(li => `• ${li.innerText.replace(/<b>|<\/b>/g, '')}`)
+                                       .join('\n');
+        
+        const textWa = `Halo Kemal Computer, saya ingin konsultasi & reservasi servis:\n\n` +
+                       `• *Nama:* ${nama}\n` +
+                       `• *Perangkat:* ${type} (${brand})\n` +
+                       `• *Keluhan:* ${document.getElementById('consSymptoms').value.trim()}\n\n` +
+                       `🤖 *DIAGNOSA INSTAN AI TOKO*:\n` +
+                       `*Kemungkinan:* ${cleanCause}\n` +
+                       `*Rekomendasi Tindakan:*\n${cleanSolutionText}\n\n` +
+                       `Mohon informasi mengenai perkiraan biaya dan jadwal pemeriksaan fisik. Terima kasih!`;
+        
+        const waLink = `https://wa.me/${globalWaNumber || '6281234567890'}?text=${encodeURIComponent(textWa)}`;
+        document.getElementById('btnConsWaLink').href = waLink;
+        
+        // Reset Loading
+        btn.disabled = false;
+        btnText.innerHTML = '<i class="fas fa-robot"></i> Analisis Kerusakan (AI)';
+        spinner.classList.add('hidden');
+        
+        // Tampilkan Container
+        resultContainer.classList.remove('hidden');
+        
+        // Scroll ke bawah sedikit agar hasil diagnosa kelihatan penuh
+        setTimeout(() => {
+            resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 150);
+    });
+}
+

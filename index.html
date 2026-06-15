@@ -285,7 +285,7 @@
             <div class="flex items-center">
                 <nav class="nav-links" style="margin-right: 15px;">
                     <a href="#" onclick="showPage('home-page')">Beranda</a>
-                    <a href="#" onclick="showPage('reservation-page')">Reservasi Servis</a>
+                    <a href="#" onclick="showPage('reservation-page')">Konsultasi AI</a>
                     <a href="#" onclick="showPage('tracking-page')">Cek Status</a>
                 </nav>
                 <button id="mobile-menu-btn" class="mobile-menu-btn" style="margin-left: 10px;"><i class="fas fa-bars"></i></button>
@@ -295,7 +295,7 @@
 
     <div id="mobile-menu" class="hidden">
         <a href="#" onclick="showPage('home-page')" style="font-weight: 600; color: var(--color-text);"><i class="fas fa-home"></i> Beranda</a>
-        <a href="#" onclick="showPage('reservation-page')" style="font-weight: 600; color: var(--color-text);"><i class="fas fa-calendar-check"></i> Reservasi Servis</a>
+        <a href="#" onclick="showPage('reservation-page')" style="font-weight: 600; color: var(--color-text);"><i class="fas fa-robot"></i> Konsultasi AI</a>
         <a href="#" onclick="showPage('tracking-page')" style="font-weight: 600; color: var(--color-text);"><i class="fas fa-search-location"></i> Cek Status</a>
     </div>
 
@@ -325,7 +325,7 @@
                         Kami tangani perangkat Anda dengan teknisi profesional dan biaya yang transparan.
                     </p>
                     <div class="flex gap-4 hero-btns-anim" style="flex-wrap: wrap;">
-                        <button onclick="showPage('reservation-page')" class="btn btn-primary"><i class="fas fa-calendar-check"></i> Reservasi Sekarang</button>
+                        <button onclick="showPage('reservation-page')" class="btn btn-primary"><i class="fas fa-robot"></i> Konsultasi AI</button>
                         <button onclick="showPage('tracking-page')" class="btn btn-outline"><i class="fas fa-search"></i> Lacak Servisan</button>
                     </div>
                     <!-- Trust Signals -->
@@ -393,7 +393,7 @@
                 <h2>Siap Memperbaiki Perangkat Anda?</h2>
                 <p>Konsultasi gratis, harga transparan, garansi terjamin. Hubungi kami sekarang!</p>
                 <button onclick="showPage('reservation-page')" class="btn-cta">
-                    <i class="fas fa-calendar-check"></i> Reservasi Sekarang
+                    <i class="fas fa-robot"></i> Konsultasi AI
                 </button>
             </div>
 
@@ -510,15 +510,100 @@
 
         <!-- 2. RESERVATION PAGE -->
         <section id="reservation-page" class="page-content hidden">
-            <div class="card text-center" style="max-width: 600px; margin: 0 auto; padding: 4rem 2rem;">
-                <div class="service-icon-wrapper" style="margin: 0 auto 1.5rem auto;"><i class="fas fa-calendar-check"></i></div>
-                <h2 style="margin-bottom: 1rem;">Reservasi Servis</h2>
-                <p style="color: var(--color-text-muted); margin-bottom: 2.5rem;">
-                    Untuk pelayanan yang lebih cepat dan responsif, silakan konsultasikan kerusakan perangkat Anda dan lakukan reservasi secara langsung melalui WhatsApp kami.
-                </p>
-                <a id="btnReservasiWa" href="#" target="_blank" class="btn btn-primary" style="background-color: #25D366; width: 100%; font-size: 1.125rem;">
-                    <i class="fab fa-whatsapp" style="font-size: 1.5rem;"></i> Reservasi via WhatsApp
-                </a>
+            <div class="card" style="max-width: 680px; margin: 0 auto; overflow: hidden;">
+                <!-- Header Form -->
+                <div style="background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-bg) 100%); padding: 2rem 2rem 1.5rem; position: relative; border-bottom: 1px solid var(--color-border);">
+                    <div style="position: absolute; top: -40px; right: -40px; width: 150px; height: 150px; background: var(--color-primary); border-radius: 50%; filter: blur(60px); opacity: 0.25;"></div>
+                    <div class="flex items-center gap-4" style="position: relative; z-index: 1;">
+                        <div class="service-icon-wrapper" style="background: rgba(13,148,136,0.2); color: var(--color-primary-light); flex-shrink: 0; margin-bottom: 0;">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div>
+                            <h3 style="color: white; font-size: 1.25rem; margin-bottom: 0.25rem;">Konsultasi & Reservasi Servis</h3>
+                            <p style="color: #94a3b8; font-size: 0.875rem; margin: 0;">Dapatkan diagnosa awal instan dari AI dan jadwalkan perbaikan</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Body -->
+                <div style="padding: 2rem;">
+                    <form id="consultationForm">
+                        <!-- Nama -->
+                        <div class="input-group mb-4">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="consNama" class="input-field" placeholder="Nama Lengkap Anda" required>
+                        </div>
+
+                        <!-- Device Type & Brand Grid -->
+                        <div class="input-group-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="input-group">
+                                <i class="fas fa-toolbox"></i>
+                                <select id="consDeviceType" class="input-field" required style="padding-left: 3rem; -webkit-appearance: none; -moz-appearance: none; appearance: none; cursor: pointer;">
+                                    <option value="" disabled selected>Pilih Jenis Perangkat</option>
+                                    <option value="Laptop">Laptop</option>
+                                    <option value="Smartphone">Smartphone (HP)</option>
+                                    <option value="PC Desktop">PC Desktop / Komputer</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                                <i class="fas fa-chevron-down" style="position: absolute; right: 1rem; left: auto; pointer-events: none; color: var(--color-text-muted); top: 50%; transform: translateY(-50%);"></i>
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-laptop"></i>
+                                <input type="text" id="consDeviceBrand" class="input-field" placeholder="Merek/Tipe (Cth: Asus ROG, iPhone 12)" required>
+                            </div>
+                        </div>
+
+                        <!-- Symptoms -->
+                        <div class="input-group mb-4" style="position: relative;">
+                            <textarea id="consSymptoms" class="input-field" placeholder="Jelaskan detail keluhan/gejala kerusakan (misal: layar berkedip, mati total, lemot sekali, tidak bisa ngecas, dll)..." required style="padding: 1rem 1rem 1rem 3rem; min-height: 120px; resize: vertical; line-height: 1.6;"></textarea>
+                            <i class="fas fa-exclamation-triangle" style="position: absolute; left: 1rem; top: 1.3rem; transform: none; color: var(--color-text-muted);"></i>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" id="btnAnalisisAi" class="btn btn-primary w-full" style="padding: 1rem; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <span id="btnAnalisisAiText"><i class="fas fa-robot"></i> Analisis Kerusakan (AI)</span>
+                            <div id="aiSpinner" class="spinner hidden" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                        </button>
+                    </form>
+
+                    <!-- Hasil Analisis AI (Tersembunyi secara default) -->
+                    <div id="consResultContainer" class="hidden card mt-8 animate-fade-in" style="background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-bg) 100%); border: 1px solid rgba(13, 148, 136, 0.3); overflow: hidden;">
+                        <!-- Header Card Hasil -->
+                        <div style="background: linear-gradient(135deg, rgba(13, 148, 136, 0.1) 0%, rgba(45, 212, 191, 0.1) 100%); padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; gap: 0.75rem;">
+                            <div class="service-icon-wrapper" style="margin-bottom: 0; background: rgba(13, 148, 136, 0.2); width: 44px; height: 44px; font-size: 1.1rem; flex-shrink: 0;">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div>
+                                <h3 style="font-size: 1.1rem; margin: 0; color: var(--color-primary-light);">Hasil Diagnosa Awal AI</h3>
+                                <p style="font-size: 0.78rem; color: var(--color-text-muted); margin: 0;">Dianalisis secara instan berdasarkan gejala perangkat</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Isi Analisis -->
+                        <div style="padding: 1.5rem; text-align: left;">
+                            <div style="margin-bottom: 1.25rem;">
+                                <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--color-text-muted); letter-spacing: 0.5px; display: block; margin-bottom: 0.4rem;">Kemungkinan Penyebab:</span>
+                                <p id="aiResultCause" style="font-weight: 700; font-size: 1.05rem; line-height: 1.5; color: var(--color-text); margin: 0;">-</p>
+                            </div>
+                            
+                            <div style="margin-bottom: 1.25rem;">
+                                <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--color-text-muted); letter-spacing: 0.5px; display: block; margin-bottom: 0.4rem;">Rekomendasi Tindakan / Solusi:</span>
+                                <div id="aiResultSolution" style="font-size: 0.95rem; line-height: 1.6; color: var(--color-text-muted); margin: 0;">-</div>
+                            </div>
+
+                            <div style="margin-bottom: 1.5rem; background: rgba(245, 158, 11, 0.08); border-left: 4px solid var(--color-warning); padding: 0.85rem 1rem; border-radius: 0 var(--radius-md) var(--radius-md) 0;">
+                                <p style="font-size: 0.8rem; color: #fbbf24; margin: 0; line-height: 1.5; font-weight: 500;">
+                                    ⚠️ <b>Penting:</b> Diagnosa ini bersifat perkiraan kasar. Pemeriksaan fisik langsung oleh teknisi kami tetap diperlukan untuk diagnosa 100% akurat beserta rincian biaya final.
+                                </p>
+                            </div>
+                            
+                            <!-- Tombol Kirim ke WhatsApp -->
+                            <a id="btnConsWaLink" href="#" target="_blank" class="btn btn-primary w-full" style="background-color: var(--color-success); padding: 1rem; font-size: 1.05rem; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <i class="fab fa-whatsapp" style="font-size: 1.35rem;"></i> Kirim Diagnosa & Hubungi WA
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 

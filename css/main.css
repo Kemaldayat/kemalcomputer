@@ -731,3 +731,31 @@ body.dark-mode .badge-pickedup { background-color: #1f2937; color: #9ca3af; }
     0% { transform: translateX(0); }
     100% { transform: translateX(calc(-350px * 4 - 20px * 4)); } /* Akan disesuaikan via JS jika perlu */
 }
+
+/* ── AI Consultation Form Custom Styles ── */
+select.input-field {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+}
+body.dark-mode select.input-field option {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+}
+select.input-field:invalid {
+    color: var(--color-text-muted) !important;
+}
+.ai-solution-list {
+    margin: 0.5rem 0 0.5rem 1.25rem;
+    padding: 0;
+    color: var(--color-text-muted);
+}
+.ai-solution-list li {
+    margin-bottom: 0.35rem;
+}
+body.dark-mode .kc-pay-card {
+    background: #1e293b;
+    border-color: var(--color-border);
+}
+
