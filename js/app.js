@@ -814,55 +814,117 @@ if (consultationForm) {
         const hasKeyword = (keywords) => keywords.some(kw => symptoms.includes(kw));
         
         if (hasKeyword(['mati total', 'matot', 'tidak menyala', 'tidak hidup', 'mati', 'no power'])) {
-            cause = "Masalah suplai daya (Power Supply), baterai drop, atau sirkuit motherboard mengalami konsleting (short circuit).";
-            solution = `<ul class="ai-solution-list">
-                <li><b>Cek Charger/Adaptor:</b> Coba gunakan charger/adaptor cadangan yang dipastikan normal untuk memastikan adaptor lama tidak mati.</li>
-                <li><b>Pengecekan Motherboard:</b> Teknisi kami perlu mengukur sirkuit IC Power menggunakan multimeter untuk menemukan titik komponen yang konslet.</li>
-                <li><b>Estimasi Waktu:</b> 1 - 3 hari kerja (tergantung ketersediaan sparepart motherboard).</li>
-            </ul>`;
+            if (type === "Smartphone") {
+                cause = "Kerusakan IC Power, baterai drop total, atau terjadi short circuit (korsleting) pada logic board/mesin HP.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Cek Pengisian Daya:</b> Coba cas menggunakan kabel & kepala charger adapter lain yang dipastikan berfungsi normal.</li>
+                    <li><b>Pengecekan Mesin & IC Power:</b> Teknisi perlu membongkar unit HP untuk mengukur tegangan listrik sirkuit IC Power menggunakan multimeter.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 2 hari kerja (tergantung tingkat kerumitan perbaikan jalur sirkuit).</li>
+                </ul>`;
+            } else {
+                cause = "Masalah suplai daya (Power Supply), baterai drop, atau sirkuit motherboard mengalami konsleting (short circuit).";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Cek Charger/Adaptor:</b> Coba gunakan charger/adaptor cadangan yang dipastikan normal untuk memastikan adaptor lama tidak mati.</li>
+                    <li><b>Pengecekan Motherboard:</b> Teknisi kami perlu mengukur sirkuit IC Power menggunakan multimeter untuk menemukan titik komponen yang konslet.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 3 hari kerja (tergantung ketersediaan sparepart motherboard).</li>
+                </ul>`;
+            }
         } else if (hasKeyword(['panas', 'overheat', 'mati sendiri', 'kipas bising', 'suara keras', 'kipas berisik', 'overheating'])) {
-            cause = "Sistem pembuangan panas tersumbat debu, kipas CPU bermasalah, atau Thermal Paste pada processor telah kering/mengeras.";
-            solution = `<ul class="ai-solution-list">
-                <li><b>Thermal Cleaning:</b> Pembersihan debu pada kipas exhaust dan heatsink laptop/PC.</li>
-                <li><b>Repaste Thermal:</b> Penggantian Thermal Paste kering dengan pasta thermal berkualitas tinggi (seperti Arctic/Noctua) agar penyaluran panas kembali optimal.</li>
-                <li><b>Estimasi Waktu:</b> 1 - 2 Jam (Bisa ditunggu).</li>
-            </ul>`;
+            if (type === "Smartphone") {
+                cause = "Baterai bocor/lemah, penggunaan aplikasi berat (game/multitasking) terus-menerus, atau sirkuit pengisian daya (IC Charger) bermasalah.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Dinginkan & Tutup Aplikasi:</b> Istirahatkan HP dari aktivitas saat dicas, turunkan kecerahan layar, dan bersihkan aplikasi background.</li>
+                    <li><b>Ganti Baterai / Cek IC Charger:</b> Jika HP tetap terasa panas tinggi meski dalam posisi mati/standby, kemungkinan baterai rusak atau IC charger bocor dan perlu diganti.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 2 Jam (Bisa ditunggu).</li>
+                </ul>`;
+            } else {
+                cause = "Sistem pembuangan panas tersumbat debu, kipas CPU bermasalah, atau Thermal Paste pada processor telah kering/mengeras.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Thermal Cleaning:</b> Pembersihan debu pada kipas exhaust dan heatsink laptop/PC.</li>
+                    <li><b>Repaste Thermal:</b> Penggantian Thermal Paste kering dengan pasta thermal berkualitas tinggi (seperti Arctic/Noctua) agar penyaluran panas kembali optimal.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 2 Jam (Bisa ditunggu).</li>
+                </ul>`;
+            }
         } else if (hasKeyword(['lemot', 'lambat', 'loading lama', 'lola', 'lelet', 'lama', 'lamban'])) {
-            cause = "Kondisi Harddisk (HDD) sudah melemah/bad sector, kapasitas RAM terlalu kecil untuk multitasking, atau sistem operasi dipenuhi file sampah/virus.";
-            solution = `<ul class="ai-solution-list">
-                <li><b>Upgrade ke SSD:</b> Mengganti Harddisk lama dengan SSD (Solid State Drive) akan meningkatkan kecepatan laptop/PC Anda hingga 10x lipat.</li>
-                <li><b>Upgrade RAM:</b> Menambah RAM (misal menjadi 8GB atau 16GB) agar aktivitas multitasking berjalan lancar.</li>
-                <li><b>Instal Ulang OS & Tuning:</b> Menyegarkan kembali Windows untuk menghapus bloatware, file sampah, dan mengoptimalkan registry.</li>
-                <li><b>Estimasi Waktu:</b> 1 - 3 Jam (Bisa ditunggu).</li>
-            </ul>`;
+            if (type === "Smartphone") {
+                cause = "Kapasitas penyimpanan internal (ROM) hampir penuh, RAM penuh oleh aplikasi latar belakang, atau kesehatan chip memori eMMC/UFS menurun.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Bersihkan Penyimpanan:</b> Hapus file/aplikasi sampah, pindahkan foto & video ke komputer atau cloud storage.</li>
+                    <li><b>Factory Reset (Reset Pabrik):</b> Setel ulang sistem untuk membersihkan berkas cache menumpuk dan malware iklan.</li>
+                    <li><b>Ganti Chip eMMC/UFS:</b> Jika HP sering hang total, freeze lama, atau restart sendiri secara konstan, chip penyimpanan mungkin melemah.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 2 Jam.</li>
+                </ul>`;
+            } else {
+                cause = "Kondisi Harddisk (HDD) sudah melemah/bad sector, kapasitas RAM terlalu kecil untuk multitasking, atau sistem operasi dipenuhi file sampah/virus.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Upgrade ke SSD:</b> Mengganti Harddisk lama dengan SSD (Solid State Drive) akan meningkatkan kecepatan laptop/PC Anda hingga 10x lipat.</li>
+                    <li><b>Upgrade RAM:</b> Menambah RAM (misal menjadi 8GB atau 16GB) agar aktivitas multitasking berjalan lancar.</li>
+                    <li><b>Instal Ulang OS & Tuning:</b> Menyegarkan kembali Windows untuk menghapus bloatware, file sampah, dan mengoptimalkan registry.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 3 Jam (Bisa ditunggu).</li>
+                </ul>`;
+            }
         } else if (hasKeyword(['layar', 'lcd', 'pecah', 'bergaris', 'kedip', 'flicker', 'gelap', 'blank', 'retak'])) {
-            cause = "Kerusakan pada panel LCD/LED, soket kabel fleksibel layar longgar/korosi, atau kerusakan chipset grafis (GPU/VGA).";
-            solution = `<ul class="ai-solution-list">
-                <li><b>Ganti Panel LCD:</b> Jika layar pecah dalam, terdapat garis warna-warni permanen, atau tompel hitam, solusi satu-satunya adalah ganti panel baru.</li>
-                <li><b>Pembersihan/Reposition Soket:</b> Jika layar berkedip hanya saat layar digerakkan (buka-tutup laptop), kemungkinan kabel fleksibel longgar.</li>
-                <li><b>Estimasi Waktu:</b> 1 - 2 Jam (jika tipe LCD ready stock).</li>
-            </ul>`;
+            if (type === "Smartphone") {
+                cause = "Panel LCD retak di dalam akibat benturan, kaca touchscreen pecah, atau soket kabel fleksibel layar ke mesin longgar.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Ganti LCD Set:</b> Mengganti satu set modul panel LCD dan kaca touchscreen dengan komponen baru berkualitas tinggi.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 2 Jam (bisa ditunggu jika persediaan tipe LCD tersedia).</li>
+                </ul>`;
+            } else {
+                cause = "Kerusakan pada panel LCD/LED, soket kabel fleksibel layar longgar/korosi, atau kerusakan chipset grafis (GPU/VGA).";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Ganti Panel LCD:</b> Jika layar pecah dalam, terdapat garis warna-warni permanen, atau tompel hitam, solusi satu-satunya adalah ganti panel baru.</li>
+                    <li><b>Pembersihan/Reposition Soket:</b> Jika layar berkedip hanya saat layar digerakkan (buka-tutup laptop), kemungkinan kabel fleksibel longgar.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 2 Jam (jika tipe LCD ready stock).</li>
+                </ul>`;
+            }
         } else if (hasKeyword(['baterai', 'battery', 'drop', 'cepat habis', 'kembung', 'batre', 'charge', 'cas', 'ngecas'])) {
-            cause = "Penurunan kesehatan sel baterai (Life cycle baterai telah habis) atau kendala pada modul IC Charging motherboard.";
-            solution = `<ul class="ai-solution-list">
-                <li><b>Ganti Baterai:</b> Penggantian unit baterai baru (original / premium) bergaransi resmi.</li>
-                <li><b>Kalibrasi Daya:</b> Pengecekan arus pengisian daya dari adaptor ke baterai untuk memastikan IC charger normal.</li>
-                <li><b>Estimasi Waktu:</b> 30 - 60 Menit.</li>
-            </ul>`;
+            if (type === "Smartphone") {
+                cause = "Usia sel baterai telah habis (kembung/drop) atau kerusakan pada komponen port USB charger bawah.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Ganti Baterai HP:</b> Penggantian unit baterai baru bergaransi (kualitas original/premium double power).</li>
+                    <li><b>Ganti Papan USB Board:</b> Jika dicas longgar, tidak masuk daya, atau harus ditekuk, konektor port charger HP harus diganti.</li>
+                    <li><b>Estimasi Waktu:</b> 30 - 60 Menit.</li>
+                </ul>`;
+            } else {
+                cause = "Penurunan kesehatan sel baterai (Life cycle baterai telah habis) atau kendala pada modul IC Charging motherboard.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Ganti Baterai:</b> Penggantian unit baterai baru (original / premium) bergaransi resmi.</li>
+                    <li><b>Kalibrasi Daya:</b> Pengecekan arus pengisian daya dari adaptor ke baterai untuk memastikan IC charger normal.</li>
+                    <li><b>Estimasi Waktu:</b> 30 - 60 Menit.</li>
+                </ul>`;
+            }
         } else if (hasKeyword(['keyboard', 'pencet sendiri', 'tombol macet', 'tuts', 'eror', 'ketik'])) {
-            cause = "Jalur sirkuit membran keyboard mengalami korsleting (sering disebabkan kelembapan atau kemasukan air/kotoran).";
-            solution = `<ul class="ai-solution-list">
-                <li><b>Ganti Keyboard Unit:</b> Keyboard laptop yang korslet sebagian besar harus diganti satu set baru karena sirkuit membran tidak bisa disolder sebagian.</li>
-                <li><b>Pembersihan Kontak:</b> Jika hanya satu tombol macet karena kotoran, teknisi akan mencoba membersihkan switch di bawah tuts keyboard.</li>
-                <li><b>Estimasi Waktu:</b> 1 - 2 Jam.</li>
-            </ul>`;
+            if (type === "Smartphone") {
+                cause = "Tombol fisik (Power, Volume +/-) aus, macet akibat kotoran, atau kabel fleksibel tombol dalam putus.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Ganti Kabel Fleksibel Tombol:</b> Penggantian satu set modul fleksibel tombol samping luar dan dalam.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 2 Jam.</li>
+                </ul>`;
+            } else {
+                cause = "Jalur sirkuit membran keyboard mengalami korsleting (sering disebabkan kelembapan atau kemasukan air/kotoran).";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Ganti Keyboard Unit:</b> Keyboard laptop yang korslet sebagian besar harus diganti satu set baru karena sirkuit membran tidak bisa disolder sebagian.</li>
+                    <li><b>Pembersihan Kontak:</b> Jika hanya satu tombol macet karena kotoran, teknisi akan mencoba membersihkan switch di bawah tuts keyboard.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 2 Jam.</li>
+                </ul>`;
+            }
         } else if (hasKeyword(['virus', 'iklan', 'hacker', 'ransomware', 'malware', 'pop-up'])) {
-            cause = "Sistem terinfeksi malware, ransomware, atau adware berbahaya akibat mengunduh file/aplikasi bajakan secara sembarangan.";
-            solution = `<ul class="ai-solution-list">
-                <li><b>Pembersihan Malware:</b> Deep scanning sistem dan pembersihan menggunakan software pembersih malware profesional.</li>
-                <li><b>Instal Ulang Sistem Operasi:</b> Langkah paling aman agar sistem benar-benar bersih dari virus tersembunyi yang merusak file registry.</li>
-                <li><b>Estimasi Waktu:</b> 1 - 2 Jam.</li>
-            </ul>`;
+            if (type === "Smartphone") {
+                cause = "Infeksi Adware (virus iklan) akibat salah mengklik tautan web, atau terdapat aplikasi berjalan mencurigakan (bloatware/malware).";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Cari & Hapus Aplikasi Aneh:</b> Periksa pengaturan aplikasi di HP Anda, uninstall aplikasi mencurigakan tanpa logo/nama yang sering memicu iklan.</li>
+                    <li><b>Factory Reset:</b> Langkah pamungkas untuk membersihkan total seluruh ancaman virus pada HP secara aman.</li>
+                    <li><b>Estimasi Waktu:</b> 1 Jam.</li>
+                </ul>`;
+            } else {
+                cause = "Sistem terinfeksi malware, ransomware, atau adware berbahaya akibat mengunduh file/aplikasi bajakan secara sembarangan.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Pembersihan Malware:</b> Deep scanning sistem dan pembersihan menggunakan software pembersih malware profesional.</li>
+                    <li><b>Instal Ulang Sistem Operasi:</b> Langkah paling aman agar sistem benar-benar bersih dari virus tersembunyi yang merusak file registry.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 2 Jam.</li>
+                </ul>`;
+            }
         } else if (type === "Smartphone") {
             cause = "Masalah umum pada smartphone seperti baterai bocor, port charger USB longgar/kotor, atau kaca touchscreen pecah.";
             solution = `<ul class="ai-solution-list">
