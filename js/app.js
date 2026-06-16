@@ -801,15 +801,6 @@ if (consultationForm) {
         spinner.classList.remove('hidden');
         resultContainer.classList.add('hidden');
         
-        // Pura-pura load 1.2 detik agar ada efek komputasi AI premium
-        await new Promise(r => setTimeout(r, 1200));
-        
-        let cause = "Kerusakan belum teridentifikasi secara spesifik.";
-        let solution = `<ul class="ai-solution-list">
-            <li>Kerusakan komponen kelistrikan di motherboard, IC power, baterai drop, atau OS corrupt.</li>
-            <li>Saran Tindakan: Silakan bawa perangkat Anda ke Kemal Computer untuk pemeriksaan fisik secara presisi oleh teknisi kami.</li>
-        </ul>`;
-        
         // Core Rules Engine
         const hasKeyword = (keywords) => keywords.some(kw => symptoms.includes(kw));
         
@@ -821,11 +812,18 @@ if (consultationForm) {
                     <li><b>Pengecekan Mesin & IC Power:</b> Teknisi perlu membongkar unit HP untuk mengukur tegangan listrik sirkuit IC Power menggunakan multimeter.</li>
                     <li><b>Estimasi Waktu:</b> 1 - 2 hari kerja (tergantung tingkat kerumitan perbaikan jalur sirkuit).</li>
                 </ul>`;
-            } else {
-                cause = "Masalah suplai daya (Power Supply), baterai drop, atau sirkuit motherboard mengalami konsleting (short circuit).";
+            } else if (type === "PC Desktop") {
+                cause = "Power Supply Unit (PSU) mati/tidak stabil, kabel power rusak, tombol power casing bermasalah, atau korsleting pada motherboard PC.";
                 solution = `<ul class="ai-solution-list">
-                    <li><b>Cek Charger/Adaptor:</b> Coba gunakan charger/adaptor cadangan yang dipastikan normal untuk memastikan adaptor lama tidak mati.</li>
-                    <li><b>Pengecekan Motherboard:</b> Teknisi kami perlu mengukur sirkuit IC Power menggunakan multimeter untuk menemukan titik komponen yang konslet.</li>
+                    <li><b>Uji Jumper PSU:</b> Teknisi akan menguji PSU secara manual menggunakan klip kertas/tester untuk memastikan kipas PSU berputar.</li>
+                    <li><b>Cek Tombol Power:</b> Menghubungkan pin power switch secara langsung di motherboard untuk menguji kerusakan tombol casing.</li>
+                    <li><b>Estimasi Waktu:</b> 1 hari kerja.</li>
+                </ul>`;
+            } else {
+                cause = "Masalah suplai daya (Power Supply), baterai laptop mati total, adaptor rusak, atau sirkuit motherboard mengalami short circuit.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Cek Adaptor:</b> Coba gunakan adaptor cadangan yang dipastikan normal untuk memastikan adaptor lama tidak mati.</li>
+                    <li><b>Pengecekan Motherboard:</b> Teknisi kami perlu mengukur sirkuit IC Power & MOSFET menggunakan multimeter untuk menemukan titik komponen yang konslet.</li>
                     <li><b>Estimasi Waktu:</b> 1 - 3 hari kerja (tergantung ketersediaan sparepart motherboard).</li>
                 </ul>`;
             }
@@ -837,15 +835,22 @@ if (consultationForm) {
                     <li><b>Ganti Baterai / Cek IC Charger:</b> Jika HP tetap terasa panas tinggi meski dalam posisi mati/standby, kemungkinan baterai rusak atau IC charger bocor dan perlu diganti.</li>
                     <li><b>Estimasi Waktu:</b> 1 - 2 Jam (Bisa ditunggu).</li>
                 </ul>`;
+            } else if (type === "PC Desktop") {
+                cause = "Kipas pendingin (CPU Cooler) mati, pompa liquid cooling (AIO) macet, aliran udara casing tersumbat debu, atau thermal paste kering.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Pembersihan Debu & Kipas:</b> Pembersihan total debu pada fan casing, radiator watercooling, dan filter udara PC.</li>
+                    <li><b>Ganti Thermal Paste & Cek Pompa:</b> Mengganti thermal paste processor dengan kualitas premium dan memastikan pompa watercooling berfungsi normal.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 2 Jam.</li>
+                </ul>`;
             } else {
-                cause = "Sistem pembuangan panas tersumbat debu, kipas CPU bermasalah, atau Thermal Paste pada processor telah kering/mengeras.";
+                cause = "Sistem pembuangan panas tersumbat debu tebal, kipas pendingin laptop macet, atau Thermal Paste pada processor telah kering/mengeras.";
                 solution = `<ul class="ai-solution-list">
                     <li><b>Thermal Cleaning:</b> Pembersihan debu pada kipas exhaust dan heatsink laptop/PC.</li>
                     <li><b>Repaste Thermal:</b> Penggantian Thermal Paste kering dengan pasta thermal berkualitas tinggi (seperti Arctic/Noctua) agar penyaluran panas kembali optimal.</li>
                     <li><b>Estimasi Waktu:</b> 1 - 2 Jam (Bisa ditunggu).</li>
                 </ul>`;
             }
-        } else if (hasKeyword(['lemot', 'lambat', 'loading lama', 'lola', 'lelet', 'lama', 'lamban'])) {
+        } else if (hasKeyword(['lemot', 'lambat', 'loading lama', 'lola', 'lelet', 'lama', 'lamban', 'freeze', 'hang'])) {
             if (type === "Smartphone") {
                 cause = "Kapasitas penyimpanan internal (ROM) hampir penuh, RAM penuh oleh aplikasi latar belakang, atau kesehatan chip memori eMMC/UFS menurun.";
                 solution = `<ul class="ai-solution-list">
@@ -853,6 +858,13 @@ if (consultationForm) {
                     <li><b>Factory Reset (Reset Pabrik):</b> Setel ulang sistem untuk membersihkan berkas cache menumpuk dan malware iklan.</li>
                     <li><b>Ganti Chip eMMC/UFS:</b> Jika HP sering hang total, freeze lama, atau restart sendiri secara konstan, chip penyimpanan mungkin melemah.</li>
                     <li><b>Estimasi Waktu:</b> 1 - 2 Jam.</li>
+                </ul>`;
+            } else if (type === "PC Desktop") {
+                cause = "Suhu prosesor terlalu tinggi (thermal throttling), Harddisk (HDD) sudah melemah/bad sector, RAM kurang, atau Windows bermasalah.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Upgrade ke SSD NVMe/SATA:</b> Mengganti drive Windows ke SSD akan mempercepat booting dan loading aplikasi hingga 10x lipat.</li>
+                    <li><b>Upgrade RAM & Tuning:</b> Menambah RAM (misal menjadi 16GB dual-channel) untuk melancarkan multitasking game/desain.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 3 Jam.</li>
                 </ul>`;
             } else {
                 cause = "Kondisi Harddisk (HDD) sudah melemah/bad sector, kapasitas RAM terlalu kecil untuk multitasking, atau sistem operasi dipenuhi file sampah/virus.";
@@ -863,12 +875,19 @@ if (consultationForm) {
                     <li><b>Estimasi Waktu:</b> 1 - 3 Jam (Bisa ditunggu).</li>
                 </ul>`;
             }
-        } else if (hasKeyword(['layar', 'lcd', 'pecah', 'bergaris', 'kedip', 'flicker', 'gelap', 'blank', 'retak'])) {
+        } else if (hasKeyword(['layar', 'lcd', 'pecah', 'bergaris', 'kedip', 'flicker', 'gelap', 'blank', 'retak', 'touchscreen'])) {
             if (type === "Smartphone") {
                 cause = "Panel LCD retak di dalam akibat benturan, kaca touchscreen pecah, atau soket kabel fleksibel layar ke mesin longgar.";
                 solution = `<ul class="ai-solution-list">
                     <li><b>Ganti LCD Set:</b> Mengganti satu set modul panel LCD dan kaca touchscreen dengan komponen baru berkualitas tinggi.</li>
                     <li><b>Estimasi Waktu:</b> 1 - 2 Jam (bisa ditunggu jika persediaan tipe LCD tersedia).</li>
+                </ul>`;
+            } else if (type === "PC Desktop") {
+                cause = "Kabel VGA/HDMI monitor rusak/longgar, monitor LCD rusak, atau kartu grafis (GPU Card/VGA Card) rusak/overheat.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Cek Kabel & Monitor:</b> Uji PC menggunakan kabel monitor lain atau pasang monitor ke perangkat lain untuk memastikan layar normal.</li>
+                    <li><b>Uji GPU Card:</b> Teknisi akan menguji GPU Card di slot PCIe lain atau membersihkan pin tembaga VGA card menggunakan penghapus/cairan khusus.</li>
+                    <li><b>Estimasi Waktu:</b> 1 Jam.</li>
                 </ul>`;
             } else {
                 cause = "Kerusakan pada panel LCD/LED, soket kabel fleksibel layar longgar/korosi, atau kerusakan chipset grafis (GPU/VGA).";
@@ -878,13 +897,19 @@ if (consultationForm) {
                     <li><b>Estimasi Waktu:</b> 1 - 2 Jam (jika tipe LCD ready stock).</li>
                 </ul>`;
             }
-        } else if (hasKeyword(['baterai', 'battery', 'drop', 'cepat habis', 'kembung', 'batre', 'charge', 'cas', 'ngecas'])) {
+        } else if (hasKeyword(['baterai', 'battery', 'drop', 'cepat habis', 'kembung', 'batre', 'charge', 'cas', 'ngecas', 'kabel power', 'cmos'])) {
             if (type === "Smartphone") {
                 cause = "Usia sel baterai telah habis (kembung/drop) atau kerusakan pada komponen port USB charger bawah.";
                 solution = `<ul class="ai-solution-list">
                     <li><b>Ganti Baterai HP:</b> Penggantian unit baterai baru bergaransi (kualitas original/premium double power).</li>
                     <li><b>Ganti Papan USB Board:</b> Jika dicas longgar, tidak masuk daya, atau harus ditekuk, konektor port charger HP harus diganti.</li>
                     <li><b>Estimasi Waktu:</b> 30 - 60 Menit.</li>
+                </ul>`;
+            } else if (type === "PC Desktop") {
+                cause = "Baterai CMOS CR2032 pada motherboard habis, menyebabkan jam dan tanggal komputer selalu ter-reset ke tahun lama setiap dinyalakan.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Ganti Baterai CMOS:</b> Penggantian baterai kancing CMOS di motherboard PC untuk menyimpan konfigurasi BIOS.</li>
+                    <li><b>Estimasi Waktu:</b> 15 Menit.</li>
                 </ul>`;
             } else {
                 cause = "Penurunan kesehatan sel baterai (Life cycle baterai telah habis) atau kendala pada modul IC Charging motherboard.";
@@ -894,12 +919,18 @@ if (consultationForm) {
                     <li><b>Estimasi Waktu:</b> 30 - 60 Menit.</li>
                 </ul>`;
             }
-        } else if (hasKeyword(['keyboard', 'pencet sendiri', 'tombol macet', 'tuts', 'eror', 'ketik'])) {
+        } else if (hasKeyword(['keyboard', 'pencet sendiri', 'tombol macet', 'tuts', 'eror', 'ketik', 'on off', 'volume'])) {
             if (type === "Smartphone") {
                 cause = "Tombol fisik (Power, Volume +/-) aus, macet akibat kotoran, atau kabel fleksibel tombol dalam putus.";
                 solution = `<ul class="ai-solution-list">
                     <li><b>Ganti Kabel Fleksibel Tombol:</b> Penggantian satu set modul fleksibel tombol samping luar dan dalam.</li>
                     <li><b>Estimasi Waktu:</b> 1 - 2 Jam.</li>
+                </ul>`;
+            } else if (type === "PC Desktop") {
+                cause = "Keyboard eksternal (USB/Wireless) kotor, switch tombol macet, atau kerusakan sirkuit controller keyboard.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Pembersihan Switch:</b> Pembersihan debu/kotoran di bawah keycap. Jika menggunakan keyboard mekanik, switch yang mati bisa disolder ulang/diganti (*hotswap*).</li>
+                    <li><b>Estimasi Waktu:</b> 15 - 30 Menit.</li>
                 </ul>`;
             } else {
                 cause = "Jalur sirkuit membran keyboard mengalami korsleting (sering disebabkan kelembapan atau kemasukan air/kotoran).";
@@ -907,6 +938,94 @@ if (consultationForm) {
                     <li><b>Ganti Keyboard Unit:</b> Keyboard laptop yang korslet sebagian besar harus diganti satu set baru karena sirkuit membran tidak bisa disolder sebagian.</li>
                     <li><b>Pembersihan Kontak:</b> Jika hanya satu tombol macet karena kotoran, teknisi akan mencoba membersihkan switch di bawah tuts keyboard.</li>
                     <li><b>Estimasi Waktu:</b> 1 - 2 Jam.</li>
+                </ul>`;
+            }
+        } else if (hasKeyword(['wifi', 'sinyal', 'jaringan', 'internet', 'putus', 'bluetooth', 'konek', 'lan', 'baseband', 'sim card'])) {
+            if (type === "Smartphone") {
+                cause = "Kerusakan pada IC Baseband (sinyal hilang/Searching terus), IC Wi-Fi/Bluetooth rusak, atau pin slot kartu SIM patah.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Ganti/Reball IC Baseband:</b> Perbaikan chip jaringan pada mesin HP jika status sinyal "Tidak Ada Layanan".</li>
+                    <li><b>Ganti Slot SIM:</b> Mengganti pembaca kartu SIM jika HP tidak mendeteksi kartu SIM sama sekali.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 3 hari kerja (karena butuh pengerjaan mikroskopis pada sirkuit).</li>
+                </ul>`;
+            } else if (type === "PC Desktop") {
+                cause = "Kabel LAN putus/longgar, port Ethernet RJ45 di motherboard rusak, atau PC tidak dipasangi receiver Wi-Fi.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Pasang Wi-Fi USB/PCIe:</b> Memasang adapter Wi-Fi tambahan agar PC bisa menangkap sinyal nirkabel.</li>
+                    <li><b>Cek Kabel LAN:</b> Mengganti konektor RJ45 atau kabel LAN baru, serta memeriksa driver LAN Realtek.</li>
+                    <li><b>Estimasi Waktu:</b> 30 Merit.</li>
+                </ul>`;
+            } else {
+                cause = "Driver kartu Wi-Fi corrupt/usang, modul Wi-Fi PCIe laptop rusak, atau kabel antena Wi-Fi internal terputus.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Update Driver & Re-seat Card:</b> Instal ulang driver Wi-Fi laptop. Jika gagal, teknisi akan membersihkan pin tembaga modul Wi-Fi internal.</li>
+                    <li><b>Estimasi Waktu:</b> 1 Jam.</li>
+                </ul>`;
+            }
+        } else if (hasKeyword(['suara', 'speaker', 'audio', 'mic', 'mikrofon', 'srek', 'pecah', 'bunyi', 'headphone'])) {
+            if (type === "Smartphone") {
+                cause = "Membran speaker HP pecah (karena air/benturan), lubang mic bawah tersumbat debu, atau IC Audio di logic board mengalami kerusakan.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Ganti Speaker/Buzzer:</b> Mengganti komponen speaker musik atau earpiece telepon yang suara pecah/mati.</li>
+                    <li><b>Pembersihan Mic:</b> Pembersihan lubang mikrofon dari debu/kotoran eksternal.</li>
+                    <li><b>Estimasi Waktu:</b> 1 Jam.</li>
+                </ul>`;
+            } else if (type === "PC Desktop") {
+                cause = "Pengaturan default output audio Windows salah, speaker aktif eksternal mati, atau port jack 3.5mm motherboard rusak.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Cek Audio Control Panel:</b> Memastikan device default mengarah ke speaker aktif yang terhubung.</li>
+                    <li><b>Ganti Soundcard USB:</b> Menggunakan soundcard USB eksternal murah untuk mem-bypass port audio motherboard yang rusak.</li>
+                    <li><b>Estimasi Waktu:</b> 15 Menit.</li>
+                </ul>`;
+            } else {
+                cause = "Speaker internal laptop sobek/pecah, Realtek Audio driver mengalami crash, atau port audio jack laptop korosi/kotor.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Ganti Speaker Internal:</b> Mengganti sepasang speaker bawaan laptop dengan unit baru agar suara kembali jernih.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 2 Jam.</li>
+                </ul>`;
+            }
+        } else if (hasKeyword(['kamera', 'camera', 'webcam', 'lens', 'burem'])) {
+            if (type === "Smartphone") {
+                cause = "Kaca pelindung lensa kamera baret/kotor, aplikasi kamera crash, atau sensor modul kamera dalam rusak akibat benturan.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Ganti Kaca Lensa Kamera:</b> Jika hasil foto buram hanya karena kaca luar baret, cukup mengganti kaca kamera luarnya saja.</li>
+                    <li><b>Ganti Modul Kamera:</b> Mengganti unit modul kamera dalam (kamera depan/belakang) jika kamera tidak bisa dibuka/blank hitam.</li>
+                    <li><b>Estimasi Waktu:</b> 1 Jam.</li>
+                </ul>`;
+            } else if (type === "PC Desktop") {
+                cause = "Kabel USB webcam eksternal longgar, driver webcam tidak terdeteksi, atau webcam rusak.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Uji Port USB Lain:</b> Memindahkan kabel webcam ke port USB utama di bagian belakang PC.</li>
+                    <li><b>Estimasi Waktu:</b> 15 Menit.</li>
+                </ul>`;
+            } else {
+                cause = "Privacy shutter webcam fisik tertutup, webcam dinonaktifkan lewat Fn Hotkey, atau kabel fleksibel kamera laptop putus.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Aktifkan Shutter & Fn Key:</b> Membuka penutup fisik kamera laptop atau mengaktifkan tombol Fn kamera.</li>
+                    <li><b>Ganti Modul Webcam:</b> Mengganti modul kamera webcam internal laptop yang terletak di bezel atas layar.</li>
+                    <li><b>Estimasi Waktu:</b> 1 Jam.</li>
+                </ul>`;
+            }
+        } else if (hasKeyword(['air', 'cairan', 'kopi', 'teh', 'hujan', 'basah', 'tumpah', 'kemasukan', 'nyemplung'])) {
+            if (type === "Smartphone") {
+                cause = "HP kemasukan air/cairan, memicu korosi (karat) instan pada logic board dan korsleting sirkuit.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>SEGERA MATIKAN HP:</b> Jangan mencoba menyalakan HP atau mengecasnya agar kerusakan tidak menyebar luas.</li>
+                    <li><b>Pembersihan Korosi:</b> Teknisi akan membongkar total, membersihkan mesin menggunakan cairan pembersih karat khusus, dan melacak jalur sirkuit yang short.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 2 hari kerja.</li>
+                </ul>`;
+            } else if (type === "PC Desktop") {
+                cause = "Kebocoran sistem water cooling (AIO) mengenai komponen GPU/Motherboard, atau cairan tumpah ke PC casing.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>Matikan Power Supply:</b> Segera cabut kabel listrik. Bongkar seluruh komponen untuk dibersihkan dengan cairan pembersih kelistrikan (Contact Cleaner).</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 2 hari kerja.</li>
+                </ul>`;
+            } else {
+                cause = "Cairan tumpah ke keyboard laptop dan merembes masuk ke bagian sensitif motherboard laptop.";
+                solution = `<ul class="ai-solution-list">
+                    <li><b>LEPASKAN CHARGER & MATIKAN LAPTOP:</b> Jangan pernah mencoba menyalakan laptop yang basah. Balikkan laptop membentuk huruf "V" terbalik agar air mengalir keluar.</li>
+                    <li><b>Bongkar Total:</b> Laptop harus segera dibongkar total oleh teknisi untuk mengeringkan sirkuit dan membersihkan karat pada motherboard.</li>
+                    <li><b>Estimasi Waktu:</b> 1 - 3 hari kerja.</li>
                 </ul>`;
             }
         } else if (hasKeyword(['virus', 'iklan', 'hacker', 'ransomware', 'malware', 'pop-up'])) {
