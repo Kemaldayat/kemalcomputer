@@ -801,6 +801,15 @@ if (consultationForm) {
         spinner.classList.remove('hidden');
         resultContainer.classList.add('hidden');
         
+        // Pura-pura load 1.2 detik agar ada efek komputasi AI premium
+        await new Promise(r => setTimeout(r, 1200));
+        
+        let cause = "Kerusakan belum teridentifikasi secara spesifik.";
+        let solution = `<ul class="ai-solution-list">
+            <li>Kerusakan komponen kelistrikan di motherboard, IC power, baterai drop, atau OS corrupt.</li>
+            <li>Saran Tindakan: Silakan bawa perangkat Anda ke Kemal Computer untuk pemeriksaan fisik secara presisi oleh teknisi kami.</li>
+        </ul>`;
+        
         // Core Rules Engine
         const hasKeyword = (keywords) => keywords.some(kw => symptoms.includes(kw));
         
