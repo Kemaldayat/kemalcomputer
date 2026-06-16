@@ -804,6 +804,9 @@ if (consultationForm) {
         // Pura-pura load 1.2 detik agar ada efek komputasi AI premium
         await new Promise(r => setTimeout(r, 1200));
         
+        let cause = "";
+        let solution = "";
+        
         // Core Rules Engine - Accumulate all matched issues
         const hasKeyword = (keywords) => keywords.some(kw => symptoms.includes(kw));
         let matched = [];
