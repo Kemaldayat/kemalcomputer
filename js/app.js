@@ -953,7 +953,7 @@ if (consultationForm) {
                 solution = `<ul class="ai-solution-list">
                     <li><b>Pasang Wi-Fi USB/PCIe:</b> Memasang adapter Wi-Fi tambahan agar PC bisa menangkap sinyal nirkabel.</li>
                     <li><b>Cek Kabel LAN:</b> Mengganti konektor RJ45 atau kabel LAN baru, serta memeriksa driver LAN Realtek.</li>
-                    <li><b>Estimasi Waktu:</b> 30 Merit.</li>
+                    <li><b>Estimasi Waktu:</b> 30 Menit.</li>
                 </ul>`;
             } else {
                 cause = "Driver kartu Wi-Fi corrupt/usang, modul Wi-Fi PCIe laptop rusak, atau kabel antena Wi-Fi internal terputus.";
