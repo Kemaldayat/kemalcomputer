@@ -804,12 +804,6 @@ if (consultationForm) {
         // Pura-pura load 1.2 detik agar ada efek komputasi AI premium
         await new Promise(r => setTimeout(r, 1200));
         
-        let cause = "Kerusakan belum teridentifikasi secara spesifik.";
-        let solution = `<ul class="ai-solution-list">
-            <li>Kerusakan komponen kelistrikan di motherboard, IC power, baterai drop, atau OS corrupt.</li>
-            <li>Saran Tindakan: Silakan bawa perangkat Anda ke Kemal Computer untuk pemeriksaan fisik secara presisi oleh teknisi kami.</li>
-        </ul>`;
-        
         // Core Rules Engine - Accumulate all matched issues
         const hasKeyword = (keywords) => keywords.some(kw => symptoms.includes(kw));
         let matched = [];
@@ -820,6 +814,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Mati Total / Kendala Daya",
                     cause: "Kerusakan IC Power, baterai drop total, atau terjadi short circuit (korsleting) pada logic board/mesin HP.",
+                    price: "Rp 250.000 - Rp 650.000",
                     solutions: [
                         "<b>Cek Pengisian Daya:</b> Coba cas menggunakan kabel & kepala charger adapter lain yang dipastikan berfungsi normal.",
                         "<b>Pengecekan Mesin & IC Power:</b> Teknisi perlu membongkar unit HP untuk mengukur tegangan listrik sirkuit IC Power menggunakan multimeter.",
@@ -830,6 +825,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Mati Total / Kendala Daya",
                     cause: "Power Supply Unit (PSU) mati/tidak stabil, kabel power rusak, tombol power casing bermasalah, atau korsleting pada motherboard PC.",
+                    price: "Rp 150.000 - Rp 600.000",
                     solutions: [
                         "<b>Uji Jumper PSU:</b> Teknisi akan menguji PSU secara manual menggunakan klip kertas/tester untuk memastikan kipas PSU berputar.",
                         "<b>Cek Tombol Power:</b> Menghubungkan pin power switch secara langsung di motherboard untuk menguji kerusakan tombol casing.",
@@ -840,6 +836,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Mati Total / Kendala Daya",
                     cause: "Masalah suplai daya (Power Supply), baterai laptop mati total, adaptor rusak, atau sirkuit motherboard mengalami short circuit.",
+                    price: "Rp 350.000 - Rp 850.000",
                     solutions: [
                         "<b>Cek Adaptor:</b> Coba gunakan adaptor cadangan yang dipastikan normal untuk memastikan adaptor lama tidak mati.",
                         "<b>Pengecekan Motherboard:</b> Teknisi kami perlu mengukur sirkuit IC Power & MOSFET menggunakan multimeter untuk menemukan titik komponen yang konslet.",
@@ -855,6 +852,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Suhu Tinggi / Overheat",
                     cause: "Baterai bocor/lemah, penggunaan aplikasi berat (game/multitasking) terus-menerus, atau sirkuit pengisian daya (IC Charger) bermasalah.",
+                    price: "Rp 150.000 - Rp 350.000",
                     solutions: [
                         "<b>Dinginkan & Tutup Aplikasi:</b> Istirahatkan HP dari aktivitas saat dicas, turunkan kecerahan layar, dan bersihkan aplikasi background.",
                         "<b>Ganti Baterai / Cek IC Charger:</b> Jika HP tetap terasa panas tinggi meski dalam posisi mati/standby, kemungkinan baterai rusak atau IC charger bocor dan perlu diganti.",
@@ -865,6 +863,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Suhu Tinggi / Overheat",
                     cause: "Kipas pendingin (CPU Cooler) mati, pompa liquid cooling (AIO) macet, aliran udara casing tersumbat debu, atau thermal paste kering.",
+                    price: "Rp 100.000 - Rp 450.000",
                     solutions: [
                         "<b>Pembersihan Debu & Kipas:</b> Pembersihan total debu pada fan casing, radiator watercooling, dan filter udara PC.",
                         "<b>Ganti Thermal Paste & Cek Pompa:</b> Mengganti thermal paste processor dengan kualitas premium dan memastikan pompa watercooling berfungsi normal.",
@@ -875,6 +874,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Suhu Tinggi / Overheat",
                     cause: "Sistem pembuangan panas tersumbat debu tebal, kipas pendingin laptop macet, atau Thermal Paste pada processor telah kering/mengeras.",
+                    price: "Rp 100.000 - Rp 250.000",
                     solutions: [
                         "<b>Thermal Cleaning:</b> Pembersihan debu pada kipas exhaust dan heatsink laptop/PC.",
                         "<b>Repaste Thermal:</b> Penggantian Thermal Paste kering dengan pasta thermal berkualitas tinggi (seperti Arctic/Noctua) agar penyaluran panas kembali optimal.",
@@ -890,6 +890,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Kinerja Lambat / Lag",
                     cause: "Kapasitas penyimpanan internal (ROM) hampir penuh, RAM penuh oleh aplikasi latar belakang, atau kesehatan chip memori eMMC/UFS menurun.",
+                    price: "Rp 50.000 - Rp 450.000",
                     solutions: [
                         "<b>Bersihkan Penyimpanan:</b> Hapus file/aplikasi sampah, pindahkan foto & video ke komputer atau cloud storage.",
                         "<b>Factory Reset (Reset Pabrik):</b> Setel ulang sistem untuk membersihkan berkas cache menumpuk dan malware iklan.",
@@ -901,6 +902,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Kinerja Lambat / Lag",
                     cause: "Suhu prosesor terlalu tinggi (thermal throttling), Harddisk (HDD) sudah melemah/bad sector, RAM kurang, atau Windows bermasalah.",
+                    price: "Rp 150.000 - Rp 950.000",
                     solutions: [
                         "<b>Upgrade ke SSD NVMe/SATA:</b> Mengganti drive Windows ke SSD akan mempercepat booting dan loading aplikasi hingga 10x lipat.",
                         "<b>Upgrade RAM & Tuning:</b> Menambah RAM (misal menjadi 16GB dual-channel) untuk melancarkan multitasking game/desain.",
@@ -911,6 +913,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Kinerja Lambat / Lag",
                     cause: "Kondisi Harddisk (HDD) sudah melemah/bad sector, kapasitas RAM terlalu kecil untuk multitasking, atau sistem operasi dipenuhi file sampah/virus.",
+                    price: "Rp 150.000 - Rp 950.000",
                     solutions: [
                         "<b>Upgrade ke SSD:</b> Mengganti Harddisk lama dengan SSD (Solid State Drive) akan meningkatkan kecepatan laptop/PC Anda hingga 10x lipat.",
                         "<b>Upgrade RAM:</b> Menambah RAM (misal menjadi 8GB atau 16GB) agar aktivitas multitasking berjalan lancar.",
@@ -927,6 +930,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Kerusakan Layar / LCD",
                     cause: "Panel LCD retak di dalam akibat benturan, kaca touchscreen pecah, atau soket kabel fleksibel layar ke mesin longgar.",
+                    price: "Rp 250.000 - Rp 1.200.000",
                     solutions: [
                         "<b>Ganti LCD Set:</b> Mengganti satu set modul panel LCD dan kaca touchscreen dengan komponen baru berkualitas tinggi.",
                         "<b>Estimasi Waktu:</b> 1 - 2 Jam (bisa ditunggu jika persediaan tipe LCD tersedia)."
@@ -936,6 +940,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Kerusakan Tampilan / Layar",
                     cause: "Kabel VGA/HDMI monitor rusak/longgar, monitor LCD rusak, atau kartu grafis (GPU Card/VGA Card) rusak/overheat.",
+                    price: "Rp 100.000 - Rp 850.000",
                     solutions: [
                         "<b>Cek Kabel & Monitor:</b> Uji PC menggunakan kabel monitor lain atau pasang monitor ke perangkat lain untuk memastikan layar normal.",
                         "<b>Uji GPU Card:</b> Teknisi akan menguji GPU Card di slot PCIe lain atau membersihkan pin tembaga VGA card menggunakan penghapus/cairan khusus.",
@@ -946,6 +951,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Kerusakan Layar / LCD",
                     cause: "Kerusakan pada panel LCD/LED, soket kabel fleksibel layar longgar/korosi, atau kerusakan chipset grafis (GPU/VGA).",
+                    price: "Rp 650.000 - Rp 1.500.000",
                     solutions: [
                         "<b>Ganti Panel LCD:</b> Jika layar pecah dalam, terdapat garis warna-warni permanen, atau tompel hitam, solusi satu-satunya adalah ganti panel baru.",
                         "<b>Pembersihan/Reposition Soket:</b> Jika layar berkedip hanya saat layar digerakkan (buka-tutup laptop), kemungkinan kabel fleksibel longgar.",
@@ -961,6 +967,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Baterai / Pengisian Daya",
                     cause: "Usia sel baterai telah habis (kembung/drop) atau kerusakan pada komponen port USB charger bawah.",
+                    price: "Rp 150.000 - Rp 350.000",
                     solutions: [
                         "<b>Ganti Baterai HP:</b> Penggantian unit baterai baru bergaransi (kualitas original/premium double power).",
                         "<b>Ganti Papan USB Board:</b> Jika dicas longgar, tidak masuk daya, atau harus ditekuk, konektor port charger HP harus diganti.",
@@ -971,6 +978,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Baterai CMOS Motherboard",
                     cause: "Baterai CMOS CR2032 pada motherboard habis, menyebabkan jam dan tanggal komputer selalu ter-reset ke tahun lama setiap dinyalakan.",
+                    price: "Rp 50.000",
                     solutions: [
                         "<b>Ganti Baterai CMOS:</b> Penggantian baterai kancing CMOS di motherboard PC untuk menyimpan konfigurasi BIOS.",
                         "<b>Estimasi Waktu:</b> 15 Menit."
@@ -980,6 +988,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Baterai / Pengisian Daya",
                     cause: "Penurunan kesehatan sel baterai (Life cycle baterai telah habis) atau kendala pada modul IC Charging motherboard.",
+                    price: "Rp 350.000 - Rp 750.000",
                     solutions: [
                         "<b>Ganti Baterai:</b> Penggantian unit baterai baru (original / premium) bergaransi resmi.",
                         "<b>Kalibrasi Daya:</b> Pengecekan arus pengisian daya dari adaptor ke baterai untuk memastikan IC charger normal.",
@@ -995,6 +1004,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Tombol Fisik HP",
                     cause: "Tombol fisik (Power, Volume +/-) aus, macet akibat kotoran, atau kabel fleksibel tombol dalam putus.",
+                    price: "Rp 100.000 - Rp 250.000",
                     solutions: [
                         "<b>Ganti Kabel Fleksibel Tombol:</b> Penggantian satu set modul fleksibel tombol samping luar dan dalam.",
                         "<b>Estimasi Waktu:</b> 1 - 2 Jam."
@@ -1004,6 +1014,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Keyboard PC / Eksternal",
                     cause: "Keyboard eksternal (USB/Wireless) kotor, switch tombol macet, atau kerusakan sirkuit controller keyboard.",
+                    price: "Rp 50.000 - Rp 250.000",
                     solutions: [
                         "<b>Pembersihan Switch:</b> Pembersihan debu/kotoran di bawah keycap. Jika menggunakan keyboard mekanik, switch yang mati bisa disolder ulang/diganti (*hotswap*).",
                         "<b>Estimasi Waktu:</b> 15 - 30 Menit."
@@ -1013,6 +1024,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Keyboard Laptop",
                     cause: "Jalur sirkuit membran keyboard mengalami korsleting (sering disebabkan kelembapan atau kemasukan air/kotoran).",
+                    price: "Rp 250.000 - Rp 500.000",
                     solutions: [
                         "<b>Ganti Keyboard Unit:</b> Keyboard laptop yang korslet sebagian besar harus diganti satu set baru karena sirkuit membran tidak bisa disolder sebagian.",
                         "<b>Pembersihan Kontak:</b> Jika hanya satu tombol macet karena kotoran, teknisi akan mencoba membersihkan switch di bawah tuts keyboard.",
@@ -1028,6 +1040,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Sinyal / Wi-Fi Smartphone",
                     cause: "Kerusakan pada IC Baseband (sinyal hilang/Searching terus), IC Wi-Fi/Bluetooth rusak, atau pin slot kartu SIM patah.",
+                    price: "Rp 250.000 - Rp 550.000",
                     solutions: [
                         "<b>Ganti/Reball IC Baseband:</b> Perbaikan chip jaringan pada mesin HP jika status sinyal 'Tidak Ada Layanan'.",
                         "<b>Ganti Slot SIM:</b> Mengganti pembaca kartu SIM jika HP tidak mendeteksi kartu SIM sama sekali.",
@@ -1038,6 +1051,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Jaringan / LAN PC",
                     cause: "Kabel LAN putus/longgar, port Ethernet RJ45 di motherboard rusak, atau PC tidak dipasangi receiver Wi-Fi.",
+                    price: "Rp 100.000 - Rp 250.000",
                     solutions: [
                         "<b>Pasang Wi-Fi USB/PCIe:</b> Memasang adapter Wi-Fi tambahan agar PC bisa menangkap sinyal nirkabel.",
                         "<b>Cek Kabel LAN:</b> Mengganti konektor RJ45 atau kabel LAN baru, serta memeriksa driver LAN Realtek.",
@@ -1048,6 +1062,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Konektivitas / Wi-Fi Laptop",
                     cause: "Driver kartu Wi-Fi corrupt/usang, modul Wi-Fi PCIe laptop rusak, atau kabel antena Wi-Fi internal terputus.",
+                    price: "Rp 150.000 - Rp 300.000",
                     solutions: [
                         "<b>Update Driver & Re-seat Card:</b> Instal ulang driver Wi-Fi laptop. Jika gagal, teknisi akan membersihkan pin tembaga modul Wi-Fi internal.",
                         "<b>Estimasi Waktu:</b> 1 Jam."
@@ -1062,6 +1077,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Speaker / Mic Smartphone",
                     cause: "Membran speaker HP pecah (karena air/benturan), lubang mic bawah tersumbat debu, atau IC Audio di logic board mengalami kerusakan.",
+                    price: "Rp 100.000 - Rp 250.000",
                     solutions: [
                         "<b>Ganti Speaker/Buzzer:</b> Mengganti komponen speaker musik atau earpiece telepon yang suara pecah/mati.",
                         "<b>Pembersihan Mic:</b> Pembersihan lubang mikrofon dari debu/kotoran eksternal.",
@@ -1072,6 +1088,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Audio / Output PC",
                     cause: "Pengaturan default output audio Windows salah, speaker aktif eksternal mati, atau port jack 3.5mm motherboard rusak.",
+                    price: "Rp 50.000 - Rp 150.000",
                     solutions: [
                         "<b>Cek Audio Control Panel:</b> Memastikan device default mengarah ke speaker aktif yang terhubung.",
                         "<b>Ganti Soundcard USB:</b> Menggunakan soundcard USB eksternal murah untuk mem-bypass port audio motherboard yang rusak.",
@@ -1082,6 +1099,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Speaker / Audio Laptop",
                     cause: "Speaker internal laptop sobek/pecah, Realtek Audio driver mengalami crash, atau port audio jack laptop korosi/kotor.",
+                    price: "Rp 150.000 - Rp 350.000",
                     solutions: [
                         "<b>Ganti Speaker Internal:</b> Mengganti sepasang speaker bawaan laptop dengan unit baru agar suara kembali jernih.",
                         "<b>Estimasi Waktu:</b> 1 - 2 Jam."
@@ -1096,6 +1114,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Kamera / Lensa HP",
                     cause: "Kaca pelindung lensa kamera baret/kotor, aplikasi kamera crash, atau sensor modul kamera dalam rusak akibat benturan.",
+                    price: "Rp 150.000 - Rp 550.000",
                     solutions: [
                         "<b>Ganti Kaca Lensa Kamera:</b> Jika hasil foto buram hanya karena kaca luar baret, cukup mengganti kaca kamera luarnya saja.",
                         "<b>Ganti Modul Kamera:</b> Mengganti unit modul kamera dalam (kamera depan/belakang) jika kamera tidak bisa dibuka/blank hitam.",
@@ -1106,6 +1125,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Webcam PC Desktop",
                     cause: "Kabel USB webcam eksternal longgar, driver webcam tidak terdeteksi, atau webcam rusak.",
+                    price: "Rp 50.000 - Rp 150.000",
                     solutions: [
                         "<b>Uji Port USB Lain:</b> Memindahkan kabel webcam ke port USB utama di bagian belakang PC.",
                         "<b>Estimasi Waktu:</b> 15 Menit."
@@ -1115,6 +1135,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Webcam Laptop",
                     cause: "Privacy shutter webcam fisik tertutup, webcam dinonaktifkan lewat Fn Hotkey, atau kabel fleksibel kamera laptop putus.",
+                    price: "Rp 150.000 - Rp 300.000",
                     solutions: [
                         "<b>Aktifkan Shutter & Fn Key:</b> Membuka penutup fisik kamera laptop atau mengaktifkan tombol Fn kamera.",
                         "<b>Ganti Modul Webcam:</b> Mengganti modul kamera webcam internal laptop yang terletak di bezel atas layar.",
@@ -1130,6 +1151,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Kemasukan Air / Cairan",
                     cause: "HP kemasukan air/cairan, memicu korosi (karat) instan pada logic board dan korsleting sirkuit.",
+                    price: "Rp 200.000 - Rp 650.000",
                     solutions: [
                         "<b>SEGERA MATIKAN HP:</b> Jangan mencoba menyalakan HP atau mengecasnya agar kerusakan tidak menyebar luas.",
                         "<b>Pembersihan Korosi:</b> Teknisi akan membongkar total, membersihkan mesin menggunakan cairan pembersih karat khusus, dan melacak jalur sirkuit yang short.",
@@ -1140,6 +1162,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Kemasukan Air / Kebocoran Liquid",
                     cause: "Kebocoran sistem water cooling (AIO) mengenai komponen GPU/Motherboard, atau cairan tumpah ke PC casing.",
+                    price: "Rp 250.000 - Rp 850.000",
                     solutions: [
                         "<b>Matikan Power Supply:</b> Segera cabut kabel listrik. Bongkar seluruh komponen untuk dibersihkan dengan cairan pembersih kelistrikan (Contact Cleaner).",
                         "<b>Estimasi Waktu:</b> 1 - 2 hari kerja."
@@ -1149,6 +1172,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Kemasukan Air / Cairan Laptop",
                     cause: "Cairan tumpah ke keyboard laptop dan merembes masuk ke bagian sensitif motherboard laptop.",
+                    price: "Rp 350.000 - Rp 950.000",
                     solutions: [
                         "<b>LEPASKAN CHARGER & MATIKAN LAPTOP:</b> Jangan pernah mencoba menyalakan laptop yang basah. Balikkan laptop membentuk huruf 'V' terbalik agar air mengalir keluar.",
                         "<b>Bongkar Total:</b> Laptop harus segera dibongkar total oleh teknisi untuk mengeringkan sirkuit dan membersihkan karat pada motherboard.",
@@ -1164,6 +1188,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Infeksi Adware / Malware HP",
                     cause: "Infeksi Adware (virus iklan) akibat salah mengklik tautan web, atau terdapat aplikasi berjalan mencurigakan (bloatware/malware).",
+                    price: "Rp 50.000 - Rp 100.000",
                     solutions: [
                         "<b>Cari & Hapus Aplikasi Aneh:</b> Periksa pengaturan aplikasi di HP Anda, uninstall aplikasi mencurigakan tanpa logo/nama yang sering memicu iklan.",
                         "<b>Factory Reset:</b> Langkah pamungkas untuk membersihkan total seluruh ancaman virus pada HP secara aman.",
@@ -1174,6 +1199,7 @@ if (consultationForm) {
                 matched.push({
                     title: "Infeksi Virus / Ransomware",
                     cause: "Sistem terinfeksi malware, ransomware, atau adware berbahaya akibat mengunduh file/aplikasi bajakan secara sembarangan.",
+                    price: "Rp 100.000 - Rp 200.000",
                     solutions: [
                         "<b>Pembersihan Malware:</b> Deep scanning sistem dan pembersihan menggunakan software pembersih malware profesional.",
                         "<b>Instal Ulang Sistem Operasi:</b> Langkah paling aman agar sistem benar-benar bersih dari virus tersembunyi yang merusak file registry.",
@@ -1184,15 +1210,18 @@ if (consultationForm) {
         }
         
         // Final Assembly of Cause and Solutions
+        let priceText = "-";
         if (matched.length > 0) {
             if (matched.length === 1) {
                 cause = matched[0].cause;
+                priceText = matched[0].price;
                 solution = `<ul class="ai-solution-list">` + 
                            matched[0].solutions.map(s => `<li>${s}</li>`).join('') + 
                            `</ul>`;
             } else {
                 // Multi-symptom format
                 cause = matched.map((m, i) => `[Kendala ${i+1}] ${m.title}: ${m.cause}`).join('\n\n');
+                priceText = matched.map((m, i) => `[Kendala ${i+1}] ${m.title}: ${m.price}`).join('\n');
                 
                 solution = matched.map((m, i) => {
                     return `<div style="margin-bottom: 1.5rem; ${i > 0 ? 'border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1rem;' : ''}">
@@ -1207,6 +1236,7 @@ if (consultationForm) {
             // Fallback default if no keywords match
             if (type === "Smartphone") {
                 cause = "Masalah umum pada smartphone seperti baterai bocor, port charger USB longgar/kotor, atau kaca touchscreen pecah.";
+                priceText = "Rp 150.000 - Rp 350.000";
                 solution = `<ul class="ai-solution-list">
                     <li><b>Service Port/Konektor:</b> Pembersihan port charger USB dari debu atau ganti papan konektor pengisian daya.</li>
                     <li><b>Ganti LCD Touchscreen:</b> Pergantian panel layar baru jika kaca pecah atau tidak merespon sentuhan jari.</li>
@@ -1214,6 +1244,7 @@ if (consultationForm) {
                 </ul>`;
             } else {
                 cause = "Kerusakan belum teridentifikasi secara spesifik.";
+                priceText = "Hubungi Admin (Pemeriksaan Fisik)";
                 solution = `<ul class="ai-solution-list">
                     <li>Kerusakan komponen kelistrikan di motherboard, IC power, baterai drop, atau OS corrupt.</li>
                     <li>Saran Tindakan: Silakan bawa perangkat Anda ke Kemal Computer untuk pemeriksaan fisik secara presisi oleh teknisi kami.</li>
@@ -1224,6 +1255,7 @@ if (consultationForm) {
         // Tampilkan Hasil di UI
         document.getElementById('aiResultCause').innerText = cause;
         document.getElementById('aiResultSolution').innerHTML = solution;
+        document.getElementById('aiResultPrice').innerText = priceText;
         
         // Rancang WhatsApp Link
         const cleanCause = cause.replace(/<b>|<\/b>/g, '');
@@ -1239,8 +1271,9 @@ if (consultationForm) {
                        `• *Keluhan:* ${document.getElementById('consSymptoms').value.trim()}\n\n` +
                        `🤖 *DIAGNOSA INSTAN AI TOKO*:\n` +
                        `*Kemungkinan:* ${cleanCause}\n` +
-                       `*Rekomendasi Tindakan:*\n${cleanSolutionText}\n\n` +
-                       `Mohon informasi mengenai perkiraan biaya dan jadwal pemeriksaan fisik. Terima kasih!`;
+                       `*Rekomendasi Tindakan:*\n${cleanSolutionText}\n` +
+                       `*Estimasi Biaya:* ${priceText}\n\n` +
+                       `Mohon informasi mengenai jadwal pemeriksaan fisik untuk diagnosa final. Terima kasih!`;
         
         const waLink = `https://wa.me/${globalWaNumber || '6281234567890'}?text=${encodeURIComponent(textWa)}`;
         document.getElementById('btnConsWaLink').href = waLink;
@@ -1259,4 +1292,3 @@ if (consultationForm) {
         }, 150);
     });
 }
-
