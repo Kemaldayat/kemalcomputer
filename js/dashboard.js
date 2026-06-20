@@ -721,16 +721,11 @@
             else if (s.status === 'Selesai') pesanStatus = 'sudah selesai dikerjakan dan siap untuk diambil.';
             else if (s.status === 'Diambil') pesanStatus = 'telah diambil. Terima kasih telah mempercayakan servis pada kami!';
 
-            // Pisah pesan menjadi 2 bagian untuk diselipkan kode murni emoji di tengahnya
-            let pesanBagian1 = `*Notifikasi |Kemal Computer| Service*\n*==============================*\nKepada Yth. ${s.nama},\nService-an anda ${s.device || 'Perangkat Elektronik'} dengan nomor invoice ${code}, ${pesanStatus}\n*==============================*\nUntuk Proses Tracking, Kamu bisa memantau melalui link dibawah ini. Terimakasih `;
+            // Menggabungkan seluruh pesan dan menggunakan Unicode escape sequences untuk emoji agar aman dari masalah encoding file sumber (\uD83D\uDE4F = 🙏, \uD83D\uDE0A = 😊)
+            let pesan = `*Notifikasi |Kemal Computer| Service*\n*==============================*\nKepada Yth. ${s.nama},\nService-an anda ${s.device || 'Perangkat Elektronik'} dengan nomor invoice ${code}, ${pesanStatus}\n*==============================*\nUntuk Proses Tracking, Kamu bisa memantau melalui link dibawah ini. Terimakasih \uD83D\uDE4F\uD83D\uDE4F\uD83D\uDE0A\n_https://kemalcomputer.vercel.app/?code=${code}_`;
 
-            let pesanBagian2 = `\n_https://kemalcomputer.vercel.app/?code=${code}_`;
-
-            // Kode murni URL untuk emoji ðŸ™ðŸ™ðŸ˜Š (Browser tidak akan merusaknya karena berupa teks biasa)
-            let emotAman = "%F0%9F%99%8F%F0%9F%99%8F%F0%9F%98%8A";
-
-            // Rakit link URL secara paksa
-            let linkWA = `https://wa.me/${s.nomorHp}?text=${encodeURIComponent(pesanBagian1)}${emotAman}${encodeURIComponent(pesanBagian2)}`;
+            // Menggunakan direct link api.whatsapp.com untuk menghindari kendala redirect wa.me yang merusak encoding emoji
+            let linkWA = `https://api.whatsapp.com/send?phone=${s.nomorHp}&text=${encodeURIComponent(pesan)}`;
 
             window.open(linkWA, '_blank');
         };
