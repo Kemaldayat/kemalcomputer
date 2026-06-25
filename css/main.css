@@ -187,6 +187,12 @@ body.dark-mode .header {
     border-radius: var(--radius-md);
     transition: all var(--transition-normal);
 }
+.btn:hover {
+    transform: translateY(-2px);
+}
+.btn:active {
+    transform: translateY(0.5px);
+}
 
 .btn-primary {
     background-color: var(--color-primary);
@@ -195,7 +201,6 @@ body.dark-mode .header {
 }
 .btn-primary:hover {
     background-color: var(--color-primary-dark);
-    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(13, 148, 136, 0.23);
 }
 
