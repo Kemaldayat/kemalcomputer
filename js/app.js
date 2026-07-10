@@ -492,8 +492,10 @@ window.trackService = async (kodeParam = null) => {
                         <div class="kc-step-circle ${activePulseClass}" style="${circleStyle}; animation-delay: ${i * 0.15}s;">
                             ${checkHtml}
                         </div>
-                        <div class="kc-step-label" style="${labelStyle}; animation: kc-fade-in-label 0.5s ease both; animation-delay: ${i * 0.15 + 0.1}s;">${step.label}</div>
-                        <div class="kc-step-desc" style="animation: kc-fade-in-label 0.5s ease both; animation-delay: ${i * 0.15 + 0.15}s;">${isActive ? `<span style="color:${activeColor}; font-weight:600;">${step.desc}</span>` : `<span>${step.desc}</span>`}</div>
+                        <div class="kc-step-text-wrap">
+                            <div class="kc-step-label" style="${labelStyle}; animation: kc-fade-in-label 0.5s ease both; animation-delay: ${i * 0.15 + 0.1}s;">${step.label}</div>
+                            <div class="kc-step-desc" style="animation: kc-fade-in-label 0.5s ease both; animation-delay: ${i * 0.15 + 0.15}s;">${isActive ? `<span style="color:${activeColor}; font-weight:600;">${step.desc}</span>` : `<span>${step.desc}</span>`}</div>
+                        </div>
                         ${pulseHtml}
                     </div>
                     ${connectorHtml}`;
@@ -530,6 +532,11 @@ window.trackService = async (kodeParam = null) => {
                         z-index: 1;
                         min-width: 64px;
                         flex: 1;
+                    }
+                    .kc-step-text-wrap {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
                     }
                     .kc-step-circle {
                         width: 48px;
@@ -666,13 +673,67 @@ window.trackService = async (kodeParam = null) => {
                         .tracking-row { flex-direction: row; }
                         .tracking-label { width: 35%; margin-bottom: 0; }
                         .tracking-value { width: 65%; }
-                        .kc-step-desc { display: block; }
                     }
-                    @media(max-width: 480px){
-                        .kc-step-circle { width: 40px; height: 40px; }
-                        .kc-step-label  { font-size: 0.62rem; }
-                        .kc-step-desc   { display: none; }
-                        .kc-stepper-wrap { padding: 1.25rem 0.25rem 0.75rem; }
+                    
+                    /* ── Responsive Mobile Timelines (max-width: 576px) ── */
+                    @media (max-width: 576px) {
+                        .kc-stepper-wrap {
+                            flex-direction: column;
+                            align-items: stretch;
+                            padding: 1.5rem 1.25rem;
+                            gap: 0.25rem;
+                        }
+                        .kc-step-item {
+                            flex-direction: row;
+                            align-items: center;
+                            justify-content: flex-start;
+                            text-align: left;
+                            width: 100%;
+                            flex: none;
+                        }
+                        .kc-step-text-wrap {
+                            align-items: flex-start;
+                            text-align: left;
+                        }
+                        .kc-step-circle {
+                            margin-bottom: 0;
+                            margin-right: 1.25rem;
+                            flex-shrink: 0;
+                        }
+                        .kc-step-label {
+                            text-align: left;
+                            font-size: 0.85rem;
+                            margin-bottom: 0.15rem;
+                        }
+                        .kc-step-desc {
+                            text-align: left;
+                            font-size: 0.7rem;
+                            max-width: none;
+                            display: block !important;
+                        }
+                        .kc-step-connector {
+                            width: 3px;
+                            height: 1.75rem;
+                            margin-left: 22.5px; /* Centers connector to the 48px circle center */
+                            margin-top: -0.25rem;
+                            margin-bottom: -0.25rem;
+                            flex: none;
+                            overflow: hidden;
+                            min-width: auto;
+                        }
+                        .kc-step-connector-fill {
+                            width: 100% !important;
+                            height: 0%;
+                            animation: kc-line-grow-vertical 1.2s cubic-bezier(.4,0,.2,1) both;
+                        }
+                        .kc-active-dot {
+                            margin-top: 0;
+                            margin-left: 0.75rem;
+                        }
+                    }
+                    @keyframes kc-line-grow-vertical {
+                        from { height: 0%; }
+                        to   { height: var(--target-width, 0%); }
                     }
                 </style>
 
