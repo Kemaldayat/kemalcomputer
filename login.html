@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="loginPageTitle">Login Admin - Kemal Computer</title>
+    <!-- Modern Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body class="dark-mode">
+    <!-- Background Animated Blobs -->
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <!-- Login Container -->
+    <div class="login-container">
+        <div class="logo-container">
+            <img id="loginLogo" src="images/logo.png" alt="Logo Toko" style="display: none;">
+        </div>
+        <h1 id="loginTitle">Login Admin</h1>
+        <p class="login-subtitle">Silakan masuk untuk mengelola antrian servis dan pengaturan website.</p>
+        
+        <form id="loginForm" class="login-form">
+            <div class="input-group">
+                <label for="email">Email</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email" id="email" placeholder="admin@email.com" required>
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-login-email" id="btnSubmitEmail">
+                <i class="fas fa-sign-in-alt" id="iconSubmitEmail"></i> 
+                <span id="textSubmitEmail">Masuk Sekarang</span> 
+                <i class="fas fa-spinner fa-spin hidden" id="spinnerSubmitEmail"></i>
+            </button>
+            
+            <div class="divider"><span>ATAU</span></div>
+            
+            <button type="button" id="btnGoogleLogin" class="btn-login-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo" class="google-icon" id="iconGoogle">
+                <span id="textGoogle">Masuk dengan Google</span>
+                <i class="fas fa-spinner fa-spin hidden" id="spinnerGoogle"></i>
+            </button>
+        </form>
+    </div>
+
+    <!-- Script UI Utilities (SweetAlert) -->
+    <script src="js/ui-utils.js"></script>
+
+    <div id="customToast" class="success-toast">
+        <i class="fas fa-check-circle"></i> 
+        <span id="toastMessage"></span>
+    </div>
+
+    <script type="module">
+        import { auth, adminEmail, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup, db, dbRef, set, get } from "./js/firebase-config.js";
+
+        // Global helper for escapeHTML in case it's not defined
+        window.escapeHTML = (str) => String(str || '').replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
+
+        // Anti-blocker helper for ImgBB
+        const antiBlokir = (url) => {
+            if (!url) return '';
+            if (url.includes('ibb.co')) {
+                return 'https://wsrv.nl/?url=' + encodeURIComponent(url);
+            }
+            return url;
+        };
+
+        // Memuat branding dinamis dari Firebase
+        async function loadDynamicBranding() {
+            try {
+                const snapshot = await get(dbRef(db, 'pengaturan_toko'));
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    if (data.warnaUtama) {
+                        document.documentElement.style.setProperty('--primary-color', data.warnaUtama);
+                        // Generate darker hover color dynamically
+                        document.documentElement.style.setProperty('--primary-hover', adjustColor(data.warnaUtama, -20));
+                    }
+                    if (data.logoUrl) {
+                        const logoEl = document.getElementById('loginLogo');
+                        if (logoEl) {
+                            logoEl.src = antiBlokir(data.logoUrl);
+                            logoEl.style.display = 'block';
+                        }
+                    }
+                    if (data.namaToko) {
+                        const titleEl = document.getElementById('loginTitle');
+                        const pageTitleEl = document.getElementById('loginPageTitle');
+                        if (titleEl) titleEl.innerText = data.namaToko;
+                        if (pageTitleEl) pageTitleEl.innerText = `Login Admin - ${data.namaToko}`;
+                    }
+                }
+            } catch (e) {
+                console.warn("Gagal memuat branding dinamis:", e);
+            }
+        }
+
+        // Helper untuk menggelapkan warna hex
+        function adjustColor(hex, percent) {
+            let num = parseInt(hex.replace("#",""), 16),
+            amt = Math.round(2.55 * percent),
+            R = (num >> 16) + amt,
+            G = (num >> 8 & 0x00FF) + amt,
+            B = (num & 0x0000FF) + amt;
+            return "#" + (0x1000000 + (R<255?R<0?0:R:255)*0x10000 + (G<255?G<0?0:G:255)*0x100 + (B<255?B<0?0:B:255)).toString(16).slice(1);
+        }
+
+        // Jalankan load branding dinamis saat awal
+        loadDynamicBranding();
+
+        // Fungsi mencatat riwayat login ke Firebase
+        async function catatRiwayatLogin(email, metode) {
+            try {
+                const logId = 'LOG-' + Date.now();
+                await set(dbRef(db, 'riwayat_login/' + logId), {
+                    email: email,
+                    waktu: new Date().toISOString(),
+                    metode: metode
+                });
+            } catch(e) { console.error("Gagal mencatat log", e); }
+        }
+
+        // Fungsi mengecek otorisasi pengguna di Firebase Database
+        async function checkAuthorizedUser(user) {
+            if (user.email === adminEmail) {
+                return { authorized: true, role: 'Owner' };
+            }
+            try {
+                const snapshot = await get(dbRef(db, 'staff'));
+                if (snapshot.exists()) {
+                    let authData = { authorized: false, role: '' };
+                    snapshot.forEach((child) => {
+                        const val = child.val();
+                        if (val.email && val.email.toLowerCase() === user.email.toLowerCase()) {
+                            authData = { authorized: true, role: val.role };
+                        }
+                    });
+                    return authData;
+                }
+            } catch (e) {
+                console.error("Gagal verifikasi data staf:", e);
+            }
+            return { authorized: false, role: '' };
+        }
+
+        // EVENT LISTENER LOGIKA UTAMA (EMAIL & PASSWORD)
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            if (!email || !password) return window.showSweetAlert("Email dan Password wajib diisi.", "error");
+
+            const btn = document.getElementById('btnSubmitEmail');
+            const icon = document.getElementById('iconSubmitEmail');
+            const text = document.getElementById('textSubmitEmail');
+            const spinner = document.getElementById('spinnerSubmitEmail');
+
+            btn.disabled = true;
+            if(icon) icon.classList.add('hidden');
+            text.innerText = 'Memverifikasi...';
+            if(spinner) spinner.classList.remove('hidden');
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                const authCheck = await checkAuthorizedUser(user);
+                if (authCheck.authorized) {
+                    await catatRiwayatLogin(user.email, `Email/Password (${authCheck.role})`);
+                    window.showSweetAlert('Login berhasil! Mengarahkan ke Dashboard...', 'success');
+                    setTimeout(() => window.location.href = 'dashboard.html', 1500);
+                } else {
+                    await signOut(auth); 
+                    window.showSweetAlert("Akun Anda tidak terdaftar sebagai staf atau admin.", "error");
+                    resetButton(btn, icon, text, spinner, "Masuk Sekarang");
+                }
+            } catch (error) {
+                let errorMessage = "Login gagal. Periksa email dan password Anda.";
+                if (error.code === 'auth/wrong-password') errorMessage = "Password salah.";
+                else if (error.code === 'auth/user-not-found') errorMessage = "Email tidak terdaftar.";
+                else if (error.code === 'auth/too-many-requests') errorMessage = "Terlalu banyak percobaan login gagal. Coba lagi nanti.";
+                window.showSweetAlert(errorMessage, "error"); 
+                resetButton(btn, icon, text, spinner, "Masuk Sekarang");
+            }
+        });
+
+        // EVENT LISTENER LOGIN GOOGLE
+        document.getElementById('btnGoogleLogin').addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            const btn = document.getElementById('btnGoogleLogin');
+            const icon = document.getElementById('iconGoogle');
+            const text = document.getElementById('textGoogle');
+            const spinner = document.getElementById('spinnerGoogle');
+
+            btn.disabled = true;
+            if(icon) icon.classList.add('hidden');
+            text.innerText = 'Menghubungkan...';
+            if(spinner) spinner.classList.remove('hidden');
+
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                
+                const authCheck = await checkAuthorizedUser(user);
+                if (authCheck.authorized) {
+                    await catatRiwayatLogin(user.email, `Google (${authCheck.role})`);
+                    window.showSweetAlert('Login Google berhasil! Mengarahkan...', 'success');
+                    setTimeout(() => window.location.href = 'dashboard.html', 1500);
+                } else {
+                    await signOut(auth);
+                    window.showSweetAlert("Akun Google Anda tidak terdaftar sebagai staf atau admin.", "error");
+                    resetGoogleButton(btn, icon, text, spinner);
+                }
+            } catch (error) {
+                console.error("Google Sign-In Error:", error.code, error.message);
+                let msg = "Login Google gagal.";
+                if (error.code === 'auth/popup-blocked') msg = "Popup diblokir oleh browser. Izinkan popup untuk halaman ini.";
+                else if (error.code === 'auth/popup-closed-by-user') msg = "Jendela login Google ditutup. Silakan coba lagi.";
+                else if (error.code === 'auth/unauthorized-domain') msg = "Domain ini belum diizinkan di Firebase. Tambahkan '127.0.0.1' ke Authorized Domains di Firebase Console.";
+                else if (error.code === 'auth/cancelled-popup-request') return; // Diabaikan jika klik ganda
+                else msg = `Login Google gagal (${error.code || 'unknown'}).`;
+                window.showSweetAlert(msg, "error");
+                resetGoogleButton(btn, icon, text, spinner);
+            }
+        });
+
+        function resetButton(btn, icon, text, spinner, defaultText) {
+            btn.disabled = false;
+            if(icon) icon.classList.remove('hidden');
+            text.innerText = defaultText;
+            if(spinner) spinner.classList.add('hidden');
+        }
+
+        function resetGoogleButton(btn, icon, text, spinner) {
+            btn.disabled = false;
+            if(icon) icon.classList.remove('hidden');
+            text.innerText = 'Masuk dengan Google';
+            if(spinner) spinner.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

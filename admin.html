@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Layanan Baru - Kemal Computer</title>
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="dark-mode">
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-plus-circle"></i> Tambah Servis</h1>
+            <button class="back-button" onclick="window.location.href='dashboard.html'"><i class="fas fa-arrow-left"></i> Kembali</button>
+        </header>
+
+        <form id="addServiceForm">
+            <!-- Section 1: Informasi Pelanggan -->
+            <div class="form-section">
+                <h2><i class="fas fa-user-shield"></i> Informasi Pelanggan</h2>
+                
+                <div class="form-group">
+                    <label for="inputNama">Nama Pelanggan:</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" id="inputNama" list="listPelangganLama" placeholder="Ketik nama pelanggan..." required>
+                    </div>
+                    <datalist id="listPelangganLama"></datalist>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputNomorHp">Nomor HP / WhatsApp (Awali 62):</label>
+                    <div class="input-wrapper">
+                        <i class="fab fa-whatsapp input-icon"></i>
+                        <input type="tel" id="inputNomorHp" placeholder="Contoh: 6281234567890" required>
+                    </div>
+                    <span id="badgeAutofill" class="autofill-badge"><i class="fas fa-check-circle"></i> Auto-fill dari Profil</span>
+                </div>
+            </div>
+
+            <!-- Section 2: Detail Perangkat & Keluhan -->
+            <div class="form-section">
+                <h2><i class="fas fa-toolbox"></i> Detail Perangkat & Keluhan</h2>
+                
+                <div class="form-group">
+                    <label for="inputDevice">Jenis Device (Laptop, HP, dll):</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-laptop input-icon"></i>
+                        <input type="text" id="inputDevice" placeholder="Contoh: Asus VivoBook 14" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="inputKerusakan">Deskripsi Kerusakan:</label>
+                    <div class="input-wrapper align-start">
+                        <i class="fas fa-exclamation-triangle input-icon textarea-icon"></i>
+                        <textarea id="inputKerusakan" rows="3" placeholder="Contoh: Mati total, instal ulang OS, ganti LCD..." required></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Keuangan & Status -->
+            <div class="form-section">
+                <h2><i class="fas fa-wallet"></i> Keuangan & Status</h2>
+                
+                <div class="grid-2-col">
+                    <div class="form-group">
+                        <label for="inputBiaya">Estimasi Biaya / Total Tagihan (Rp):</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-coins input-icon"></i>
+                            <input type="number" id="inputBiaya" placeholder="Contoh: 150000" min="0">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputModalKomponen">Modal Sparepart / Komponen (Rp):</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-box-open input-icon"></i>
+                            <input type="number" id="inputModalKomponen" placeholder="Opsional (misal: 50000)" min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2-col">
+                    <div class="form-group">
+                        <label for="inputStatus">Status Pengerjaan:</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-tasks input-icon"></i>
+                            <select id="inputStatus" required>
+                                <option value="Menunggu">Menunggu</option>
+                                <option value="Proses">Proses</option>
+                                <option value="Selesai">Selesai</option>
+                                <option value="Diambil">Diambil</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="inputPaymentStatus">Status Pembayaran:</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-credit-card input-icon"></i>
+                            <select id="inputPaymentStatus" required>
+                                <option value="Belum Dibayar">Belum Dibayar</option>
+                                <option value="Lunas">Lunas</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="inputKeterangan">Catatan Tambahan (Opsional):</label>
+                    <div class="input-wrapper align-start">
+                        <i class="fas fa-info-circle input-icon textarea-icon"></i>
+                        <textarea id="inputKeterangan" rows="2" placeholder="Nomor seri perangkat, kelengkapan, dll..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" id="btnSubmit"><i class="fas fa-save"></i> Simpan Data Servis</button>
+        </form>
+    </div>
+
+    <script src="js/ui-utils.js"></script>
+    <script type="module" src="js/admin.js"></script>
+</body>
+</html>
