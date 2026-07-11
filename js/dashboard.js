@@ -272,6 +272,33 @@
             }
         };
         window.remExSlider = i => { window.existingSliders.splice(i, 1); renderSliderPreviews(); }; window.remPenSlider = i => { window.pendingSliders.splice(i, 1); renderSliderPreviews(); };
+        window.addBankAccountRow = (bank = '', norek = '', nama = '') => {
+            const container = document.getElementById('bankAccountsContainer');
+            if (!container) return;
+            
+            const row = document.createElement('div');
+            row.className = 'bank-account-row';
+            row.style.cssText = 'display: flex; gap: 8px; align-items: center; background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);';
+            row.innerHTML = `
+                <input type="text" class="bank-name" value="${escapeHTML(bank)}" placeholder="Bank (Cth: BCA, Mandiri)" style="width: 25%; margin-bottom: 0;" required>
+                <input type="text" class="bank-norek" value="${escapeHTML(norek)}" placeholder="No. Rekening" style="width: 40%; margin-bottom: 0;" required>
+                <input type="text" class="bank-nama" value="${escapeHTML(nama)}" placeholder="Atas Nama" style="width: 30%; margin-bottom: 0;" required>
+                <button type="button" onclick="window.removeBankAccountRow(this)" style="background: var(--danger-color, #ef4444); color: white; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(row);
+        };
+        
+        window.removeBankAccountRow = (btn) => {
+            const container = document.getElementById('bankAccountsContainer');
+            if (!container) return;
+            const row = btn.closest('.bank-account-row');
+            if (row) {
+                row.remove();
+            }
+            if (container.children.length === 0) {
+                window.addBankAccountRow();
+            }
+        };
 
         async function loadWebsiteSettings() {
             try {
@@ -302,6 +329,19 @@
                     if (document.getElementById('setBcaNoRek')) document.getElementById('setBcaNoRek').value = data.bcaNoRek || '';
                     if (document.getElementById('setBcaNama')) document.getElementById('setBcaNama').value = data.bcaNama || '';
                     if (document.getElementById('setQrisUrl')) document.getElementById('setQrisUrl').value = data.qrisUrl || '';
+
+                    // Load akun bank dinamis
+                    const bankContainer = document.getElementById('bankAccountsContainer');
+                    if (bankContainer) {
+                        bankContainer.innerHTML = '';
+                        if (data.akun_bank && data.akun_bank.length > 0) {
+                            data.akun_bank.forEach(b => window.addBankAccountRow(b.bank, b.norek, b.nama));
+                        } else if (data.bcaNoRek) {
+                            window.addBankAccountRow('BCA', data.bcaNoRek, data.bcaNama);
+                        } else {
+                            window.addBankAccountRow();
+                        }
+                    }
                     if (document.getElementById('previewQris')) {
                         if (data.qrisUrl) {
                             document.getElementById('previewQris').src = antiBlokir(data.qrisUrl);
@@ -438,9 +478,27 @@
                 ig: document.getElementById('setIg').value.trim(), tiktok: document.getElementById('setTiktok').value.trim(), youtube: document.getElementById('setYoutube').value.trim(), warnaUtama: document.getElementById('setWarnaUtama').value, teksGaransi: document.getElementById('setTeksGaransi').value.trim(),
                 sliders: finalSliders, layanans: layanansArr, testimonis: testimoniArr, katalog: katalogArr,
                 tipePembayaran: document.getElementById('setTipePembayaran')?.value || 'manual',
-                bcaNoRek: document.getElementById('setBcaNoRek')?.value.trim() || '',
-                bcaNama: document.getElementById('setBcaNama')?.value.trim() || '',
+                bcaNoRek: (() => {
+                    const firstRow = document.querySelector('.bank-account-row');
+                    return firstRow ? firstRow.querySelector('.bank-norek').value.trim() : '';
+                })(),
+                bcaNama: (() => {
+                    const firstRow = document.querySelector('.bank-account-row');
+                    return firstRow ? firstRow.querySelector('.bank-nama').value.trim() : '';
+                })(),
                 qrisUrl: document.getElementById('setQrisUrl')?.value.trim() || '',
+                akun_bank: (() => {
+                    const accounts = [];
+                    document.querySelectorAll('.bank-account-row').forEach(row => {
+                        const bank = row.querySelector('.bank-name').value.trim();
+                        const norek = row.querySelector('.bank-norek').value.trim();
+                        const nama = row.querySelector('.bank-nama').value.trim();
+                        if (bank || norek || nama) {
+                            accounts.push({ bank, norek, nama });
+                        }
+                    });
+                    return accounts;
+                })(),
                 stats: {
                     tahun:     document.getElementById('setStatTahun')?.value.trim()     || '5+',
                     pelanggan: document.getElementById('setStatPelanggan')?.value.trim() || '500+',
@@ -485,8 +543,22 @@
                         let payClass = payStatus === 'Lunas' ? 'status-finished' : 'status-waiting';
                         let payIcon = payStatus === 'Lunas' ? 'fa-check-circle' : 'fa-clock';
                         let payBadge = `<span class="status-badge ${payClass}"><i class="fas ${payIcon}"></i> ${payStatus}</span>`;
+                        
+                        let garansiBadge = '';
+                        if (s.garansi_sampai) {
+                            const now = new Date();
+                            const garansiDate = new Date(s.garansi_sampai);
+                            if (now <= garansiDate) {
+                                const diffTime = Math.abs(garansiDate - now);
+                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                garansiBadge = `<div style="font-size:0.75em; margin-top:5px; color:#10b981; font-weight:700; display:flex; align-items:center; justify-content:center; gap:3px;"><i class="fas fa-shield-alt"></i> Garansi (${diffDays}H)</div>`;
+                            } else {
+                                garansiBadge = `<div style="font-size:0.75em; margin-top:5px; color:var(--text-light); display:flex; align-items:center; justify-content:center; gap:3px; opacity:0.6;"><i class="fas fa-shield-alt"></i> Expired</div>`;
+                            }
+                        }
+
                         const row = tableBody.insertRow(); row.setAttribute('data-id', code); row.setAttribute('data-status', s.status);
-                        row.innerHTML = `<td>${escapeHTML(s.nama)}</td><td>${dText}</td><td>${escapeHTML(s.kerusakan)}</td><td>${escapeHTML(s.nomorHp) || '-'}</td><td class="biaya-text">${formatRupiah(s.biaya)}</td><td class="biaya-text" style="color: var(--warning-color);">${formatRupiah(s.modal_komponen || 0)}</td><td class="status-column"><span class="status-badge ${bClass}">${s.status}</span></td><td>${payBadge}</td><td>${escapeHTML(s.keterangan) || '-'}</td><td><strong style="color:var(--primary-color)">${escapeHTML(code)}</strong></td><td class="action-buttons action-column"><button class="icon-btn print-button" onclick="printInvoice('${code}')"><i class="fas fa-print"></i></button><button class="icon-btn whatsapp-button" onclick="sendWhatsappNotification('${code}')"><i class="fab fa-whatsapp"></i></button><button class="icon-btn edit-button" onclick="openEditModal('${code}')"><i class="fas fa-edit"></i></button><button class="icon-btn delete-button" onclick="deleteService('${code}')"><i class="fas fa-trash"></i></button></td>`;
+                        row.innerHTML = `<td>${escapeHTML(s.nama)}</td><td>${dText}</td><td>${escapeHTML(s.kerusakan)}</td><td>${escapeHTML(s.nomorHp) || '-'}</td><td class="biaya-text">${formatRupiah(s.biaya)}</td><td class="biaya-text" style="color: var(--warning-color);">${formatRupiah(s.modal_komponen || 0)}</td><td class="status-column"><span class="status-badge ${bClass}">${s.status}</span>${garansiBadge}</td><td>${payBadge}</td><td>${escapeHTML(s.keterangan) || '-'}</td><td><strong style="color:var(--primary-color)">${escapeHTML(code)}</strong></td><td class="action-buttons action-column"><button class="icon-btn print-button" onclick="printInvoice('${code}')"><i class="fas fa-print"></i></button><button class="icon-btn whatsapp-button" onclick="sendWhatsappNotification('${code}')"><i class="fab fa-whatsapp"></i></button><button class="icon-btn edit-button" onclick="openEditModal('${code}')"><i class="fas fa-edit"></i></button><button class="icon-btn delete-button" onclick="deleteService('${code}')"><i class="fas fa-trash"></i></button></td>`;
 
                         const hp = s.nomorHp ? s.nomorHp.trim() : 'Tanpa Nomor';
                         if (!customersData[hp]) customersData[hp] = { nama: s.nama, hp: hp, totSrv: 0, totB: 0, riwayat: [] };

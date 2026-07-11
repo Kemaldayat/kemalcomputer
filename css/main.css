@@ -37,16 +37,22 @@
 }
 
 body.dark-mode {
-    --color-bg: #0f172a;
-    --color-surface: #1e293b;
+    --color-bg: #0b0f19;
+    --color-surface: #131c2e;
     --color-text: #f8fafc;
     --color-text-muted: #94a3b8;
-    --color-border: #334155;
+    --color-border: #1e293b;
     
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(139, 92, 246, 0.04) 0px, transparent 50%);
+    background-attachment: fixed;
 }
 
 
@@ -251,13 +257,17 @@ body.dark-mode .header {
     color: var(--color-text) !important;
     font-size: 1rem;
     font-family: inherit;
-    transition: var(--transition-fast);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
+body.dark-mode .input-field {
+    background-color: rgba(11, 15, 25, 0.8);
+    border-color: rgba(255, 255, 255, 0.08);
+}
 .input-field:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
+    box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.15), 0 0 15px rgba(13, 148, 136, 0.1);
+    transform: translateY(-1px);
 }
 
 /* Badges */
@@ -453,24 +463,34 @@ body.dark-mode .badge-pickedup { background-color: #1f2937; color: #9ca3af; }
 .badge-pulse { animation: pulseBadge 2.5s ease-in-out infinite; }
 
 /* ── Hero Decorative Blobs ── */
+@keyframes float-blob-1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(35px, -25px) scale(1.08); }
+}
+@keyframes float-blob-2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-25px, 25px) scale(0.92); }
+}
 .hero-blob {
     position: absolute;
     border-radius: 50%;
-    filter: blur(70px);
+    filter: blur(80px);
     pointer-events: none;
     z-index: 0;
 }
 .hero-blob-1 {
-    width: 260px; height: 260px;
+    width: 280px; height: 280px;
     background: var(--color-primary-light);
     top: -80px; right: -60px;
-    opacity: 0.35;
+    opacity: 0.25;
+    animation: float-blob-1 14s ease-in-out infinite;
 }
 .hero-blob-2 {
-    width: 180px; height: 180px;
+    width: 220px; height: 220px;
     background: var(--color-primary);
-    bottom: -40px; left: 20%;
-    opacity: 0.2;
+    bottom: -40px; left: 15%;
+    opacity: 0.15;
+    animation: float-blob-2 18s ease-in-out infinite;
 }
 
 /* ── Section Title Gradient Underline ── */
@@ -488,16 +508,33 @@ body.dark-mode .badge-pickedup { background-color: #1f2937; color: #9ca3af; }
     border-radius: 99px;
 }
 
-/* ── Card Hover Glow ── */
-.service-card:hover {
-    transform: translateY(-8px);
-    border-color: rgba(13, 148, 136, 0.35);
-    box-shadow: 0 20px 40px -10px rgba(13, 148, 136, 0.18), var(--shadow-xl);
+/* ── Card Hover Glow & Glassmorphism ── */
+.card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease;
 }
-.katalog-card:hover {
+body.dark-mode .card {
+    background: rgba(19, 28, 46, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.card:hover {
     transform: translateY(-6px);
-    border-color: rgba(13, 148, 136, 0.3);
-    box-shadow: 0 16px 32px -8px rgba(13, 148, 136, 0.15), var(--shadow-xl);
+    box-shadow: 0 22px 40px -10px rgba(0, 0, 0, 0.15), var(--shadow-xl);
+}
+body.dark-mode .card:hover {
+    border-color: rgba(13, 148, 136, 0.35);
+    box-shadow: 0 0 30px rgba(13, 148, 136, 0.12), 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+.service-card:hover, .katalog-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--color-primary);
+    box-shadow: 0 20px 40px -10px rgba(13, 148, 136, 0.22), var(--shadow-xl);
 }
 
 /* ── Trust Signals ── */

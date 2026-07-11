@@ -56,8 +56,8 @@
                     class="fas fa-history"></i> Log Akses</button>
             <button class="menu-item" onclick="openTab('tab-sosmed', this, 'Sosial Media')"><i
                     class="fas fa-share-alt"></i> Sosial Media</button>
-            <button class="menu-item" onclick="openTab('tab-sistem', this, 'Sistem & Nota')"><i class="fas fa-cog"></i>
-                Sistem & Nota</button>
+            <button class="menu-item" onclick="openTab('tab-sistem', this, 'Tema & Pembayaran')"><i class="fas fa-cog"></i>
+                Tema & Pembayaran</button>
         </div>
     </div>
 
@@ -491,13 +491,16 @@
                         <!-- Form Manual QRIS/BCA -->
                         <div id="manualPaymentGroup"
                             style="margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
+                            <!-- Hidden inputs for legacy code compatibility -->
+                            <input type="hidden" id="setBcaNoRek">
+                            <input type="hidden" id="setBcaNama">
+                            
                             <div class="form-group">
-                                <label>Nomor Rekening BCA (Transfer Manual)</label>
-                                <input type="text" id="setBcaNoRek" placeholder="Contoh: 1234567890">
-                            </div>
-                            <div class="form-group">
-                                <label>Nama Pemilik Rekening BCA</label>
-                                <input type="text" id="setBcaNama" placeholder="Contoh: Kemal Comp">
+                                <label style="font-weight: 600; margin-bottom: 8px; display: block; color: var(--text-color);">Daftar Rekening Bank (Transfer Manual)</label>
+                                <div id="bankAccountsContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                                    <!-- Baris rekening bank akan diisi dinamis oleh JS -->
+                                </div>
+                                <button type="button" onclick="window.addBankAccountRow()" class="btn" style="margin-top: 10px; width: auto; padding: 8px 14px; font-size: 0.82em; background: #2563eb; color: white; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);"><i class="fas fa-plus"></i> Tambah Rekening Bank</button>
                             </div>
                             <div class="form-group">
                                 <label>Upload QRIS Toko Anda</label>

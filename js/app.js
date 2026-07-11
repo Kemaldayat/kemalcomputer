@@ -901,14 +901,28 @@ window.showManualPaymentModal = (code, amount, bcaNoRek, bcaNama, qrisUrl) => {
         ? `<div style="text-align:center; margin-bottom: 1.25rem;"><img src="${antiBlokir(qrisUrl)}" alt="QRIS Toko" style="max-width: 210px; border-radius: 12px; border: 1px solid var(--color-border); padding: 8px; background: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); display: block; margin: 0 auto;"><p style="font-size:0.8rem; color:#64748b; margin-top:6px; font-weight: 500;">Scan QRIS di atas untuk membayar</p></div>` 
         : '';
     
-    let transferHtml = bcaNoRek 
-        ? `<div style="background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 10px; border: 1px solid var(--color-border); margin-bottom: 1.25rem; text-align: left; font-size: 0.9rem;">
+    let transferHtml = '';
+    const settings = window.tokoSettings || {};
+    const bankList = settings.akun_bank || [];
+    
+    if (bankList.length > 0) {
+        let cardsHtml = bankList.map(b => `
+            <div style="background: rgba(0,0,0,0.02); padding: 0.85rem; border-radius: 10px; border: 1px solid var(--color-border); margin-bottom: 0.75rem; text-align: left; font-size: 0.85rem;">
+                <p style="margin: 0 0 0.4rem; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; gap: 6px; color: var(--color-text);"><i class="fas fa-university" style="color:var(--color-primary);"></i> Transfer Bank ${escapeHTML(b.bank)}</p>
+                <p style="margin:0 0 0.2rem; color:var(--color-text-muted);">No. Rekening: <b style="color:var(--color-text); font-family: monospace; font-size: 1.1rem; letter-spacing: 0.5px;">${escapeHTML(b.norek)}</b></p>
+                <p style="margin:0; color:var(--color-text-muted);">Atas Nama: <b style="color:var(--color-text);">${escapeHTML(b.nama)}</b></p>
+            </div>
+        `).join('');
+        transferHtml = `<div style="max-height: 180px; overflow-y: auto; padding-right: 5px; margin-bottom: 1.25rem;">${cardsHtml}</div>`;
+    } else if (bcaNoRek) {
+        transferHtml = `
+        <div style="background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 10px; border: 1px solid var(--color-border); margin-bottom: 1.25rem; text-align: left; font-size: 0.9rem;">
             <p style="margin: 0 0 0.5rem; font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; color: var(--color-text);"><i class="fas fa-university" style="color:var(--color-primary);"></i> Transfer Bank</p>
             <p style="margin:0 0 0.25rem; color:var(--color-text-muted);">Bank: <b style="color:var(--color-text);">BCA</b></p>
             <p style="margin:0 0 0.25rem; color:var(--color-text-muted);">No. Rekening: <b style="color:var(--color-text); font-family: monospace; font-size: 1.15rem; letter-spacing: 0.5px;">${escapeHTML(bcaNoRek)}</b></p>
             <p style="margin:0; color:var(--color-text-muted);">Atas Nama: <b style="color:var(--color-text);">${escapeHTML(bcaNama || '')}</b></p>
-           </div>` 
-        : '';
+        </div>`;
+    }
     
     let pesanWA = `Halo Admin, saya ingin konfirmasi pembayaran untuk nomor invoice *${code}* sebesar *${formatRupiahVal(amount)}*.\n\nBerikut bukti transfer saya:`;
     let waUrl = `https://wa.me/${globalWaNumber}?text=${encodeURIComponent(pesanWA)}`;
