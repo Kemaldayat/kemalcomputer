@@ -1175,6 +1175,8 @@ if (consultationForm) {
         const nama = document.getElementById('consNama').value.trim();
         const type = document.getElementById('consDeviceType').value;
         const brand = document.getElementById('consDeviceBrand').value.trim();
+        const trigger = document.getElementById('consTrigger').value;
+        const powerState = document.getElementById('consPowerState').value;
         const symptoms = document.getElementById('consSymptoms').value.trim().toLowerCase();
         
         const btn = document.getElementById('btnAnalisisAi');
@@ -1194,12 +1196,20 @@ if (consultationForm) {
         let cause = "";
         let solution = "";
         
-        // Core Rules Engine - Accumulate all matched issues
-        const hasKeyword = (keywords) => keywords.some(kw => symptoms.includes(kw));
+        // Core Rules Engine - Accumulate all matched issues with exact word matching (boundary-safe)
+        const hasKeyword = (keywords) => {
+            const words = symptoms.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, " ").split(/\s+/);
+            return keywords.some(kw => {
+                if (kw.includes(" ")) {
+                    return symptoms.includes(kw);
+                }
+                return words.includes(kw);
+            });
+        };
         let matched = [];
         
         // 1. Mati Total
-        if (hasKeyword(['mati total', 'matot', 'tidak menyala', 'tidak hidup', 'mati', 'no power'])) {
+        if (powerState === "MatiTotal" || hasKeyword(['mati total', 'matot', 'tidak menyala', 'tidak hidup', 'mati', 'no power'])) {
             if (type === "Smartphone") {
                 matched.push({
                     title: "Mati Total / Kendala Daya",
@@ -1315,7 +1325,7 @@ if (consultationForm) {
         }
         
         // 4. Layar / LCD
-        if (hasKeyword(['layar', 'lcd', 'pecah', 'bergaris', 'kedip', 'flicker', 'gelap', 'blank', 'retak', 'touchscreen'])) {
+        if (powerState === "NoDisplay" || hasKeyword(['layar', 'lcd', 'pecah', 'bergaris', 'kedip', 'flicker', 'gelap', 'blank', 'retak', 'touchscreen'])) {
             if (type === "Smartphone") {
                 matched.push({
                     title: "Kerusakan Layar / LCD",
@@ -1536,7 +1546,7 @@ if (consultationForm) {
         }
         
         // 10. Kemasukan Air
-        if (hasKeyword(['air', 'cairan', 'kopi', 'teh', 'hujan', 'basah', 'tumpah', 'kemasukan', 'nyemplung'])) {
+        if (trigger === "Air" || hasKeyword(['air', 'cairan', 'kopi', 'teh', 'hujan', 'basah', 'tumpah', 'kemasukan', 'nyemplung'])) {
             if (type === "Smartphone") {
                 matched.push({
                     title: "Kemasukan Air / Cairan",
@@ -1599,28 +1609,90 @@ if (consultationForm) {
             }
         }
         
+        // 12. Sistem Operasi / Software Corrupt / Bootloop (Triggered by Update or Bootloop, or keywords)
+        if (trigger === "Update" || powerState === "Bootloop" || hasKeyword(['bootloop', 'corrupt', 'gagal boot', 'stuck logo', 'update gagal', 'os error', 'sistem error', 'blue screen', 'bsod'])) {
+            if (type === "Smartphone") {
+                matched.push({
+                    title: "Kerusakan OS / Bootloop HP",
+                    cause: "Sistem operasi Android/iOS mengalami crash, bootloop (mentok logo), atau gagal update software (corrupt firmware).",
+                    price: "Rp 100.000 - Rp 250.000",
+                    solutions: [
+                        "<b>Flashing / Install Ulang Firmware:</b> Teknisi akan melakukan flash ulang ROM/Firmware resmi sesuai tipe HP.",
+                        "<b>Recovery Mode:</b> Melakukan wipe cache / factory reset lewat Android Recovery jika sistem hanya mengalami crash ringan.",
+                        "<b>Estimasi Waktu:</b> 1 - 2 Jam."
+                    ]
+                });
+            } else if (type === "PC Desktop") {
+                matched.push({
+                    title: "Kerusakan OS / Gagal Booting PC",
+                    cause: "Sistem operasi Windows/Linux corrupt, file system rusak setelah update gagal, bad sector pada harddisk, atau partisi booting terhapus.",
+                    price: "Rp 100.000 - Rp 200.000",
+                    solutions: [
+                        "<b>Instal Ulang OS (Clean Install):</b> Melakukan instalasi ulang OS Windows lengkap dengan driver terupdate dan software standar.",
+                        "<b>Perbaikan Bootloader:</b> Melakukan rebuild sector booting via CMD/Recovery jika OS masih bisa diselamatkan.",
+                        "<b>Estimasi Waktu:</b> 1 - 2 Jam (Bisa ditunggu)."
+                    ]
+                });
+            } else {
+                matched.push({
+                    title: "Kerusakan OS / Gagal Booting Laptop",
+                    cause: "Sistem operasi Windows/MacOS corrupt, file system rusak setelah update gagal, bad sector pada harddisk, atau partisi booting terhapus.",
+                    price: "Rp 100.000 - Rp 200.000",
+                    solutions: [
+                        "<b>Instal Ulang OS (Clean Install):</b> Melakukan instalasi ulang OS Windows/MacOS lengkap dengan driver terupdate dan software standar.",
+                        "<b>Perbaikan Bootloader:</b> Melakukan rebuild sector booting via CMD/Recovery jika OS masih bisa diselamatkan.",
+                        "<b>Estimasi Waktu:</b> 1 - 2 Jam (Bisa ditunggu)."
+                    ]
+                });
+            }
+        }
+
+        // 13. Potensi Kerusakan Fisik akibat Jatuh (Triggered by Jatuh)
+        if (trigger === "Jatuh" && !matched.some(m => m.title.includes("Layar") || m.title.includes("LCD") || m.title.includes("Tampilan"))) {
+            matched.push({
+                title: "Potensi Kerusakan Fisik / Benturan",
+                cause: "Perangkat mengalami benturan fisik berat, berpotensi melonggarkan soket internal, meretakkan jalur logic board/motherboard, atau merusak komponen sensitif di dalam.",
+                price: "Pemeriksaan Fisik Gratis (Estimasi biaya tergantung komponen yang terbukti rusak)",
+                solutions: [
+                    "<b>Bongkar & Rekoneksi Soket:</b> Teknisi kami akan memeriksa dan menghubungkan ulang semua kabel fleksibel (fleksibel baterai, layar, dll) yang bergeser akibat benturan.",
+                    "<b>Scanning Jalur Mesin:</b> Melacak retakan jalur PCB sirkuit jika ada komponen penting yang tidak terdeteksi oleh sistem.",
+                    "<b>Estimasi Waktu:</b> 1 Jam."
+                ]
+            });
+        }
+        
         // Final Assembly of Cause and Solutions
         let priceText = "-";
+        let cleanCauseForWa = "";
+        let cleanSolutionForWa = "";
+
         if (matched.length > 0) {
-            if (matched.length === 1) {
-                cause = matched[0].cause;
-                priceText = matched[0].price;
-                solution = `<ul class="ai-solution-list">` + 
-                           matched[0].solutions.map(s => `<li>${s}</li>`).join('') + 
-                           `</ul>`;
-            } else {
-                // Multi-symptom format
-                cause = matched.map((m, i) => `[Kendala ${i+1}] ${m.title}: ${m.cause}`).join('\n\n');
-                priceText = matched.map((m, i) => `[Kendala ${i+1}] ${m.title}: ${m.price}`).join('\n');
+            // DIAGNOSIS UTAMA (Fokus pada matched[0])
+            cause = matched[0].cause;
+            priceText = matched[0].price;
+            solution = `<ul class="ai-solution-list">` + 
+                       matched[0].solutions.map(s => `<li>${s}</li>`).join('') + 
+                       `</ul>`;
+            
+            cleanCauseForWa = matched[0].cause.replace(/<b>|<\/b>/g, '');
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = solution;
+            cleanSolutionForWa = Array.from(tempDiv.querySelectorAll('li'))
+                                       .map(li => `• ${li.innerText.replace(/<b>|<\/b>/g, '')}`)
+                                       .join('\n');
+
+            // KENDALA SEKUNDER (Jika ada sirkuit lain yang terdeteksi)
+            if (matched.length > 1) {
+                const secondaryIssues = matched.slice(1);
+                const secondaryTitles = secondaryIssues.map(m => m.title).join(', ');
                 
-                solution = matched.map((m, i) => {
-                    return `<div style="margin-bottom: 1.5rem; ${i > 0 ? 'border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1rem;' : ''}">
-                        <h4 style="color: var(--color-primary-light); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px; font-size: 1rem;"><i class="fas fa-tools"></i> Solusi: ${m.title}</h4>
-                        <ul class="ai-solution-list" style="margin-top: 0.25rem;">
-                            ${m.solutions.map(s => `<li>${s}</li>`).join('')}
-                        </ul>
-                    </div>`;
-                }).join('');
+                // Tambahkan keterangan kendala sekunder secara minimalis di bawah rekomendasi tindakan
+                solution += `<div style="margin-top: 1.5rem; padding: 1rem; background: rgba(245, 158, 11, 0.05); border: 1px dashed rgba(245, 158, 11, 0.2); border-radius: var(--radius-md);">
+                    <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #fbbf24; letter-spacing: 0.5px; display: block; margin-bottom: 0.4rem;">⚠️ Terdeteksi Potensi Kendala Lainnya:</span>
+                    <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.5;">
+                        Ada indikasi masalah sekunder pada: <b>${secondaryTitles}</b>. Teknisi kami akan melakukan pengecekan menyeluruh pada bagian ini saat pemeriksaan fisik langsung.
+                    </p>
+                </div>`;
             }
         } else {
             // Fallback default if no keywords match
@@ -1640,6 +1712,13 @@ if (consultationForm) {
                     <li>Saran Tindakan: Silakan bawa perangkat Anda ke Kemal Computer untuk pemeriksaan fisik secara presisi oleh teknisi kami.</li>
                 </ul>`;
             }
+
+            cleanCauseForWa = cause;
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = solution;
+            cleanSolutionForWa = Array.from(tempDiv.querySelectorAll('li'))
+                                       .map(li => `• ${li.innerText.replace(/<b>|<\/b>/g, '')}`)
+                                       .join('\n');
         }
         
         // Tampilkan Hasil di UI
@@ -1648,21 +1727,37 @@ if (consultationForm) {
         document.getElementById('aiResultPrice').innerText = priceText;
         
         // Rancang WhatsApp Link
-        const cleanCause = cause.replace(/<b>|<\/b>/g, '');
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = solution;
-        const cleanSolutionText = Array.from(tempDiv.querySelectorAll('li'))
-                                       .map(li => `• ${li.innerText.replace(/<b>|<\/b>/g, '')}`)
-                                       .join('\n');
+        const triggerMap = {
+            "Normal": "Tiba-tiba (Tidak ada kejadian khusus)",
+            "Jatuh": "Pernah jatuh / benturan fisik",
+            "Air": "Terkena air / ketumpahan cairan",
+            "Update": "Setelah update software / OS"
+        };
+        const powerMap = {
+            "MatiTotal": "Mati total (tidak ada lampu/kipas)",
+            "NoDisplay": "Nyala, tapi layar blank/gelap",
+            "Bootloop": "Mentok di logo (bootloop)",
+            "Normal": "Masuk ke sistem operasi (bisa digunakan)"
+        };
         
+        const friendlyTrigger = triggerMap[trigger] || trigger;
+        const friendlyPowerState = powerMap[powerState] || powerState;
+
+        // Ambil info kendala sekunder jika ada untuk dicatat di WA
+        const secondaryNoteWa = matched.length > 1 
+            ? `\n*Potensi Kendala Sekunder:* ${matched.slice(1).map(m => m.title).join(', ')}`
+            : '';
+
         const textWa = `Halo Kemal Computer, saya ingin konsultasi & reservasi servis:\n\n` +
                        `• *Nama:* ${nama}\n` +
                        `• *Perangkat:* ${type} (${brand})\n` +
-                       `• *Keluhan:* ${document.getElementById('consSymptoms').value.trim()}\n\n` +
+                       `• *Kronologi/Pemicu:* ${friendlyTrigger}\n` +
+                       `• *Kondisi Perangkat:* ${friendlyPowerState}\n` +
+                       `• *Keluhan Tambahan:* ${document.getElementById('consSymptoms').value.trim()}\n\n` +
                        `🤖 *DIAGNOSA INSTAN AI TOKO*:\n` +
-                       `*Kemungkinan:* ${cleanCause}\n` +
-                       `*Rekomendasi Tindakan:*\n${cleanSolutionText}\n` +
-                       `*Estimasi Biaya:* ${priceText}\n\n` +
+                       `*Diagnosa Utama:* ${cleanCauseForWa}\n` +
+                       `*Rekomendasi Tindakan:*\n${cleanSolutionForWa}${secondaryNoteWa}\n\n` +
+                       `*Estimasi Biaya Utama:* ${priceText}\n\n` +
                        `Mohon informasi mengenai jadwal pemeriksaan fisik untuk diagnosa final. Terima kasih!`;
         
         const waLink = `https://wa.me/${globalWaNumber || '6281234567890'}?text=${encodeURIComponent(textWa)}`;

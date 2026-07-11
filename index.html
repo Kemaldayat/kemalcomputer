@@ -446,7 +446,7 @@
                             <div class="input-group-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                                 <div class="input-group">
                                     <i class="fas fa-user"></i>
-                                    <input type="text" id="testimoniNama" class="input-field" placeholder="Nama Lengkap Anda" maxlength="50" required>
+                                    <input type="text" id="testimoniNama" class="input-field" placeholder="Nama Anda" maxlength="50" required>
                                 </div>
                                 <div class="input-group">
                                     <i class="fas fa-briefcase"></i>
@@ -531,7 +531,7 @@
                         <!-- Nama -->
                         <div class="input-group mb-4">
                             <i class="fas fa-user"></i>
-                            <input type="text" id="consNama" class="input-field" placeholder="Nama Lengkap Anda" required>
+                            <input type="text" id="consNama" class="input-field" placeholder="Nama Anda" required>
                         </div>
 
                         <!-- Device Type & Brand Grid -->
@@ -550,6 +550,32 @@
                             <div class="input-group">
                                 <i class="fas fa-laptop"></i>
                                 <input type="text" id="consDeviceBrand" class="input-field" placeholder="Merek/Tipe (Cth: Asus ROG, iPhone 12)" required>
+                            </div>
+                        </div>
+
+                        <!-- Trigger & Booting State Grid -->
+                        <div class="input-group-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="input-group">
+                                <i class="fas fa-history"></i>
+                                <select id="consTrigger" class="input-field" required style="padding-left: 3rem; -webkit-appearance: none; -moz-appearance: none; appearance: none; cursor: pointer;">
+                                    <option value="" disabled selected>Kronologi / Pemicu</option>
+                                    <option value="Normal">Tiba-tiba (Tidak ada kejadian khusus)</option>
+                                    <option value="Jatuh">Pernah jatuh / benturan fisik</option>
+                                    <option value="Air">Terkena air / ketumpahan cairan</option>
+                                    <option value="Update">Setelah update software / OS</option>
+                                </select>
+                                <i class="fas fa-chevron-down" style="position: absolute; right: 1rem; left: auto; pointer-events: none; color: var(--color-text-muted); top: 50%; transform: translateY(-50%);"></i>
+                            </div>
+                            <div class="input-group">
+                                <i class="fas fa-power-off"></i>
+                                <select id="consPowerState" class="input-field" required style="padding-left: 3rem; -webkit-appearance: none; -moz-appearance: none; appearance: none; cursor: pointer;">
+                                    <option value="" disabled selected>Kondisi Booting / Daya</option>
+                                    <option value="MatiTotal">Mati total (tidak ada lampu/kipas)</option>
+                                    <option value="NoDisplay">Nyala, tapi layar blank/gelap</option>
+                                    <option value="Bootloop">Mentok di logo (bootloop)</option>
+                                    <option value="Normal">Masuk ke sistem operasi (bisa digunakan)</option>
+                                </select>
+                                <i class="fas fa-chevron-down" style="position: absolute; right: 1rem; left: auto; pointer-events: none; color: var(--color-text-muted); top: 50%; transform: translateY(-50%);"></i>
                             </div>
                         </div>
 
