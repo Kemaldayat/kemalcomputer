@@ -402,7 +402,15 @@ window.trackService = async (kodeParam = null) => {
                 const garansiDate = new Date(service.garansi_sampai);
                 const formatter = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
                 if (now <= garansiDate) {
-                    garansiHtml = `<div class="tracking-row" style="border-bottom:none;"><div class="tracking-label"><i class="fas fa-shield-alt" style="color:#10b981; background:rgba(16, 185, 129, 0.1);"></i> Garansi Digital</div><div class="tracking-value"><span style="color:#10b981; font-weight:bold;"><i class="fas fa-check-circle"></i> Aktif s.d ${formatter.format(garansiDate)}</span></div></div>`;
+                    const formattedDate = formatter.format(garansiDate);
+                    garansiHtml = `
+                    <div class="tracking-row" style="border-bottom:none;">
+                        <div class="tracking-label"><i class="fas fa-shield-alt" style="color:#10b981; background:rgba(16, 185, 129, 0.1);"></i> Garansi Digital</div>
+                        <div class="tracking-value kc-warranty-value-wrap">
+                            <span style="color:#10b981; font-weight:bold;"><i class="fas fa-check-circle"></i> Aktif s.d ${formattedDate}</span>
+                            <button onclick="window.claimWarranty()" class="btn-claim-garansi"><i class="fab fa-whatsapp"></i> Klaim Garansi</button>
+                        </div>
+                    </div>`;
                 } else {
                     garansiHtml = `<div class="tracking-row" style="border-bottom:none;"><div class="tracking-label"><i class="fas fa-shield-alt" style="color:#ef4444; background:rgba(239, 68, 68, 0.1);"></i> Garansi Digital</div><div class="tracking-value"><span style="color:#ef4444; font-weight:bold;"><i class="fas fa-times-circle"></i> Habis per ${formatter.format(garansiDate)}</span></div></div>`;
                 }
@@ -669,10 +677,54 @@ window.trackService = async (kodeParam = null) => {
                     .tracking-label { font-weight: 600; color: var(--color-text-muted); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
                     .tracking-label i { width: 30px; height: 30px; background: rgba(0,0,0,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
                     .tracking-value { font-weight: 500; color: var(--color-text); }
+                    .kc-warranty-value-wrap {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        flex-wrap: wrap;
+                    }
+                    .btn-claim-garansi {
+                        padding: 6px 14px;
+                        font-size: 0.78rem;
+                        font-weight: 600;
+                        border-radius: 6px;
+                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                        color: white;
+                        border: none;
+                        cursor: pointer;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+                        transition: all 0.2s;
+                    }
+                    .btn-claim-garansi:hover {
+                        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+                        transform: translateY(-1px);
+                        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+                    }
+                    .btn-claim-garansi:active {
+                        transform: translateY(0);
+                    }
                     @media(min-width: 768px){
                         .tracking-row { flex-direction: row; }
                         .tracking-label { width: 35%; margin-bottom: 0; }
                         .tracking-value { width: 65%; }
+                    }
+                    @media(max-width: 768px){
+                        .kc-warranty-value-wrap {
+                            flex-direction: column;
+                            align-items: stretch;
+                            gap: 8px;
+                            width: 100%;
+                            margin-top: 0.25rem;
+                        }
+                        .btn-claim-garansi {
+                            width: 100%;
+                            justify-content: center;
+                            padding: 10px;
+                            font-size: 0.85rem;
+                        }
                     }
                     
                     /* ── Responsive Mobile Timelines (max-width: 576px) ── */
@@ -922,6 +974,37 @@ if (checkStatusForm) {
         window.trackService();
     });
 }
+
+// Klaim Garansi Customer via WhatsApp
+window.claimWarranty = () => {
+    if (!window.currentTrackedService || !window.currentTrackedCode) return;
+    const s = window.currentTrackedService;
+    const code = window.currentTrackedCode;
+    
+    if (!globalWaNumber) {
+        if (window.showSweetAlert) window.showSweetAlert('Nomor WA Toko belum diatur.', 'info');
+        else alert('Nomor WA Toko belum diatur.');
+        return;
+    }
+    
+    const expiredDate = new Date(s.garansi_sampai).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const message = `Halo Admin Kemal Computer,
+Saya ingin mengajukan klaim garansi untuk servis berikut:
+
+• No. Invoice    : ${code}
+• Pelanggan      : ${s.nama}
+• Device         : ${s.device || '-'}
+• Keluhan Awal   : ${s.kerusakan}
+• Berlaku Sampai : ${expiredDate}
+
+Kendala baru yang dialami saat ini:
+[Tulis kendala baru Anda di sini...]
+
+Mohon panduannya untuk proses klaim garansi. Terima kasih!`;
+
+    const waUrl = `https://api.whatsapp.com/send?phone=${globalWaNumber}&text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank');
+};
 
 // Print Invoice Customer
 window.printCustomerInvoice = async () => {
