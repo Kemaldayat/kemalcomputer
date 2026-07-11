@@ -739,7 +739,39 @@
         window.openEditModal = (code) => {
             const s = servicesData[code]; if (!s) return;
             document.getElementById('editKodeService').value = code; document.getElementById('editNama').value = s.nama; document.getElementById('editDevice').value = s.device || ''; document.getElementById('editKerusakan').value = s.kerusakan; document.getElementById('editNomorHp').value = s.nomorHp || ''; document.getElementById('editBiaya').value = s.biaya || ''; document.getElementById('editModalKomponen').value = s.modal_komponen || ''; document.getElementById('editStatus').value = s.status; document.getElementById('editPaymentStatus').value = s.payment_status || 'Belum Dibayar'; document.getElementById('editKeterangan').value = s.keterangan || ''; document.getElementById('editFoto').value = '';
-            document.getElementById('editGaransi').value = "0";
+            
+            // Sinkronisasi Garansi Digital
+            const select = document.getElementById('editGaransi');
+            const oldTemp = document.getElementById('tempActiveGaransi');
+            if (oldTemp) oldTemp.remove();
+            
+            if (s.garansi_sampai) {
+                const now = new Date();
+                const garansiDate = new Date(s.garansi_sampai);
+                const formatter = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                
+                if (now <= garansiDate) {
+                    const diffTime = Math.abs(garansiDate - now);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    const tempOption = document.createElement('option');
+                    tempOption.id = 'tempActiveGaransi';
+                    tempOption.value = 'keep';
+                    tempOption.textContent = `Aktif (Sisa ${diffDays} Hari - s.d ${formatter.format(garansiDate)})`;
+                    select.prepend(tempOption);
+                    select.value = 'keep';
+                } else {
+                    const tempOption = document.createElement('option');
+                    tempOption.id = 'tempActiveGaransi';
+                    tempOption.value = '0';
+                    tempOption.textContent = `Habis per ${formatter.format(garansiDate)}`;
+                    select.prepend(tempOption);
+                    select.value = '0';
+                }
+            } else {
+                select.value = "0";
+            }
+
             if(s.status === 'Selesai' || s.status === 'Diambil') { document.getElementById('garansiGroup').style.display = 'block'; } else { document.getElementById('garansiGroup').style.display = 'none'; }
             let rf = s.fotoUrls || s.fotoUrl; window.existingPhotos = Array.isArray(rf) ? [...rf] : (typeof rf === 'object' && rf !== null ? Object.values(rf) : (typeof rf === 'string' ? [rf] : []));
             window.pendingFiles = []; renderPhotoPreviewsEdit(); document.getElementById('editModal').style.display = 'flex';
@@ -769,11 +801,22 @@
                 }
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
                 const d = { nama: nm, device: dv, kerusakan: kr, nomorHp: hp, biaya: Number(by) || 0, modal_komponen: Number(mk) || 0, status: st, payment_status: pst, keterangan: kt, timestamp: servicesData[code]?.timestamp || new Date().toISOString() };
-                if (servicesData[code]?.garansi_sampai) d.garansi_sampai = servicesData[code].garansi_sampai;
-                if ((st === 'Selesai' || st === 'Diambil') && Number(gr) > 0) {
-                    const now = new Date(); now.setDate(now.getDate() + Number(gr));
-                    d.garansi_sampai = now.toISOString();
-                } else if (st !== 'Selesai' && st !== 'Diambil') {
+                
+                // Mengelola input garansi
+                if (st === 'Selesai' || st === 'Diambil') {
+                    if (gr === 'keep') {
+                        // Mempertahankan tanggal garansi yang aktif sebelumnya
+                        d.garansi_sampai = servicesData[code]?.garansi_sampai || null;
+                    } else if (Number(gr) > 0) {
+                        // Membuat tanggal garansi baru dihitung sejak hari ini
+                        const now = new Date(); now.setDate(now.getDate() + Number(gr));
+                        d.garansi_sampai = now.toISOString();
+                    } else {
+                        // Tidak ada garansi
+                        d.garansi_sampai = null;
+                    }
+                } else {
+                    // Jika status diubah kembali ke Antrian/Proses, hapus garansi
                     d.garansi_sampai = null;
                 }
                 if (fUrls.length > 0) { d.fotoUrls = fUrls; d.fotoUrl = fUrls[0]; } else { d.fotoUrls = null; d.fotoUrl = null; }
