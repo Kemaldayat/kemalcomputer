@@ -370,15 +370,6 @@ window.trackService = async (kodeParam = null) => {
             window.currentTrackedService = service; 
             window.currentTrackedCode = code;
             
-            let statusBadgeClass = '';
-            switch (service.status) { 
-                case 'Menunggu': statusBadgeClass = 'badge-waiting'; break; 
-                case 'Proses': statusBadgeClass = 'badge-process'; break; 
-                case 'Selesai': statusBadgeClass = 'badge-finished'; break; 
-                case 'Diambil': statusBadgeClass = 'badge-pickedup'; break; 
-                default: statusBadgeClass = 'badge-pickedup'; 
-            }
-
             let fotoHtml = ''; 
             let rawFotos = service.fotoUrls || service.fotoUrl; 
             let safeFotoArray = [];
@@ -805,7 +796,6 @@ window.trackService = async (kodeParam = null) => {
                     ${fotoHtml}
                     <div class="tracking-row"><div class="tracking-label"><i class="fas fa-money-bill-wave" style="color:var(--color-success); background:rgba(16, 185, 129, 0.1);"></i> Total Biaya</div><div class="tracking-value" style="font-size:1.25rem; font-weight:700; color:var(--color-primary);">${formatRupiah(service.biaya)}</div></div>
                     ${payRow}
-                    <div class="tracking-row"><div class="tracking-label"><i class="fas fa-tasks" style="color:#8b5cf6; background:rgba(139, 92, 246, 0.1);"></i> Status Saat Ini</div><div class="tracking-value"><span class="badge ${statusBadgeClass}">${service.status}</span></div></div>
                     ${garansiHtml}
                 </div>
                 <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 10px;">
