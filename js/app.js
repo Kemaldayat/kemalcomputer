@@ -1209,8 +1209,19 @@ if (consultationForm) {
         let matched = [];
         
         // 1. Mati Total
-        if (powerState === "MatiTotal" || hasKeyword(['mati total', 'matot', 'tidak menyala', 'tidak hidup', 'mati', 'no power'])) {
-            if (type === "Smartphone") {
+        if (powerState === "MatiTotal" || hasKeyword(['mati total', 'matot', 'tidak menyala', 'tidak hidup', 'mati', 'no power', 'indikator mati saat dicas', 'indikator mati'])) {
+            if (hasKeyword(['indikator mati saat dicas', 'indikator mati', 'lampu indikator mati'])) {
+                matched.push({
+                    title: "Mati Total / Short Circuit 19V",
+                    cause: "Indikasi short circuit (korsleting) pada jalur daya utama (19V). Kemungkinan kerusakan pada IC Power (PMIC) atau komponen SMD seperti mosfet (kaki tiga) yang putus.",
+                    price: "Rp 350.000 - Rp 850.000",
+                    solutions: [
+                        "<b>Pengecekan Jalur Daya:</b> Teknisi kami perlu mengukur sirkuit IC Power & MOSFET menggunakan multimeter untuk menemukan titik komponen yang konslet.",
+                        "<b>Perbaikan/Ganti Komponen:</b> Mengganti IC Power atau komponen SMD mosfet yang terbukti putus/short.",
+                        "<b>Estimasi Waktu:</b> 1 - 3 hari kerja."
+                    ]
+                });
+            } else if (type === "Smartphone") {
                 matched.push({
                     title: "Mati Total / Kendala Daya",
                     cause: "Kerusakan IC Power, baterai drop total, atau terjadi short circuit (korsleting) pada logic board/mesin HP.",
@@ -1247,8 +1258,19 @@ if (consultationForm) {
         }
         
         // 2. Panas / Overheat
-        if (hasKeyword(['panas', 'overheat', 'mati sendiri', 'kipas bising', 'suara keras', 'kipas berisik', 'overheating'])) {
-            if (type === "Smartphone") {
+        if (hasKeyword(['panas', 'overheat', 'mati sendiri', 'kipas bising', 'suara keras', 'kipas berisik', 'overheating', 'mati sendiri saat panas'])) {
+            if (hasKeyword(['mati sendiri saat panas', 'mati sendiri saat overheat', 'mati sendiri']) && type !== "Smartphone") {
+                matched.push({
+                    title: "Overheat / Thermal Shutdown",
+                    cause: "Pasta prosesor (thermal paste) mengering atau sirkulasi heatsink/fan tersumbat debu. Jika berlanjut, berisiko merusak chipset atau VGA (Thermal Shutdown).",
+                    price: "Rp 100.000 - Rp 250.000",
+                    solutions: [
+                        "<b>Pembersihan Heatsink & Kipas:</b> Membersihkan total debu dan kotoran penyumbat fan/heatsink.",
+                        "<b>Repaste Thermal:</b> Mengoleskan thermal paste baru berkinerja tinggi pada CPU/GPU untuk mengoptimalkan hantaran panas.",
+                        "<b>Estimasi Waktu:</b> 1 - 2 Jam (Bisa ditunggu)."
+                    ]
+                });
+            } else if (type === "Smartphone") {
                 matched.push({
                     title: "Suhu Tinggi / Overheat",
                     cause: "Baterai bocor/lemah, penggunaan aplikasi berat (game/multitasking) terus-menerus, atau sirkuit pengisian daya (IC Charger) bermasalah.",
@@ -1325,8 +1347,19 @@ if (consultationForm) {
         }
         
         // 4. Layar / LCD
-        if (powerState === "NoDisplay" || hasKeyword(['layar', 'lcd', 'pecah', 'bergaris', 'kedip', 'flicker', 'gelap', 'blank', 'retak', 'touchscreen'])) {
-            if (type === "Smartphone") {
+        if (powerState === "NoDisplay" || hasKeyword(['layar', 'lcd', 'pecah', 'bergaris', 'kedip', 'flicker', 'gelap', 'blank', 'retak', 'touchscreen', 'no display', 'kipas muter', 'layar gelap'])) {
+            if (powerState === "NoDisplay" || hasKeyword(['no display', 'kipas muter', 'layar gelap', 'gelap'])) {
+                matched.push({
+                    title: "Inisialisasi Visual Gagal (No Display)",
+                    cause: "Indikasi kegagalan inisialisasi visual. Kemungkinan masalah pada tegangan RAM, firmware BIOS yang korup, atau kerusakan jalur eDP/LVDS pada motherboard.",
+                    price: "Rp 150.000 - Rp 450.000",
+                    solutions: [
+                        "<b>Pengecekan RAM & BIOS:</b> Pembersihan pin RAM atau flash ulang firmware BIOS yang korup.",
+                        "<b>Pengecekan Jalur Motherboard:</b> Teknisi kami akan mengukur tegangan dan memeriksa jalur eDP/LVDS pada motherboard.",
+                        "<b>Estimasi Waktu:</b> 1 - 2 hari kerja."
+                    ]
+                });
+            } else if (type === "Smartphone") {
                 matched.push({
                     title: "Kerusakan Layar / LCD",
                     cause: "Panel LCD retak di dalam akibat benturan, kaca touchscreen pecah, atau soket kabel fleksibel layar ke mesin longgar.",
@@ -1362,8 +1395,29 @@ if (consultationForm) {
         }
         
         // 5. Baterai
-        if (hasKeyword(['baterai', 'battery', 'drop', 'cepat habis', 'kembung', 'batre', 'charge', 'cas', 'ngecas', 'kabel power', 'cmos'])) {
-            if (type === "Smartphone") {
+        if (hasKeyword(['baterai', 'battery', 'drop', 'cepat habis', 'kembung', 'batre', 'charge', 'cas', 'ngecas', 'kabel power', 'cmos', 'plugged in', 'not charging', 'persentase loncat', 'drop drastis'])) {
+            if (hasKeyword(['plugged in', 'not charging', 'tidak mengisi'])) {
+                matched.push({
+                    title: "Kegagalan Sirkuit Pengisian Daya",
+                    cause: "Indikasi kegagalan sirkuit pengisian daya. Kemungkinan kerusakan pada IC Charger, mosfet baterai, atau sel baterai itu sendiri sudah melemah.",
+                    price: "Rp 350.000 - Rp 750.000",
+                    solutions: [
+                        "<b>Pengecekan IC Charger & Mosfet:</b> Teknisi kami akan mengukur tegangan sirkuit charging di motherboard untuk mendeteksi short.",
+                        "<b>Pemeriksaan Sel Baterai:</b> Melakukan pengetesan daya langsung pada pin konektor baterai.",
+                        "<b>Estimasi Waktu:</b> 1 - 2 hari kerja."
+                    ]
+                });
+            } else if (hasKeyword(['cepat habis', 'drop drastis', 'persentase loncat', 'baterai cepat habis'])) {
+                matched.push({
+                    title: "Degradasi Sel Baterai",
+                    cause: "Sel baterai degradasi (aus). Memerlukan penggantian modul baterai baru.",
+                    price: "Rp 350.000 - Rp 750.000",
+                    solutions: [
+                        "<b>Ganti Modul Baterai:</b> Mengganti baterai lama dengan unit baru original/premium yang bergaransi resmi.",
+                        "<b>Estimasi Waktu:</b> 30 - 60 Menit (Bisa ditunggu)."
+                    ]
+                });
+            } else if (type === "Smartphone") {
                 matched.push({
                     title: "Baterai / Pengisian Daya",
                     cause: "Usia sel baterai telah habis (kembung/drop) atau kerusakan pada komponen port USB charger bawah.",

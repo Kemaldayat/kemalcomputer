@@ -157,21 +157,36 @@
         };
 
         const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.7) => {
-            return new Promise((r) => {
-                const reader = new FileReader(); reader.readAsDataURL(file);
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
                 reader.onload = (e) => {
-                    const img = new Image(); img.src = e.target.result;
+                    const img = new Image();
+                    img.src = e.target.result;
                     img.onload = () => {
                         let w = img.width, h = img.height;
                         if (w > h && w > maxWidth) { h *= maxWidth / w; w = maxWidth; }
                         else if (h > maxHeight) { w *= maxHeight / h; h = maxHeight; }
-                        const cvs = document.createElement('canvas'); cvs.width = w; cvs.height = h;
+                        const cvs = document.createElement('canvas');
+                        cvs.width = w;
+                        cvs.height = h;
                         cvs.getContext('2d').drawImage(img, 0, 0, w, h);
 
                         let fileType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-                        cvs.toBlob((b) => r(new File([b], file.name, { type: fileType })), fileType, quality);
+                        cvs.toBlob((b) => resolve(new File([b], file.name, { type: fileType })), fileType, quality);
                     };
+                    img.onerror = (err) => reject(err);
                 };
+                reader.onerror = (err) => reject(err);
+            });
+        };
+
+        const fileToBase64 = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (error) => reject(error);
             });
         };
 
@@ -182,10 +197,21 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 0%'; btn.disabled = true;
             try {
                 let f = await compressImage(file, 600, 600, 0.8);
-                const res = await uploadToImgBBWithProgress(f, (pct) => {
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${pct}%`;
-                });
-                if (res.success) textInput.value = res.data.url; // Simpan URL asli ke input
+                let finalUrl = "";
+                try {
+                    const res = await uploadToImgBBWithProgress(f, (pct) => {
+                        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${pct}%`;
+                    });
+                    if (res.success) {
+                        finalUrl = res.data.url;
+                    } else {
+                        throw new Error("Upload failed on server");
+                    }
+                } catch (uploadErr) {
+                    console.warn("ImgBB upload failed, falling back to Base64:", uploadErr);
+                    finalUrl = await fileToBase64(f);
+                }
+                textInput.value = finalUrl;
             } catch (e) { window.showSweetAlert("Gagal upload foto.", "error"); console.log(e); }
             btn.innerHTML = '<i class="fas fa-upload"></i> Foto'; btn.disabled = false; inputElem.value = '';
         };
@@ -209,14 +235,23 @@
             btn.disabled = true;
             try {
                 let f = await compressImage(file, 800, 800, 0.8);
-                const res = await uploadToImgBBWithProgress(f, (pct) => {
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${pct}%`;
-                });
-                if (res.success) {
-                    textInput.value = res.data.url;
-                    previewImg.src = antiBlokir(res.data.url);
-                    previewImg.style.display = 'block';
+                let finalUrl = "";
+                try {
+                    const res = await uploadToImgBBWithProgress(f, (pct) => {
+                        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${pct}%`;
+                    });
+                    if (res.success) {
+                        finalUrl = res.data.url;
+                    } else {
+                        throw new Error("Upload failed on server");
+                    }
+                } catch (uploadErr) {
+                    console.warn("ImgBB upload failed, falling back to Base64:", uploadErr);
+                    finalUrl = await fileToBase64(f);
                 }
+                textInput.value = finalUrl;
+                previewImg.src = antiBlokir(finalUrl);
+                previewImg.style.display = 'block';
             } catch (e) { window.showSweetAlert("Gagal upload QRIS.", "error"); console.log(e); }
             btn.innerHTML = '<i class="fas fa-upload"></i> Upload';
             btn.disabled = false;
@@ -425,10 +460,20 @@
                 const btnSave = document.getElementById('btnSaveSettings'); btnSave.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Upload Logo (0%)..."; btnSave.disabled = true;
                 try {
                     let f = await compressImage(file, 800, 800, 0.8);
-                    const res = await uploadToImgBBWithProgress(f, (pct) => {
-                        btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Upload Logo (${pct}%)...`;
-                    });
-                    if (res.success) document.getElementById('setLogoUrl').value = res.data.url;
+                    try {
+                        const res = await uploadToImgBBWithProgress(f, (pct) => {
+                            btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Upload Logo (${pct}%)...`;
+                        });
+                        if (res.success) {
+                            document.getElementById('setLogoUrl').value = res.data.url;
+                        } else {
+                            throw new Error("Logo upload failed");
+                        }
+                    } catch (uploadErr) {
+                        console.warn("Logo upload to ImgBB failed, falling back to Base64:", uploadErr);
+                        const base64Url = await fileToBase64(f);
+                        document.getElementById('setLogoUrl').value = base64Url;
+                    }
                 } catch (err) { console.log(err); }
                 btnSave.innerHTML = "<i class='fas fa-save'></i> Simpan Pengaturan CMS"; btnSave.disabled = false;
             }
@@ -443,10 +488,20 @@
             for (let i = 0; i < window.pendingSliders.length; i++) {
                 try {
                     let f = await compressImage(window.pendingSliders[i], 1200, 800, 0.8);
-                    const res = await uploadToImgBBWithProgress(f, (pct) => {
-                        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Slider ${i + 1}/${window.pendingSliders.length} (${pct}%)...`;
-                    });
-                    if (res.success) finalSliders.push(res.data.url);
+                    try {
+                        const res = await uploadToImgBBWithProgress(f, (pct) => {
+                            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Slider ${i + 1}/${window.pendingSliders.length} (${pct}%)...`;
+                        });
+                        if (res.success) {
+                            finalSliders.push(res.data.url);
+                        } else {
+                            throw new Error("Slider upload failed");
+                        }
+                    } catch (uploadErr) {
+                        console.warn("Slider upload to ImgBB failed, falling back to Base64:", uploadErr);
+                        const base64Url = await fileToBase64(f);
+                        finalSliders.push(base64Url);
+                    }
                 } catch (e) { console.log(e); }
             }
 
@@ -859,17 +914,34 @@
         window.saveEdit = async () => {
             const code = document.getElementById('editKodeService').value, nm = document.getElementById('editNama').value.trim(), dv = document.getElementById('editDevice').value.trim(), kr = document.getElementById('editKerusakan').value.trim(), hp = document.getElementById('editNomorHp').value.trim(), by = document.getElementById('editBiaya').value.trim(), mk = document.getElementById('editModalKomponen').value.trim(), st = document.getElementById('editStatus').value, pst = document.getElementById('editPaymentStatus').value, kt = document.getElementById('editKeterangan').value.trim(), gr = document.getElementById('editGaransi').value, btn = document.getElementById('btnSaveEdit');
             if (!nm || !dv || !kr || !hp || !st) return showModal('Wajib diisi semua!', 'info');
+            
+            // Validasi Nomor HP
+            if (!/^\d+$/.test(hp) || !hp.startsWith('62') || hp.length < 10) {
+                return showModal('Nomor HP tidak valid. Wajib diawali 62, hanya angka, dan minimal 10 digit (Contoh: 62812...).', 'info');
+            }
+
             btn.disabled = true;
             try {
                 let fUrls = [...window.existingPhotos];
                 for (let i = 0; i < window.pendingFiles.length; i++) {
                     try {
                         let f = await compressImage(window.pendingFiles[i], 800, 800, 0.7);
-                        const result = await uploadToImgBBWithProgress(f, (pct) => {
-                            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Foto ${i + 1}/${window.pendingFiles.length} (${pct}%)...`;
-                        });
-                        if (result.success) fUrls.push(result.data.url);
-                    } catch (e) { console.log(e); }
+                        try {
+                            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Foto ${i + 1}/${window.pendingFiles.length} (Uploading)...`;
+                            const result = await uploadToImgBBWithProgress(f, (pct) => {
+                                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Foto ${i + 1}/${window.pendingFiles.length} (${pct}%)...`;
+                            });
+                            if (result.success) {
+                                fUrls.push(result.data.url);
+                            } else {
+                                throw new Error("Upload failed on server");
+                            }
+                        } catch (uploadErr) {
+                            console.warn("ImgBB upload failed, falling back to Base64:", uploadErr);
+                            const base64Url = await fileToBase64(f);
+                            fUrls.push(base64Url);
+                        }
+                    } catch (e) { console.error("Error processing photo:", e); }
                 }
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
                 const d = { nama: nm, device: dv, kerusakan: kr, nomorHp: hp, biaya: Number(by) || 0, modal_komponen: Number(mk) || 0, status: st, payment_status: pst, keterangan: kt, timestamp: servicesData[code]?.timestamp || new Date().toISOString() };

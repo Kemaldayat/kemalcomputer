@@ -547,7 +547,7 @@
         <div class="modal-content">
             <span class="close-button" onclick="closeEditModal()">×</span>
             <h2>Edit Layanan</h2>
-            <form id="editForm">
+            <form id="editForm" onsubmit="event.preventDefault(); saveEdit();">
                 <div class="form-group"><label>Kode Service</label><input type="text" id="editKodeService" readonly
                         style="background:#e2e8f0; cursor:not-allowed;"></div>
                 <div class="form-group"><label>Nama</label><input type="text" id="editNama" required></div>
@@ -606,7 +606,7 @@
         <div class="modal-content">
             <span class="close-button" onclick="closeExpenseModal()">×</span>
             <h2>Tambah Pengeluaran</h2>
-            <form id="expenseForm">
+            <form id="expenseForm" onsubmit="event.preventDefault(); saveExpense();">
                 <div class="form-group"><label>Tanggal</label><input type="date" id="expTanggal" required></div>
                 <div class="form-group"><label>Keterangan</label><input type="text" id="expKeterangan" required></div>
                 <div class="form-group"><label>Nominal (Rp)</label><input type="number" id="expNominal" min="1"
@@ -625,7 +625,7 @@
         <div class="modal-content">
             <span class="close-button" onclick="closeInventoryModal()">×</span>
             <h2 id="inventoryModalTitle">Tambah Barang Inventaris</h2>
-            <form id="inventoryForm">
+            <form id="inventoryForm" onsubmit="event.preventDefault(); saveInventory();">
                 <input type="hidden" id="invId">
                 <div class="form-group"><label>Nama Barang / Sparepart</label><input type="text" id="invNama" required>
                 </div>
@@ -649,7 +649,7 @@
         <div class="modal-content">
             <span class="close-button" onclick="closeMutasiModal()">×</span>
             <h2>Mutasi Stok Barang</h2>
-            <form id="mutasiForm">
+            <form id="mutasiForm" onsubmit="event.preventDefault(); saveMutasi();">
                 <input type="hidden" id="mutasiInvId">
                 <input type="hidden" id="mutasiInvNama">
                 <div class="form-group">
