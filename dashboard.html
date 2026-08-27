@@ -36,15 +36,15 @@
                     class="fas fa-wallet"></i> Keuangan</button>
         </div>
 
-        <div class="sidebar-category owner-only" style="margin-top: 25px; display: none;">Pengaturan CMS</div>
-        <div class="menu-list owner-only" style="display: none;">
+        <div class="sidebar-category owner-admin-only" style="margin-top: 25px; display: none;">Pengaturan CMS</div>
+        <div class="menu-list owner-admin-only" style="display: none;">
             <button class="menu-item" onclick="openTab('tab-identitas', this, 'Identitas & Legalitas')"><i
                     class="fas fa-store"></i> Identitas & Legalitas</button>
             <button class="menu-item" onclick="openTab('tab-tampilan', this, 'Tampilan Beranda')"><i
                     class="fas fa-desktop"></i> Tampilan Beranda</button>
             <button class="menu-item" onclick="openTab('tab-katalog', this, 'Katalog Produk')"><i
                     class="fas fa-shopping-bag"></i> Katalog Produk</button>
-            <button class="menu-item owner-only" id="menuUlasanPending"
+            <button class="menu-item owner-admin-only" id="menuUlasanPending"
                 onclick="openTab('tab-ulasan-pending', this, 'Ulasan Pending')"
                 style="position: relative; display: none;"><i class="fas fa-star"></i> Ulasan Pending
                 <span id="badgePending"
@@ -301,8 +301,9 @@
                                 <label>Peran / Hak Akses</label>
                                 <select id="staffRole" required
                                     style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--secondary-color); color: var(--text-color);">
-                                    <option value="Teknisi">Teknisi (Hanya Kelola Servis)</option>
-                                    <option value="Kasir">Kasir (Kelola Servis & Stok Barang)</option>
+                                    <option value="Admin">Admin (Kelola Operasional & CMS)</option>
+                                    <option value="Kasir">Kasir (Kelola Operasional)</option>
+                                    <option value="Teknisi">Teknisi (Kelola Operasional)</option>
                                 </select>
                             </div>
                             <button type="submit" class="btn btn-primary"

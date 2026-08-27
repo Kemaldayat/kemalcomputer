@@ -1085,10 +1085,24 @@
         window.applyRoleGating = (role) => {
             window.currentUserRole = role;
             
-            // 1. Visibilitas Menu Sidebar
+            // 1. Visibilitas Menu Sidebar (Hanya Owner)
             const ownerOnlyElements = document.querySelectorAll('.owner-only');
             ownerOnlyElements.forEach(el => {
                 if (role === 'Owner') {
+                    if (el.tagName === 'BUTTON' || el.classList.contains('menu-list')) {
+                        el.style.setProperty('display', 'flex', 'important');
+                    } else {
+                        el.style.setProperty('display', 'block', 'important');
+                    }
+                } else {
+                    el.style.setProperty('display', 'none', 'important');
+                }
+            });
+
+            // 1b. Visibilitas Menu Sidebar (Owner & Admin)
+            const ownerAdminOnlyElements = document.querySelectorAll('.owner-admin-only');
+            ownerAdminOnlyElements.forEach(el => {
+                if (role === 'Owner' || role === 'Admin') {
                     if (el.tagName === 'BUTTON' || el.classList.contains('menu-list')) {
                         el.style.setProperty('display', 'flex', 'important');
                     } else {
