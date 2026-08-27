@@ -38,6 +38,12 @@
 
         <div class="sidebar-category owner-only" style="margin-top: 25px; display: none;">Pengaturan CMS</div>
         <div class="menu-list owner-only" style="display: none;">
+            <button class="menu-item" onclick="openTab('tab-identitas', this, 'Identitas & Legalitas')"><i
+                    class="fas fa-store"></i> Identitas & Legalitas</button>
+            <button class="menu-item" onclick="openTab('tab-tampilan', this, 'Tampilan Beranda')"><i
+                    class="fas fa-desktop"></i> Tampilan Beranda</button>
+            <button class="menu-item" onclick="openTab('tab-katalog', this, 'Katalog Produk')"><i
+                    class="fas fa-shopping-bag"></i> Katalog Produk</button>
             <button class="menu-item owner-only" id="menuUlasanPending"
                 onclick="openTab('tab-ulasan-pending', this, 'Ulasan Pending')"
                 style="position: relative; display: none;"><i class="fas fa-star"></i> Ulasan Pending
@@ -46,16 +52,10 @@
             </button>
             <button class="menu-item owner-only" onclick="openTab('tab-staff', this, 'Manajemen Staf')"
                 style="display: none;"><i class="fas fa-user-shield"></i> Staf Karyawan</button>
-            <button class="menu-item" onclick="openTab('tab-identitas', this, 'Identitas & Legalitas')"><i
-                    class="fas fa-store"></i> Identitas & Legalitas</button>
-            <button class="menu-item" onclick="openTab('tab-tampilan', this, 'Tampilan Beranda')"><i
-                    class="fas fa-desktop"></i> Tampilan Beranda</button>
-            <button class="menu-item" onclick="openTab('tab-katalog', this, 'Katalog Produk')"><i
-                    class="fas fa-shopping-bag"></i> Katalog Produk</button>
-            <button class="menu-item" onclick="openTab('tab-login-log', this, 'Riwayat Login')"><i
-                    class="fas fa-history"></i> Log Akses</button>
             <button class="menu-item" onclick="openTab('tab-sosmed', this, 'Sosial Media')"><i
                     class="fas fa-share-alt"></i> Sosial Media</button>
+            <button class="menu-item" onclick="openTab('tab-login-log', this, 'Riwayat Login')"><i
+                    class="fas fa-history"></i> Log Akses</button>
             <button class="menu-item" onclick="openTab('tab-sistem', this, 'Tema & Pembayaran')"><i class="fas fa-cog"></i>
                 Tema & Pembayaran</button>
         </div>
