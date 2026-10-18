@@ -309,6 +309,15 @@
             return Math.round(res / 1000) * 1000;
         }
 
+        function getRakitCategoryItems(category) {
+            if (Array.isArray(category?.items)) return category.items;
+            return Array.isArray(category) ? category : [];
+        }
+
+        function isRakitMonitor(item) {
+            return /^mon_/i.test(item?.id || "") || /\bmonitor\b|\bdisplay\b/i.test(item?.nama || "");
+        }
+
         window.loadRakitPcDataAdmin = async () => {
             const status = document.getElementById('rakitCatalogLoadStatus');
             const saveButton = document.getElementById('btnSaveRakitComponents');
@@ -323,6 +332,29 @@
                 const snapshot = await get(ref(db, 'komponen_rakit'));
                 if (snapshot.exists()) {
                     window.rakitComponents = snapshot.val();
+                    const oldAccessoryCategory = window.rakitComponents.aksesori;
+                    const oldAccessoryItems = getRakitCategoryItems(oldAccessoryCategory);
+                    const monitorCategory = window.rakitComponents.monitor;
+                    const existingMonitorItems = getRakitCategoryItems(monitorCategory);
+                    const movedMonitorItems = oldAccessoryItems.filter(isRakitMonitor);
+                    const monitorItems = [...existingMonitorItems];
+                    movedMonitorItems.forEach(item => {
+                        if (!monitorItems.some(existing => existing.id === item.id)) monitorItems.push(item);
+                    });
+                    const monitorPlaceholder = DEFAULT_COMPONENTS.monitor.items[0];
+
+                    window.rakitComponents.monitor = {
+                        ...DEFAULT_COMPONENTS.monitor,
+                        ...(monitorCategory && !Array.isArray(monitorCategory) ? monitorCategory : {}),
+                        items: monitorItems.some(item => item.id === monitorPlaceholder.id)
+                            ? monitorItems
+                            : [monitorPlaceholder, ...monitorItems]
+                    };
+                    window.rakitComponents.aksesori = {
+                        ...DEFAULT_COMPONENTS.aksesori,
+                        ...(oldAccessoryCategory && !Array.isArray(oldAccessoryCategory) ? oldAccessoryCategory : {}),
+                        items: oldAccessoryItems.filter(item => !isRakitMonitor(item) && item.id !== "aks_0")
+                    };
                 } else {
                     window.rakitComponents = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
                 }
@@ -602,7 +634,7 @@
                 const newCatalog = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
                 Object.keys(newCatalog).forEach(cat => {
                     const placeholder = newCatalog[cat].items[0] || { id: `${cat}_0`, nama: `-- Pilih ${newCatalog[cat].categoryName} --`, hargaNew: 0, hargaSecond: 0 };
-                    newCatalog[cat].items = [placeholder];
+                    newCatalog[cat].items = cat === 'aksesori' ? [] : [placeholder];
                 });
 
                 let parsedCount = 0;
@@ -619,7 +651,7 @@
                     if (catKey === 'powersupply' || catKey === 'power supply') catKey = 'psu';
                     if (catKey === 'case') catKey = 'casing';
                     if (catKey === 'pendingin' || catKey === 'fan') catKey = 'cooler';
-                    if (catKey === 'monitor' || catKey === 'aksesoris') catKey = 'aksesori';
+                    if (catKey === 'aksesoris' || catKey === 'accessories') catKey = 'aksesori';
 
                     if (!newCatalog[catKey]) continue;
 

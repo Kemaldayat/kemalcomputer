@@ -117,15 +117,24 @@ export const DEFAULT_COMPONENTS = {
             { id: "cooler_3", nama: "Liquid Cooler AIO 240mm ARGB Water Cooling", hargaNew: 950000, hargaSecond: 580000 }
         ]
     },
-    aksesori: {
-        categoryName: "Aksesori & Monitor (Opsional)",
-        icon: "fa-tv",
+    monitor: {
+        categoryName: "Monitor",
+        icon: "fa-desktop",
         items: [
-            { id: "aks_0", nama: "Tanpa Aksesori Tambahan", hargaNew: 0, hargaSecond: 0 },
+            { id: "mon_0", nama: "Tanpa Monitor", hargaNew: 0, hargaSecond: 0 },
+            { id: "mon_1", nama: "Monitor 19 Inch HD (Office / Standar)", hargaNew: 750000, hargaSecond: 450000, wattage: 18 },
+            { id: "mon_2", nama: "Monitor 22 Inch Full HD 75Hz / 100Hz", hargaNew: 980000, hargaSecond: 650000, wattage: 22 },
+            { id: "mon_3", nama: "Monitor 24 Inch IPS Full HD 100Hz", hargaNew: 1250000, hargaSecond: 850000, wattage: 25 },
+            { id: "mon_4", nama: "Monitor Gaming 24 Inch IPS 165Hz / 180Hz", hargaNew: 1750000, hargaSecond: 1250000, wattage: 30 },
+            { id: "mon_5", nama: "Monitor Gaming 27 Inch IPS 2K QHD 165Hz+", hargaNew: 3250000, hargaSecond: 2350000, wattage: 40 }
+        ]
+    },
+    aksesori: {
+        categoryName: "Aksesori (bisa pilih lebih dari satu)",
+        icon: "fa-keyboard",
+        items: [
             { id: "aks_1", nama: "USB Wifi Dongle + Bluetooth 5.0", hargaNew: 95000, hargaSecond: 55000 },
             { id: "aks_2", nama: "PCIe Wifi Dual Band Antena Luar + Bluetooth", hargaNew: 245000, hargaSecond: 160000 },
-            { id: "aks_3", nama: "Monitor 22 Inch 75Hz Full HD IPS", hargaNew: 1350000, hargaSecond: 850000 },
-            { id: "aks_4", nama: "Monitor Gaming 24 Inch 100Hz-180Hz IPS Full HD", hargaNew: 1950000, hargaSecond: 1350000 },
             { id: "aks_5", nama: "Combo Keyboard & Mouse RGB Gaming", hargaNew: 185000, hargaSecond: 95000 }
         ]
     }
@@ -147,7 +156,7 @@ export const PRESETS = {
             psu: { id: "psu_2", condition: "new" },
             casing: { id: "case_1", condition: "new" },
             cooler: { id: "cooler_0", condition: "new" },
-            aksesori: { id: "aks_0", condition: "new" }
+            aksesori: []
         }
     },
     gaming_budget: {
@@ -163,7 +172,7 @@ export const PRESETS = {
             psu: { id: "psu_2", condition: "new" },
             casing: { id: "case_2", condition: "new" },
             cooler: { id: "cooler_0", condition: "new" },
-            aksesori: { id: "aks_0", condition: "new" }
+            aksesori: []
         }
     },
     gaming_streamer: {
@@ -179,7 +188,7 @@ export const PRESETS = {
             psu: { id: "psu_3", condition: "new" },
             casing: { id: "case_3", condition: "new" },
             cooler: { id: "cooler_1", condition: "new" },
-            aksesori: { id: "aks_0", condition: "new" }
+            aksesori: []
         }
     },
     all_new_high: {
@@ -195,7 +204,7 @@ export const PRESETS = {
             psu: { id: "psu_4", condition: "new" },
             casing: { id: "case_4", condition: "new" },
             cooler: { id: "cooler_3", condition: "new" },
-            aksesori: { id: "aks_0", condition: "new" }
+            aksesori: []
         }
     },
     office_all_new: {
@@ -211,7 +220,7 @@ export const PRESETS = {
             psu: { id: "psu_2", condition: "new" },
             casing: { id: "case_1", condition: "new" },
             cooler: { id: "cooler_0", condition: "new" },
-            aksesori: { id: "aks_0", condition: "new" }
+            aksesori: []
         }
     },
     gaming_mix_value: {
@@ -227,7 +236,7 @@ export const PRESETS = {
             psu: { id: "psu_2", condition: "new" },
             casing: { id: "case_2", condition: "new" },
             cooler: { id: "cooler_0", condition: "new" },
-            aksesori: { id: "aks_0", condition: "new" }
+            aksesori: []
         }
     },
     gaming_rx6600: {
@@ -243,7 +252,7 @@ export const PRESETS = {
             psu: { id: "psu_3", condition: "new" },
             casing: { id: "case_2", condition: "new" },
             cooler: { id: "cooler_1", condition: "new" },
-            aksesori: { id: "aks_0", condition: "new" }
+            aksesori: []
         }
     },
     creator_ryzen: {
@@ -259,7 +268,7 @@ export const PRESETS = {
             psu: { id: "psu_4", condition: "new" },
             casing: { id: "case_3", condition: "new" },
             cooler: { id: "cooler_2", condition: "new" },
-            aksesori: { id: "aks_0", condition: "new" }
+            aksesori: []
         }
     },
     gaming_am5_4060: {
@@ -275,7 +284,7 @@ export const PRESETS = {
             psu: { id: "psu_4", condition: "new" },
             casing: { id: "case_4", condition: "new" },
             cooler: { id: "cooler_1", condition: "new" },
-            aksesori: { id: "aks_0", condition: "new" }
+            aksesori: []
         }
     },
     gaming_am5_4070: {
@@ -291,7 +300,7 @@ export const PRESETS = {
             psu: { id: "psu_5", condition: "new" },
             casing: { id: "case_4", condition: "new" },
             cooler: { id: "cooler_2", condition: "new" },
-            aksesori: { id: "aks_0", condition: "new" }
+            aksesori: []
         }
     },
     intel_office: {
@@ -307,7 +316,7 @@ export const PRESETS = {
             psu: { id: "psu_2", condition: "new" },
             casing: { id: "case_1", condition: "new" },
             cooler: { id: "cooler_0", condition: "new" },
-            aksesori: { id: "aks_0", condition: "new" }
+            aksesori: []
         }
     },
     intel_gaming_budget: {
@@ -323,7 +332,7 @@ export const PRESETS = {
             psu: { id: "psu_3", condition: "new" },
             casing: { id: "case_2", condition: "new" },
             cooler: { id: "cooler_0", condition: "new" },
-            aksesori: { id: "aks_0", condition: "new" }
+            aksesori: []
         }
     },
     intel_gaming_rtx4060: {
@@ -339,7 +348,7 @@ export const PRESETS = {
             psu: { id: "psu_4", condition: "new" },
             casing: { id: "case_3", condition: "new" },
             cooler: { id: "cooler_1", condition: "new" },
-            aksesori: { id: "aks_0", condition: "new" }
+            aksesori: []
         }
     }
 };
@@ -363,10 +372,9 @@ class PCBuilderController {
 
     initSelectedParts() {
         Object.keys(this.componentsData).forEach(cat => {
-            this.selectedParts[cat] = {
-                id: `${cat}_0`,
-                condition: "new"
-            };
+            this.selectedParts[cat] = cat === "aksesori"
+                ? []
+                : { id: `${cat}_0`, condition: "new" };
         });
     }
 
@@ -388,7 +396,19 @@ class PCBuilderController {
 
                 if (fbData && typeof fbData === "object") {
                     Object.keys(nextComponents).forEach(catKey => {
-                        const categoryData = fbData[catKey];
+                        let categoryData = fbData[catKey];
+                        if (catKey === "monitor" && !categoryData) {
+                            const legacyAccessories = fbData.aksesori;
+                            const legacyItems = Array.isArray(legacyAccessories?.items)
+                                ? legacyAccessories.items
+                                : Array.isArray(legacyAccessories)
+                                    ? legacyAccessories
+                                    : [];
+                            const monitorItems = legacyItems.filter(isMonitorComponent);
+                            if (monitorItems.length) {
+                                categoryData = { items: [nextComponents.monitor.items[0], ...monitorItems] };
+                            }
+                        }
                         if (!categoryData || typeof categoryData !== "object") return;
 
                         const items = Array.isArray(categoryData.items)
@@ -397,13 +417,39 @@ class PCBuilderController {
                                 ? categoryData
                                 : null;
 
-                        if (items) nextComponents[catKey].items = items;
+                        if (items?.length) {
+                            const normalizedItems = catKey === "aksesori"
+                                ? items.filter(item => !isMonitorComponent(item) && item.id !== "aks_0")
+                                : items;
+                            if (normalizedItems.length) {
+                                nextComponents[catKey].items = catKey === "monitor"
+                                    && !normalizedItems.some(item => item.id === "mon_0")
+                                    ? [nextComponents.monitor.items[0], ...normalizedItems]
+                                    : normalizedItems;
+                            }
+                        }
+                    });
+
+                    const accessoryData = fbData.aksesori;
+                    const accessoryItems = Array.isArray(accessoryData?.items)
+                        ? accessoryData.items
+                        : Array.isArray(accessoryData)
+                            ? accessoryData
+                            : [];
+                    const monitorItems = nextComponents.monitor.items;
+                    accessoryItems.filter(isMonitorComponent).forEach(item => {
+                        if (!monitorItems.some(existing => existing.id === item.id)) monitorItems.push(item);
                     });
                 }
 
                 this.componentsData = nextComponents;
                 Object.keys(this.selectedParts).forEach(catKey => {
                     const items = this.componentsData[catKey].items;
+                    if (catKey === "aksesori") {
+                        this.selectedParts[catKey] = this.selectedParts[catKey]
+                            .filter(selection => items.some(item => item.id === selection.id));
+                        return;
+                    }
                     if (!items.some(item => item.id === this.selectedParts[catKey].id)) {
                         this.selectedParts[catKey] = {
                             id: items[0]?.id || `${catKey}_0`,
@@ -437,19 +483,22 @@ class PCBuilderController {
 
             Object.entries(preset.parts).forEach(([catKey, part]) => {
                 const items = this.componentsData[catKey]?.items || [];
-                const item = items.find(component => component.id === part.id);
-                if (!item) {
-                    catalogItemMissing = true;
-                    return;
-                }
+                const selections = Array.isArray(part) ? part : part ? [part] : [];
+                selections.forEach(selection => {
+                    const item = items.find(component => component.id === selection.id);
+                    if (!item) {
+                        catalogItemMissing = true;
+                        return;
+                    }
 
-                const price = Number(part.condition === "second" ? item.hargaSecond : item.hargaNew);
-                if (!Number.isFinite(price) || price < 0) {
-                    catalogItemMissing = true;
-                    return;
-                }
+                    const price = Number(selection.condition === "second" ? item.hargaSecond : item.hargaNew);
+                    if (!Number.isFinite(price) || price < 0) {
+                        catalogItemMissing = true;
+                        return;
+                    }
 
-                total += price;
+                    total += price;
+                });
             });
 
             estimateEl.innerText = catalogItemMissing
@@ -464,6 +513,8 @@ class PCBuilderController {
 
         container.innerHTML = Object.keys(this.componentsData).map(catKey => {
             const cat = this.componentsData[catKey];
+            if (catKey === "aksesori") return this.renderAccessorySlot(cat);
+
             const currentSelected = this.selectedParts[catKey] || { id: `${catKey}_0`, condition: "new" };
             const currentItem = cat.items.find(i => i.id === currentSelected.id) || cat.items[0];
 
@@ -521,6 +572,86 @@ class PCBuilderController {
             </div>
             `;
         }).join('');
+
+        container.querySelectorAll("[data-accessory-id]").forEach(checkbox => {
+            checkbox.addEventListener("change", () => {
+                this.setAccessorySelected(checkbox.dataset.accessoryId, checkbox.checked);
+            });
+        });
+        container.querySelectorAll("[data-accessory-condition-id]").forEach(select => {
+            select.addEventListener("change", () => {
+                this.setAccessoryCondition(select.dataset.accessoryConditionId, select.value);
+            });
+        });
+        container.querySelector("[data-accessory-reset]")?.addEventListener("click", () => this.resetSlot("aksesori"));
+    }
+
+    renderAccessorySlot(cat) {
+        const selected = this.selectedParts.aksesori || [];
+        const hasSelected = selected.length > 0;
+        const rows = cat.items.map(item => {
+            const selection = selected.find(part => part.id === item.id);
+            const canUseNew = itemHasNew(item);
+            const canUseSecond = itemHasSecond(item);
+            const condition = selection?.condition || (canUseNew ? "new" : "second");
+
+            return `
+                <div class="accessory-option">
+                    <label class="accessory-option-name">
+                        <input type="checkbox" data-accessory-id="${escapeBuilderText(item.id)}" ${selection ? "checked" : ""}>
+                        <span>${escapeBuilderText(item.nama)}</span>
+                    </label>
+                    <select class="part-select-input accessory-condition" data-accessory-condition-id="${escapeBuilderText(item.id)}" ${selection ? "" : "disabled"}>
+                        ${canUseNew ? `<option value="new" ${condition === "new" ? "selected" : ""}>Baru · Rp ${Number(item.hargaNew).toLocaleString("id-ID")}</option>` : ""}
+                        ${canUseSecond ? `<option value="second" ${condition === "second" ? "selected" : ""}>Second · Rp ${Number(item.hargaSecond).toLocaleString("id-ID")}</option>` : ""}
+                    </select>
+                </div>
+            `;
+        }).join("");
+
+        return `
+            <div class="part-slot-card ${hasSelected ? "has-selected" : ""}" id="card-slot-aksesori">
+                <div class="part-slot-header">
+                    <div class="part-slot-title">
+                        <div class="part-slot-icon"><i class="fas ${cat.icon}"></i></div>
+                        <span>${cat.categoryName}</span>
+                    </div>
+                    ${hasSelected ? `
+                        <button type="button" class="part-slot-reset" data-accessory-reset>
+                            <i class="fas fa-undo"></i> Hapus pilihan
+                        </button>
+                    ` : ""}
+                </div>
+                <div class="accessory-options">${rows || "<span>Belum ada aksesori di katalog.</span>"}</div>
+                <p class="accessory-selection-help">Centang satu atau beberapa aksesori yang ingin dimasukkan ke rakitan.</p>
+            </div>
+        `;
+    }
+
+    setAccessorySelected(itemId, isSelected) {
+        const item = this.componentsData.aksesori.items.find(component => component.id === itemId);
+        if (!item) return;
+
+        const selected = this.selectedParts.aksesori;
+        if (isSelected && !selected.some(part => part.id === itemId)) {
+            const condition = itemHasNew(item) ? "new" : "second";
+            selected.push({ id: itemId, condition });
+        } else if (!isSelected) {
+            this.selectedParts.aksesori = selected.filter(part => part.id !== itemId);
+        }
+
+        this.clearActivePreset();
+        this.renderCategorySlots();
+        this.recalculate();
+    }
+
+    setAccessoryCondition(itemId, condition) {
+        const selection = this.selectedParts.aksesori.find(part => part.id === itemId);
+        if (!selection || !["new", "second"].includes(condition)) return;
+        selection.condition = condition;
+        this.clearActivePreset();
+        this.renderCategorySlots();
+        this.recalculate();
     }
 
     handleSelectPart(catKey, itemId) {
@@ -551,6 +682,14 @@ class PCBuilderController {
     }
 
     resetSlot(catKey) {
+        if (catKey === "aksesori") {
+            this.selectedParts.aksesori = [];
+            this.clearActivePreset();
+            this.renderCategorySlots();
+            this.recalculate();
+            return;
+        }
+
         this.selectedParts[catKey] = { id: `${catKey}_0`, condition: "new" };
         this.clearActivePreset();
         const selectEl = document.getElementById(`select-${catKey}`);
@@ -567,6 +706,11 @@ class PCBuilderController {
     }
 
     updateSlotUI(catKey) {
+        if (catKey === "aksesori") {
+            this.renderCategorySlots();
+            return;
+        }
+
         const cat = this.componentsData[catKey];
         const currentSelected = this.selectedParts[catKey];
         const currentItem = cat.items.find(i => i.id === currentSelected.id) || cat.items[0];
@@ -619,6 +763,11 @@ class PCBuilderController {
         return item.garansiNew || "🛡️ Garansi Resmi 1-3 Tahun";
     }
 
+    getSelectedParts(catKey) {
+        const selection = this.selectedParts[catKey];
+        return Array.isArray(selection) ? selection : selection ? [selection] : [];
+    }
+
     recalculate() {
         let subtotalNew = 0;
         let subtotalSecond = 0;
@@ -630,24 +779,18 @@ class PCBuilderController {
 
         Object.keys(this.selectedParts).forEach(catKey => {
             const cat = this.componentsData[catKey];
-            const sel = this.selectedParts[catKey];
-            const item = cat.items.find(i => i.id === sel.id);
+            this.getSelectedParts(catKey).forEach(sel => {
+                const item = cat.items.find(i => i.id === sel.id);
+                if (!item || (item.hargaNew <= 0 && item.hargaSecond <= 0)) return;
 
-            if (item && (item.hargaNew > 0 || item.hargaSecond > 0)) {
                 selectedCount++;
                 const isSecond = sel.condition === "second";
                 const price = isSecond ? item.hargaSecond : item.hargaNew;
 
-                if (isSecond) {
-                    subtotalSecond += price;
-                } else {
-                    subtotalNew += price;
-                }
+                if (isSecond) subtotalSecond += price;
+                else subtotalNew += price;
 
-                // Kalkulasi harga jika seandainya beli New semua untuk perbandingan hemat
                 hypotheticalAllNewTotal += item.hargaNew > 0 ? item.hargaNew : (item.hargaSecond * 1.35);
-
-                // Tambahkan Wattage
                 if (item.wattage) totalWattage += item.wattage;
                 if (catKey === "psu" && item.capacity) selectedPsuWattage = item.capacity;
 
@@ -655,9 +798,9 @@ class PCBuilderController {
                     catName: cat.categoryName,
                     nama: item.nama,
                     condition: sel.condition,
-                    price: price
+                    price
                 });
-            }
+            });
         });
 
         // Biaya Jasa & Services
@@ -782,9 +925,12 @@ class PCBuilderController {
         const preset = PRESETS[presetKey];
         if (!preset) return;
 
-        const unavailablePart = Object.entries(preset.parts).find(([catKey, part]) => {
-            const item = this.componentsData[catKey]?.items.find(component => component.id === part.id);
-            return !itemHasPresetPrice(item, part.condition);
+        const unavailablePart = Object.entries(preset.parts).find(([catKey, parts]) => {
+            const selections = Array.isArray(parts) ? parts : parts ? [parts] : [];
+            return selections.some(part => {
+                const item = this.componentsData[catKey]?.items.find(component => component.id === part.id);
+                return !itemHasPresetPrice(item, part.condition);
+            });
         });
 
         if (unavailablePart) {
@@ -797,12 +943,15 @@ class PCBuilderController {
         // Set parts
         Object.keys(preset.parts).forEach(catKey => {
             if (this.componentsData[catKey]) {
-                this.selectedParts[catKey] = {
-                    id: preset.parts[catKey].id,
-                    condition: preset.parts[catKey].condition
-                };
+                const parts = preset.parts[catKey];
+                this.selectedParts[catKey] = catKey === "aksesori"
+                    ? (Array.isArray(parts) ? parts.map(part => ({ ...part })) : parts ? [{ ...parts }] : [])
+                    : { ...parts };
             }
         });
+        if (!Object.prototype.hasOwnProperty.call(preset.parts, "monitor")) {
+            this.selectedParts.monitor = { id: "mon_0", condition: "new" };
+        }
 
         // Update UI
         Object.keys(this.componentsData).forEach(catKey => {
@@ -853,10 +1002,10 @@ class PCBuilderController {
 
         Object.keys(this.selectedParts).forEach(catKey => {
             const cat = this.componentsData[catKey];
-            const sel = this.selectedParts[catKey];
-            const item = cat.items.find(i => i.id === sel.id);
+            this.getSelectedParts(catKey).forEach(sel => {
+                const item = cat.items.find(i => i.id === sel.id);
+                if (!item || (item.hargaNew <= 0 && item.hargaSecond <= 0)) return;
 
-            if (item && (item.hargaNew > 0 || item.hargaSecond > 0)) {
                 count++;
                 const isSec = sel.condition === "second";
                 const price = isSec ? item.hargaSecond : item.hargaNew;
@@ -865,7 +1014,7 @@ class PCBuilderController {
                 if (item.wattage) totalWatt += item.wattage;
 
                 partsListText += `${count}. *${cat.categoryName}:*\n   ${item.nama} [${isSec ? 'SECOND' : 'BARU'}] - Rp ${price.toLocaleString('id-ID')}\n`;
-            }
+            });
         });
 
         if (count === 0) {
@@ -900,10 +1049,10 @@ Apakah semua part di atas ready stok? Mohon konfirmasi ketersediaan dan proses p
 
         Object.keys(this.selectedParts).forEach(catKey => {
             const cat = this.componentsData[catKey];
-            const sel = this.selectedParts[catKey];
-            const item = cat.items.find(i => i.id === sel.id);
+            this.getSelectedParts(catKey).forEach(sel => {
+                const item = cat.items.find(i => i.id === sel.id);
+                if (!item || (item.hargaNew <= 0 && item.hargaSecond <= 0)) return;
 
-            if (item && (item.hargaNew > 0 || item.hargaSecond > 0)) {
                 count++;
                 const isSec = sel.condition === "second";
                 const price = isSec ? item.hargaSecond : item.hargaNew;
@@ -911,7 +1060,7 @@ Apakah semua part di atas ready stok? Mohon konfirmasi ketersediaan dan proses p
                 else subNew += price;
 
                 text += `${count}. ${cat.categoryName}: ${item.nama} (${isSec ? 'SECOND' : 'BARU'}) - Rp ${price.toLocaleString('id-ID')}\n`;
-            }
+            });
         });
 
         text += `\nSubtotal Baru: Rp ${subNew.toLocaleString('id-ID')}`;
@@ -950,7 +1099,21 @@ function itemHasPresetPrice(item, condition) {
     if (condition === "second") return itemHasSecond(item);
     if (itemHasNew(item)) return true;
     return !item.onlySecond && item.hargaNew === 0
-        && ["vga_0", "extra_0", "cooler_0", "aks_0"].includes(item.id);
+        && ["vga_0", "extra_0", "cooler_0", "mon_0"].includes(item.id);
+}
+
+function isMonitorComponent(item) {
+    return /^mon_/i.test(item?.id || "") || /\bmonitor\b|\bdisplay\b/i.test(item?.nama || "");
+}
+
+function escapeBuilderText(value) {
+    return String(value ?? "").replace(/[&<>'"]/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "'": "&#39;",
+        '"': "&quot;"
+    })[character]);
 }
 
 // Singleton Export
