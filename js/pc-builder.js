@@ -293,6 +293,54 @@ export const PRESETS = {
             cooler: { id: "cooler_2", condition: "new" },
             aksesori: { id: "aks_0", condition: "new" }
         }
+    },
+    intel_office: {
+        nama: "Paket Intel Office & Kasir",
+        deskripsi: "Intel Core i3 untuk kasir, administrasi, belajar, dan pemakaian harian.",
+        parts: {
+            cpu: { id: "cpu_1", condition: "second" },
+            mobo: { id: "mobo_1", condition: "second" },
+            ram: { id: "ram_2", condition: "new" },
+            vga: { id: "vga_2", condition: "second" },
+            ssd: { id: "ssd_2", condition: "new" },
+            extraStorage: { id: "extra_0", condition: "new" },
+            psu: { id: "psu_2", condition: "new" },
+            casing: { id: "case_1", condition: "new" },
+            cooler: { id: "cooler_0", condition: "new" },
+            aksesori: { id: "aks_0", condition: "new" }
+        }
+    },
+    intel_gaming_budget: {
+        nama: "Paket Intel Gaming Budget",
+        deskripsi: "Intel Core i3 generasi 12 dan GTX 1660 Super untuk gaming 1080p.",
+        parts: {
+            cpu: { id: "cpu_3", condition: "new" },
+            mobo: { id: "mobo_2", condition: "new" },
+            ram: { id: "ram_2", condition: "new" },
+            vga: { id: "vga_3", condition: "second" },
+            ssd: { id: "ssd_3", condition: "new" },
+            extraStorage: { id: "extra_0", condition: "new" },
+            psu: { id: "psu_3", condition: "new" },
+            casing: { id: "case_2", condition: "new" },
+            cooler: { id: "cooler_0", condition: "new" },
+            aksesori: { id: "aks_0", condition: "new" }
+        }
+    },
+    intel_gaming_rtx4060: {
+        nama: "Paket Intel Core i5 RTX 4060",
+        deskripsi: "Intel Core i5 generasi 12 dan RTX 4060 untuk gaming serta streaming.",
+        parts: {
+            cpu: { id: "cpu_4", condition: "new" },
+            mobo: { id: "mobo_2", condition: "new" },
+            ram: { id: "ram_3", condition: "new" },
+            vga: { id: "vga_6", condition: "new" },
+            ssd: { id: "ssd_4", condition: "new" },
+            extraStorage: { id: "extra_0", condition: "new" },
+            psu: { id: "psu_4", condition: "new" },
+            casing: { id: "case_3", condition: "new" },
+            cooler: { id: "cooler_1", condition: "new" },
+            aksesori: { id: "aks_0", condition: "new" }
+        }
     }
 };
 
