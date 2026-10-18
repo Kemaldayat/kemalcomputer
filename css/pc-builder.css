@@ -158,7 +158,7 @@
 .preset-section {
     margin: 0 auto 2.5rem;
     max-width: 1120px;
-    padding: 1.5rem;
+    padding: 1.75rem;
     position: relative;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -269,7 +269,7 @@
 .preset-featured-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.85rem;
+    gap: 1rem;
 }
 
 .preset-btn {
@@ -304,16 +304,20 @@
 }
 
 .preset-card {
-    min-height: 112px;
+    min-height: 132px;
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+    align-content: center;
+    align-items: center;
     gap: 0.75rem;
+    padding: 1rem;
 }
 
 .preset-card-icon {
     display: grid;
     place-items: center;
-    flex: 0 0 2.5rem;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.75rem;
+    height: 2.75rem;
     color: var(--color-primary-light);
     background: rgba(13, 148, 136, 0.12);
     border-radius: var(--radius-md);
@@ -322,27 +326,35 @@
 
 .preset-card-copy {
     display: flex;
-    flex: 1;
     flex-direction: column;
-    gap: 0.25rem;
+    align-self: stretch;
+    justify-content: center;
+    gap: 0.35rem;
 }
 
 .preset-card-copy strong {
     color: var(--color-text);
     line-height: 1.35;
+    font-size: 0.95rem;
 }
 
 .preset-card-copy > span {
     color: var(--color-text-muted);
-    font-size: 0.775rem;
+    font-size: 0.85rem;
     font-weight: 400;
     line-height: 1.4;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
 }
 
 .preset-card-copy b {
-    margin-top: 0.15rem;
+    margin-top: 0.25rem;
     color: var(--color-primary-light);
-    font-size: 0.8rem;
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.35;
 }
 
 .preset-card-arrow {
@@ -422,7 +434,8 @@
 .preset-option b {
     flex: 0 0 auto;
     color: var(--color-primary-light);
-    font-size: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 800;
     white-space: nowrap;
 }
 
@@ -475,7 +488,7 @@
     }
 
     .preset-section {
-        padding: 1rem;
+        padding: 1.1rem;
         margin-bottom: 1.5rem;
     }
 
@@ -496,7 +509,28 @@
 
     .preset-card {
         min-height: 0;
+        grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+        padding: 0.9rem;
     }
+
+.preset-card-copy b {
+    font-size: 1rem;
+}
+
+.preset-card .preset-card-arrow {
+    display: none;
+}
+
+@media (max-width: 420px) {
+    .preset-card {
+        grid-template-columns: 2.25rem minmax(0, 1fr);
+    }
+
+    .preset-card-icon {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
 }
 
 /* Komponen List Cards */
