@@ -32,6 +32,8 @@ const mobileMenu = document.getElementById('mobile-menu');
 const pageLoader = document.getElementById('page-loader');
 
 window.showPage = (pageId) => {
+    document.body.classList.toggle('builder-page-active', pageId === 'simulasi-page');
+
     // Show loader
     pageLoader.classList.remove('hidden');
     

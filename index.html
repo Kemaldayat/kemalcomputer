@@ -286,7 +286,7 @@
             <div class="flex items-center">
                 <nav class="nav-links" style="margin-right: 15px;">
                     <a href="#" onclick="showPage('home-page')">Beranda</a>
-                    <a href="#" onclick="showPage('simulasi-page')">Simulasi Rakit</a>
+                    <a href="#" onclick="showPage('simulasi-page')"><i class="fas fa-desktop" aria-hidden="true"></i> Simulasi Rakit</a>
                     <a href="#" onclick="showPage('reservation-page')">Konsultasi AI</a>
                     <a href="#" onclick="showPage('tracking-page')">Cek Status</a>
                 </nav>
@@ -297,7 +297,7 @@
 
     <div id="mobile-menu" class="hidden">
         <a href="#" onclick="showPage('home-page')" style="font-weight: 600; color: var(--color-text);"><i class="fas fa-home"></i> Beranda</a>
-        <a href="#" onclick="showPage('simulasi-page')" style="font-weight: 600; color: var(--color-primary-light);">Simulasi Rakit PC</a>
+        <a href="#" onclick="showPage('simulasi-page')" style="font-weight: 600; color: var(--color-text);"><i class="fas fa-desktop" aria-hidden="true"></i> Simulasi Rakit PC</a>
         <a href="#" onclick="showPage('reservation-page')" style="font-weight: 600; color: var(--color-text);"><i class="fas fa-robot"></i> Konsultasi AI</a>
         <a href="#" onclick="showPage('tracking-page')" style="font-weight: 600; color: var(--color-text);"><i class="fas fa-search-location"></i> Cek Status</a>
     </div>
@@ -697,83 +697,143 @@
 
         <!-- 4. SIMULASI RAKIT PC PAGE -->
         <section id="simulasi-page" class="page-content hidden">
-            <!-- Header & Presets -->
+            <!-- Header & Recommendations -->
             <div class="simulasi-header reveal">
                 <div class="service-icon-wrapper" style="margin: 0 auto 1rem auto; background: rgba(13, 148, 136, 0.15); color: var(--color-primary-light);">
                     <i class="fas fa-microchip"></i>
                 </div>
                 <h1 class="simulasi-title">Simulasi Rakit PC &amp; Estimasi Real-Time</h1>
                 <p class="simulasi-subtitle">
-                    Rancang PC idaman Anda sesuai kebutuhan dan anggaran. Bebas kombinasikan komponen <strong>Baru (New)</strong> dan <strong>Bekas (Second QC Passed)</strong> untuk memaksimalkan performa dengan harga terhemat.
+                    Pilih paket rekomendasi atau susun sendiri. Harga total akan dihitung otomatis dan setiap paket masih bisa Anda sesuaikan.
                 </p>
 
-                <!-- Quick Presets -->
-                <div class="preset-wrapper">
-                    <span style="display: flex; align-items: center; font-size: 0.85rem; font-weight: 700; color: var(--color-text-muted); margin-right: 0.5rem;">
-                        <i class="fas fa-bolt" style="color: #f59e0b; margin-right: 0.35rem;"></i> Rekomendasi Cepat:
-                    </span>
-                    <button type="button" class="preset-btn" data-preset="office" onclick="window.pcBuilder.applyPreset('office')">
-                        <i class="fas fa-briefcase"></i> Office &amp; Kasir Hemat (~4.7Jt)
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="gaming_budget" onclick="window.pcBuilder.applyPreset('gaming_budget')">
-                        <i class="fas fa-gamepad"></i> Gaming Budget 1080p (~6.3Jt)
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="gaming_streamer" onclick="window.pcBuilder.applyPreset('gaming_streamer')">
-                        <i class="fas fa-video"></i> Gaming &amp; Render Populer (~10.7Jt)
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="all_new_high" onclick="window.pcBuilder.applyPreset('all_new_high')">
-                        <i class="fas fa-crown" style="color: #f59e0b;"></i> All New High Spec (~17.3Jt)
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="office_all_new" onclick="window.pcBuilder.applyPreset('office_all_new')">
-                        <i class="fas fa-desktop"></i> Office All New (~7.5Jt)
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="gaming_mix_value" onclick="window.pcBuilder.applyPreset('gaming_mix_value')">
-                        <i class="fas fa-gamepad"></i> Gaming Mix Hemat (~5.7Jt)
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="gaming_rx6600" onclick="window.pcBuilder.applyPreset('gaming_rx6600')">
-                        <i class="fas fa-gamepad"></i> Gaming RX 6600 All New (~10.6Jt)
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="creator_ryzen" onclick="window.pcBuilder.applyPreset('creator_ryzen')">
-                        <i class="fas fa-photo-video"></i> Editing Ryzen 7 (~14Jt)
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="gaming_am5_4060" onclick="window.pcBuilder.applyPreset('gaming_am5_4060')">
-                        <i class="fas fa-microchip"></i> AM5 RTX 4060 (~16.3Jt)
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="gaming_am5_4070" onclick="window.pcBuilder.applyPreset('gaming_am5_4070')">
-                        <i class="fas fa-crown"></i> AM5 RTX 4070 (~23.4Jt)
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="intel_office" onclick="window.pcBuilder.applyPreset('intel_office')">
-                        <i class="fas fa-briefcase"></i> Intel Office &amp; Kasir (~5.3Jt)
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="intel_gaming_budget" onclick="window.pcBuilder.applyPreset('intel_gaming_budget')">
-                        <i class="fas fa-gamepad"></i> Intel Gaming Budget (~7.7Jt)
-                    </button>
-                    <button type="button" class="preset-btn" data-preset="intel_gaming_rtx4060" onclick="window.pcBuilder.applyPreset('intel_gaming_rtx4060')">
-                        <i class="fas fa-microchip"></i> Intel Core i5 RTX 4060 (~14.3Jt)
-                    </button>
-                    <button type="button" class="preset-btn" onclick="window.pcBuilder.resetAll()" title="Kosongkan semua pilihan" style="color: var(--color-danger); border-color: rgba(239, 68, 68, 0.3);">
-                        <i class="fas fa-trash-alt"></i> Reset
-                    </button>
+                <div class="builder-steps" aria-label="Langkah merakit PC">
+                    <div class="builder-step"><span>1</span><strong>Pilih paket</strong></div>
+                    <div class="builder-step"><span>2</span><strong>Sesuaikan komponen</strong></div>
+                    <div class="builder-step"><span>3</span><strong>Cek total &amp; konsultasi</strong></div>
                 </div>
             </div>
+
+            <section class="preset-section" id="preset-recommendations" aria-labelledby="preset-section-title">
+                <div class="builder-section-heading">
+                    <div>
+                        <span class="builder-section-kicker">LANGKAH 1</span>
+                        <h2 id="preset-section-title">Mulai dari paket rekomendasi</h2>
+                        <p>Pilih yang paling mendekati kebutuhan Anda. Komponen dan harga masih bisa diubah setelahnya.</p>
+                    </div>
+                    <button type="button" class="preset-reset-btn" onclick="window.pcBuilder.resetAll()">
+                        <i class="fas fa-undo"></i> Mulai dari kosong
+                    </button>
+                </div>
+
+                <p class="catalog-load-warning" id="builder-catalog-warning" role="status" aria-live="polite" hidden>
+                    Harga katalog toko belum berhasil dimuat. Harga yang tampil mungkin belum terbaru; mohon konfirmasi sebelum memesan.
+                </p>
+
+                <div class="preset-featured-grid">
+                    <button type="button" class="preset-btn preset-card preset-card-featured" data-preset="intel_office" aria-pressed="false" onclick="window.pcBuilder.applyPreset('intel_office')">
+                        <span class="preset-card-icon"><i class="fas fa-briefcase"></i></span>
+                        <span class="preset-card-copy">
+                            <strong>Intel Office &amp; Kasir</strong>
+                            <span>Untuk administrasi, kasir, dan belajar.</span>
+                            <b data-preset-estimate="intel_office">Menghitung harga...</b>
+                        </span>
+                        <i class="fas fa-arrow-right preset-card-arrow"></i>
+                    </button>
+                    <button type="button" class="preset-btn preset-card preset-card-featured" data-preset="gaming_budget" aria-pressed="false" onclick="window.pcBuilder.applyPreset('gaming_budget')">
+                        <span class="preset-card-icon"><i class="fas fa-gamepad"></i></span>
+                        <span class="preset-card-copy">
+                            <strong>Gaming Budget 1080p</strong>
+                            <span>Untuk mulai bermain game dengan budget hemat.</span>
+                            <b data-preset-estimate="gaming_budget">Menghitung harga...</b>
+                        </span>
+                        <i class="fas fa-arrow-right preset-card-arrow"></i>
+                    </button>
+                    <button type="button" class="preset-btn preset-card preset-card-featured" data-preset="intel_gaming_rtx4060" aria-pressed="false" onclick="window.pcBuilder.applyPreset('intel_gaming_rtx4060')">
+                        <span class="preset-card-icon"><i class="fas fa-microchip"></i></span>
+                        <span class="preset-card-copy">
+                            <strong>Intel Core i5 + RTX 4060</strong>
+                            <span>Untuk gaming dan streaming performa tinggi.</span>
+                            <b data-preset-estimate="intel_gaming_rtx4060">Menghitung harga...</b>
+                        </span>
+                        <i class="fas fa-arrow-right preset-card-arrow"></i>
+                    </button>
+                </div>
+
+                <details class="preset-more">
+                    <summary>Lihat 10 paket rekomendasi lainnya</summary>
+                    <div class="preset-options-grid">
+                        <div class="preset-option-group">
+                            <h3>Office &amp; penggunaan harian</h3>
+                            <button type="button" class="preset-btn preset-option" data-preset="office" aria-pressed="false" onclick="window.pcBuilder.applyPreset('office')">
+                                <span>Office &amp; Kasir Hemat</span><b data-preset-estimate="office">Menghitung...</b>
+                            </button>
+                            <button type="button" class="preset-btn preset-option" data-preset="office_all_new" aria-pressed="false" onclick="window.pcBuilder.applyPreset('office_all_new')">
+                                <span>Office All New</span><b data-preset-estimate="office_all_new">Menghitung...</b>
+                            </button>
+                        </div>
+                        <div class="preset-option-group">
+                            <h3>Gaming</h3>
+                            <button type="button" class="preset-btn preset-option" data-preset="gaming_mix_value" aria-pressed="false" onclick="window.pcBuilder.applyPreset('gaming_mix_value')">
+                                <span>Gaming Mix Hemat</span><b data-preset-estimate="gaming_mix_value">Menghitung...</b>
+                            </button>
+                            <button type="button" class="preset-btn preset-option" data-preset="gaming_rx6600" aria-pressed="false" onclick="window.pcBuilder.applyPreset('gaming_rx6600')">
+                                <span>Gaming RX 6600 All New</span><b data-preset-estimate="gaming_rx6600">Menghitung...</b>
+                            </button>
+                            <button type="button" class="preset-btn preset-option" data-preset="gaming_streamer" aria-pressed="false" onclick="window.pcBuilder.applyPreset('gaming_streamer')">
+                                <span>Gaming &amp; Render Populer</span><b data-preset-estimate="gaming_streamer">Menghitung...</b>
+                            </button>
+                            <button type="button" class="preset-btn preset-option" data-preset="intel_gaming_budget" aria-pressed="false" onclick="window.pcBuilder.applyPreset('intel_gaming_budget')">
+                                <span>Intel Gaming Budget</span><b data-preset-estimate="intel_gaming_budget">Menghitung...</b>
+                            </button>
+                            <button type="button" class="preset-btn preset-option" data-preset="gaming_am5_4060" aria-pressed="false" onclick="window.pcBuilder.applyPreset('gaming_am5_4060')">
+                                <span>AM5 + RTX 4060</span><b data-preset-estimate="gaming_am5_4060">Menghitung...</b>
+                            </button>
+                        </div>
+                        <div class="preset-option-group">
+                            <h3>Editing &amp; performa tinggi</h3>
+                            <button type="button" class="preset-btn preset-option" data-preset="creator_ryzen" aria-pressed="false" onclick="window.pcBuilder.applyPreset('creator_ryzen')">
+                                <span>Editing Ryzen 7</span><b data-preset-estimate="creator_ryzen">Menghitung...</b>
+                            </button>
+                            <button type="button" class="preset-btn preset-option" data-preset="all_new_high" aria-pressed="false" onclick="window.pcBuilder.applyPreset('all_new_high')">
+                                <span>All New High Spec</span><b data-preset-estimate="all_new_high">Menghitung...</b>
+                            </button>
+                            <button type="button" class="preset-btn preset-option" data-preset="gaming_am5_4070" aria-pressed="false" onclick="window.pcBuilder.applyPreset('gaming_am5_4070')">
+                                <span>AM5 + RTX 4070</span><b data-preset-estimate="gaming_am5_4070">Menghitung...</b>
+                            </button>
+                        </div>
+                    </div>
+                </details>
+            </section>
 
             <!-- Builder Layout Grid -->
             <div class="builder-layout">
                 <!-- Left: Parts Selection -->
-                <div class="builder-parts-container" id="builder-parts-list">
-                    <!-- Rendered dynamically by pc-builder.js -->
-                    <div style="text-align: center; padding: 3rem 0; color: var(--color-text-muted);">
-                        <div class="spinner" style="margin: 0 auto 1rem auto;"></div>
-                        Memuat modul komponen rakit PC...
+                <div class="builder-parts-column">
+                    <div class="builder-section-heading builder-parts-heading" id="component-selection">
+                        <div>
+                            <span class="builder-section-kicker">LANGKAH 2</span>
+                            <h2>Sesuaikan komponen</h2>
+                            <p>Pilih nama part dari menu. Anda dapat mengganti kondisi Baru atau Second jika tersedia.</p>
+                        </div>
+                    </div>
+
+                    <div class="builder-parts-container" id="builder-parts-list">
+                        <!-- Rendered dynamically by pc-builder.js -->
+                        <div style="text-align: center; padding: 3rem 0; color: var(--color-text-muted);">
+                            <div class="spinner" style="margin: 0 auto 1rem auto;"></div>
+                            Memuat modul komponen rakit PC...
+                        </div>
                     </div>
                 </div>
 
                 <!-- Right: Sticky Summary Box -->
-                <div class="builder-summary-card">
+                <div class="builder-summary-card" id="build-summary">
                     <div class="summary-header">
                         <h3><i class="fas fa-receipt" style="color: var(--color-primary-light);"></i> Ringkasan Racikan</h3>
                         <span class="summary-counter-badge" id="summary-counter">0 Komponen</span>
                     </div>
+                    <p class="summary-help-text"><span>LANGKAH 3</span> Periksa pilihan dan estimasi harga di bawah.</p>
 
                     <!-- Selected Items Mini List -->
                     <div class="summary-items-list" id="summary-items-list">

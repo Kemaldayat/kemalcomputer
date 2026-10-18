@@ -373,12 +373,16 @@ class PCBuilderController {
     init() {
         this.renderCategorySlots();
         this.recalculate();
+        this.updatePresetEstimates();
 
         if (this.catalogUnsubscribe) return;
 
         this.catalogUnsubscribe = onValue(
             ref(db, "komponen_rakit"),
             snapshot => {
+                const loadWarning = document.getElementById("builder-catalog-warning");
+                if (loadWarning) loadWarning.hidden = true;
+
                 const nextComponents = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
                 const fbData = snapshot.exists() ? snapshot.val() : null;
 
@@ -408,13 +412,47 @@ class PCBuilderController {
                     }
                 });
 
+                this.updatePresetEstimates();
                 this.renderCategorySlots();
                 this.recalculate();
             },
             error => {
+                const loadWarning = document.getElementById("builder-catalog-warning");
+                if (loadWarning) loadWarning.hidden = false;
                 console.error("Gagal memuat komponen_rakit dari Firebase; katalog default tetap digunakan:", error);
             }
         );
+    }
+
+    updatePresetEstimates() {
+        document.querySelectorAll("[data-preset-estimate]").forEach(estimateEl => {
+            const preset = PRESETS[estimateEl.dataset.preset];
+            if (!preset) return;
+
+            let total = 0;
+            let catalogItemMissing = false;
+
+            Object.entries(preset.parts).forEach(([catKey, part]) => {
+                const items = this.componentsData[catKey]?.items || [];
+                const item = items.find(component => component.id === part.id);
+                if (!item) {
+                    catalogItemMissing = true;
+                    return;
+                }
+
+                const price = Number(part.condition === "second" ? item.hargaSecond : item.hargaNew);
+                if (!Number.isFinite(price) || price < 0) {
+                    catalogItemMissing = true;
+                    return;
+                }
+
+                total += price;
+            });
+
+            estimateEl.innerText = catalogItemMissing
+                ? "Cek ketersediaan part"
+                : `Estimasi Rp ${total.toLocaleString("id-ID")}`;
+        });
     }
 
     renderCategorySlots() {
@@ -496,6 +534,7 @@ class PCBuilderController {
         }
 
         this.selectedParts[catKey] = { id: itemId, condition: cond };
+        this.clearActivePreset();
         this.updateSlotUI(catKey);
         this.recalculate();
     }
@@ -503,16 +542,25 @@ class PCBuilderController {
     setCondition(catKey, condition) {
         if (!this.selectedParts[catKey]) return;
         this.selectedParts[catKey].condition = condition;
+        this.clearActivePreset();
         this.updateSlotUI(catKey);
         this.recalculate();
     }
 
     resetSlot(catKey) {
         this.selectedParts[catKey] = { id: `${catKey}_0`, condition: "new" };
+        this.clearActivePreset();
         const selectEl = document.getElementById(`select-${catKey}`);
         if (selectEl) selectEl.value = `${catKey}_0`;
         this.updateSlotUI(catKey);
         this.recalculate();
+    }
+
+    clearActivePreset() {
+        document.querySelectorAll(".preset-btn").forEach(btn => {
+            btn.classList.remove("active");
+            btn.setAttribute("aria-pressed", "false");
+        });
     }
 
     updateSlotUI(catKey) {
@@ -731,6 +779,19 @@ class PCBuilderController {
         const preset = PRESETS[presetKey];
         if (!preset) return;
 
+        const unavailablePart = Object.entries(preset.parts).find(([catKey, part]) => {
+            const item = this.componentsData[catKey]?.items.find(component => component.id === part.id);
+            if (!item) return true;
+            return part.condition === "second" ? !itemHasSecond(item) : !itemHasNew(item);
+        });
+
+        if (unavailablePart) {
+            const message = `Paket "${preset.nama}" belum tersedia lengkap di katalog saat ini. Silakan pilih komponen secara manual atau hubungi toko.`;
+            if (window.showSweetAlert) window.showSweetAlert(message, "warning");
+            else alert(message);
+            return;
+        }
+
         // Set parts
         Object.keys(preset.parts).forEach(catKey => {
             if (this.componentsData[catKey]) {
@@ -748,7 +809,9 @@ class PCBuilderController {
 
         // Set active preset button
         document.querySelectorAll(".preset-btn").forEach(btn => {
-            btn.classList.toggle("active", btn.dataset.preset === presetKey);
+            const isActive = btn.dataset.preset === presetKey;
+            btn.classList.toggle("active", isActive);
+            btn.setAttribute("aria-pressed", String(isActive));
         });
 
         this.recalculate();
@@ -763,7 +826,7 @@ class PCBuilderController {
         Object.keys(this.componentsData).forEach(catKey => {
             this.updateSlotUI(catKey);
         });
-        document.querySelectorAll(".preset-btn").forEach(btn => btn.classList.remove("active"));
+        this.clearActivePreset();
         this.recalculate();
     }
 
