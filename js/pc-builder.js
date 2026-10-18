@@ -429,7 +429,7 @@ class PCBuilderController {
 
     updatePresetEstimates() {
         document.querySelectorAll("[data-preset-estimate]").forEach(estimateEl => {
-            const preset = PRESETS[estimateEl.dataset.preset];
+            const preset = PRESETS[estimateEl.dataset.presetEstimate];
             if (!preset) return;
 
             let total = 0;
