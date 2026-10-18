@@ -299,6 +299,15 @@
         window.currentRakitCategory = 'cpu';
         window.rakitComponents = null;
 
+        function applyMarkupMath(price, pct, round10k) {
+            if (!price || price <= 0) return 0;
+            let res = price * (1 + pct / 100);
+            if (round10k) {
+                return Math.round(res / 10000) * 10000;
+            }
+            return Math.round(res / 1000) * 1000;
+        }
+
         window.loadRakitPcDataAdmin = async () => {
             try {
                 const snapshot = await get(ref(db, 'komponen_rakit'));
@@ -306,6 +315,17 @@
                     window.rakitComponents = snapshot.val();
                 } else {
                     window.rakitComponents = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
+                }
+
+                // Load sheet & markup settings
+                const sheetSnap = await get(ref(db, 'pengaturan_toko/sheet_settings'));
+                if (sheetSnap.exists()) {
+                    const s = sheetSnap.val();
+                    if (s.sheetUrl && document.getElementById('rakitSheetUrl')) document.getElementById('rakitSheetUrl').value = s.sheetUrl;
+                    if (s.markupNewPct !== undefined && document.getElementById('markupNewPct')) document.getElementById('markupNewPct').value = s.markupNewPct;
+                    if (s.markupSecondPct !== undefined && document.getElementById('markupSecondPct')) document.getElementById('markupSecondPct').value = s.markupSecondPct;
+                    if (s.roundTo10k !== undefined && document.getElementById('roundTo10kCheck')) document.getElementById('roundTo10kCheck').checked = s.roundTo10k;
+                    if (s.lastSyncTime && document.getElementById('sheetSyncStatus')) document.getElementById('sheetSyncStatus').innerText = `Terakhir sync: ${s.lastSyncTime}`;
                 }
             } catch (err) {
                 console.error("Gagal load komponen_rakit admin:", err);
@@ -389,10 +409,232 @@
             if (!window.rakitComponents) return;
             try {
                 await set(ref(db, 'komponen_rakit'), window.rakitComponents);
+                
+                // Save sheet & markup fields
+                const sheetSettings = {
+                    sheetUrl: document.getElementById('rakitSheetUrl')?.value.trim() || '',
+                    markupNewPct: Number(document.getElementById('markupNewPct')?.value) || 0,
+                    markupSecondPct: Number(document.getElementById('markupSecondPct')?.value) || 0,
+                    roundTo10k: document.getElementById('roundTo10kCheck')?.checked ?? true
+                };
+                await set(ref(db, 'pengaturan_toko/sheet_settings'), sheetSettings);
+
                 if (showAlert) showModal("Daftar komponen rakit PC berhasil diperbarui!", "info");
             } catch (err) {
                 console.error("Gagal simpan komponen rakit:", err);
                 if (showAlert) showModal("Gagal menyimpan komponen rakit.", "info");
+            }
+        };
+
+        window.applyMarkupToCurrentData = async () => {
+            window.collectCurrentRakitCategoryInputs();
+            if (!window.rakitComponents) return;
+
+            const markupNew = Number(document.getElementById('markupNewPct')?.value) || 0;
+            const markupSecond = Number(document.getElementById('markupSecondPct')?.value) || 0;
+            const round10k = document.getElementById('roundTo10kCheck')?.checked ?? true;
+
+            if (!confirm(`Terapkan kenaikan markup +${markupNew}% (Part Baru) dan +${markupSecond}% (Part Second) ke seluruh komponen saat ini?`)) {
+                return;
+            }
+
+            Object.keys(window.rakitComponents).forEach(cat => {
+                const items = window.rakitComponents[cat].items || window.rakitComponents[cat];
+                if (Array.isArray(items)) {
+                    items.forEach(item => {
+                        if (item.hargaNew > 0) item.hargaNew = applyMarkupMath(item.hargaNew, markupNew, round10k);
+                        if (item.hargaSecond > 0) item.hargaSecond = applyMarkupMath(item.hargaSecond, markupSecond, round10k);
+                    });
+                }
+            });
+
+            await window.saveRakitPcSettings(false);
+            window.renderRakitCategory(window.currentRakitCategory);
+            showModal(`Berhasil menerapkan markup (+${markupNew}% Baru, +${markupSecond}% Second) ke seluruh komponen!`, "info");
+        };
+
+        window.downloadRakitCsvTemplate = () => {
+            let csv = "Kategori,ID,Nama Komponen,Harga Baru,Harga Second,Watt,Socket\n";
+            const data = window.rakitComponents || DEFAULT_COMPONENTS;
+            Object.keys(data).forEach(cat => {
+                const items = data[cat].items || data[cat];
+                if (Array.isArray(items)) {
+                    items.forEach(item => {
+                        if (item.hargaNew > 0 || item.hargaSecond > 0) {
+                            const cleanName = `"${(item.nama || '').replace(/"/g, '""')}"`;
+                            const cleanSocket = `"${(item.socket || item.ramType || '').replace(/"/g, '""')}"`;
+                            csv += `${cat},${item.id || ''},${cleanName},${item.hargaNew || 0},${item.hargaSecond || 0},${item.wattage || 0},${cleanSocket}\n`;
+                        }
+                    });
+                }
+            });
+
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "template_komponen_kemalcomputer.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        function parseCSVToRows(text) {
+            const rows = [];
+            let currentRow = [];
+            let currentCell = '';
+            let insideQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const nextChar = text[i + 1];
+
+                if (char === '"') {
+                    if (insideQuotes && nextChar === '"') {
+                        currentCell += '"';
+                        i++;
+                    } else {
+                        insideQuotes = !insideQuotes;
+                    }
+                } else if (char === ',' && !insideQuotes) {
+                    currentRow.push(currentCell.trim());
+                    currentCell = '';
+                } else if ((char === '\r' || char === '\n') && !insideQuotes) {
+                    if (char === '\r' && nextChar === '\n') i++;
+                    currentRow.push(currentCell.trim());
+                    if (currentRow.length > 1 || (currentRow.length === 1 && currentRow[0] !== '')) {
+                        rows.push(currentRow);
+                    }
+                    currentRow = [];
+                    currentCell = '';
+                } else {
+                    currentCell += char;
+                }
+            }
+            if (currentCell || currentRow.length > 0) {
+                currentRow.push(currentCell.trim());
+                if (currentRow.length > 1 || (currentRow.length === 1 && currentRow[0] !== '')) {
+                    rows.push(currentRow);
+                }
+            }
+            return rows;
+        }
+
+        window.syncRakitFromGoogleSheets = async () => {
+            const urlInput = document.getElementById('rakitSheetUrl');
+            const rawUrl = urlInput?.value.trim() || '';
+            if (!rawUrl) {
+                showModal("Silakan tempel (paste) URL Google Sheets Anda terlebih dahulu.", "info");
+                return;
+            }
+
+            const matchId = rawUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+            if (!matchId || !matchId[1]) {
+                showModal("URL Google Sheets tidak valid. Pastikan link memiliki format: https://docs.google.com/spreadsheets/d/.../edit", "info");
+                return;
+            }
+            const sheetId = matchId[1];
+            const matchGid = rawUrl.match(/[#&?]gid=([0-9]+)/);
+            const gid = matchGid ? matchGid[1] : '0';
+
+            const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+
+            const btnSync = document.getElementById('btnSyncSheet');
+            const originalText = btnSync.innerHTML;
+            btnSync.disabled = true;
+            btnSync.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunduh data Sheet...';
+
+            try {
+                const response = await fetch(csvUrl);
+                if (!response.ok) {
+                    throw new Error("Gagal mengambil data. Pastikan Google Sheet telah dibagikan dengan akses: 'Siapa saja yang memiliki link dapat melihat' (Anyone with the link can view)");
+                }
+                const csvText = await response.text();
+                
+                const rows = parseCSVToRows(csvText);
+                if (rows.length < 2) {
+                    throw new Error("Tabel Google Sheet kosong atau tidak memiliki baris data.");
+                }
+
+                const markupNew = Number(document.getElementById('markupNewPct')?.value) || 0;
+                const markupSecond = Number(document.getElementById('markupSecondPct')?.value) || 0;
+                const round10k = document.getElementById('roundTo10kCheck')?.checked ?? true;
+
+                const newCatalog = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
+                Object.keys(newCatalog).forEach(cat => {
+                    const placeholder = newCatalog[cat].items[0] || { id: `${cat}_0`, nama: `-- Pilih ${newCatalog[cat].categoryName} --`, hargaNew: 0, hargaSecond: 0 };
+                    newCatalog[cat].items = [placeholder];
+                });
+
+                let parsedCount = 0;
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (!row || row.length < 3) continue;
+
+                    let catKey = (row[0] || '').trim().toLowerCase();
+                    if (catKey === 'processor' || catKey === 'prosesor') catKey = 'cpu';
+                    if (catKey === 'motherboard' || catKey === 'mainboard') catKey = 'mobo';
+                    if (catKey === 'memory' || catKey === 'memori') catKey = 'ram';
+                    if (catKey === 'gpu' || catKey === 'graphic' || catKey === 'vga card') catKey = 'vga';
+                    if (catKey === 'harddisk' || catKey === 'hdd' || catKey === 'storage tambahan') catKey = 'extraStorage';
+                    if (catKey === 'powersupply' || catKey === 'power supply') catKey = 'psu';
+                    if (catKey === 'case') catKey = 'casing';
+                    if (catKey === 'pendingin' || catKey === 'fan') catKey = 'cooler';
+                    if (catKey === 'monitor' || catKey === 'aksesoris') catKey = 'aksesori';
+
+                    if (!newCatalog[catKey]) continue;
+
+                    const id = (row[1] || '').trim() || `${catKey}_${i}`;
+                    const nama = (row[2] || '').trim();
+                    if (!nama) continue;
+
+                    let rawHargaNew = Number(String(row[3] || '').replace(/[^0-9]/g, '')) || 0;
+                    let rawHargaSecond = Number(String(row[4] || '').replace(/[^0-9]/g, '')) || 0;
+                    const wattage = Number(String(row[5] || '').replace(/[^0-9]/g, '')) || 0;
+                    const socket = (row[6] || '').trim();
+
+                    if (rawHargaNew > 0 && markupNew > 0) rawHargaNew = applyMarkupMath(rawHargaNew, markupNew, round10k);
+                    if (rawHargaSecond > 0 && markupSecond > 0) rawHargaSecond = applyMarkupMath(rawHargaSecond, markupSecond, round10k);
+
+                    newCatalog[catKey].items.push({
+                        id,
+                        nama,
+                        hargaNew: rawHargaNew,
+                        hargaSecond: rawHargaSecond,
+                        wattage,
+                        socket
+                    });
+                    parsedCount++;
+                }
+
+                if (parsedCount === 0) {
+                    throw new Error("Tidak ada data komponen yang cocok dengan kolom format (Kategori, ID, Nama, Harga Baru, Harga Second). Silakan cek kembali template.");
+                }
+
+                await set(ref(db, 'komponen_rakit'), newCatalog);
+                window.rakitComponents = newCatalog;
+
+                const syncTimeStr = new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date());
+                const sheetSettings = {
+                    sheetUrl: rawUrl,
+                    markupNewPct: markupNew,
+                    markupSecondPct: markupSecond,
+                    roundTo10k: round10k,
+                    lastSyncTime: syncTimeStr
+                };
+                await set(ref(db, 'pengaturan_toko/sheet_settings'), sheetSettings);
+
+                const statusEl = document.getElementById('sheetSyncStatus');
+                if (statusEl) statusEl.innerText = `Terakhir sync: ${syncTimeStr} (${parsedCount} part)`;
+
+                window.renderRakitCategory(window.currentRakitCategory);
+                showModal(`Berhasil! ${parsedCount} komponen dari Google Sheets telah disinkronkan ke database (termasuk markup).`, "info");
+            } catch (err) {
+                console.error("Gagal sinkron Google Sheets:", err);
+                showModal(`Sinkronisasi Gagal: ${err.message}`, "info");
+            } finally {
+                btnSync.disabled = false;
+                btnSync.innerHTML = originalText;
             }
         };
 

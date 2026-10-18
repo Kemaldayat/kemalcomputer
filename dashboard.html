@@ -474,6 +474,72 @@
                             </div>
                         </div>
 
+                        <!-- Panel Integrasi Google Sheets & Kontrol Markup Massal -->
+                        <div style="background: rgba(13, 148, 136, 0.08); border: 1px solid rgba(13, 148, 136, 0.25); border-radius: 8px; padding: 18px; margin-bottom: 25px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                                <h4 style="margin: 0; color: var(--color-primary-light, #2dd4bf); display: flex; align-items: center; gap: 8px; font-size: 1rem;">
+                                    <i class="fab fa-google-drive"></i> Sinkronisasi Google Sheets &amp; Auto-Markup Margin
+                                </h4>
+                                <span id="sheetSyncStatus" style="font-size: 0.775rem; color: var(--text-muted); font-style: italic;">
+                                    Belum pernah disinkronkan
+                                </span>
+                            </div>
+                            <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">
+                                Perbarui puluhan harga sekaligus dari spreadsheet Google Sheets Anda (bisa diedit lewat HP). Lengkap dengan fitur auto-markup margin keuntungan toko secara massal.
+                            </p>
+
+                            <!-- Input URL Google Sheet -->
+                            <div style="margin-bottom: 14px;">
+                                <label style="display: block; font-size: 0.775rem; font-weight: 700; text-transform: uppercase; color: var(--text-color); margin-bottom: 6px;">
+                                    Link / URL Google Sheets (Akses: "Siapa saja yang memiliki link dapat melihat")
+                                </label>
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <input type="url" id="rakitSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=0" style="flex: 1; min-width: 260px; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg, var(--bg-secondary)); color: var(--text-color); font-size: 0.875rem;">
+                                    <button type="button" class="btn btn-outline" onclick="window.downloadRakitCsvTemplate()" style="padding: 9px 14px; font-size: 0.825rem; white-space: nowrap;">
+                                        <i class="fas fa-file-download"></i> Unduh Template Sheet (CSV)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Opsi Margin Markup Toko -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 14px; background: rgba(0,0,0,0.18); padding: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+                                <div>
+                                    <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #10b981; margin-bottom: 4px;">
+                                        Markup Margin Part Baru (%)
+                                    </label>
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <input type="number" id="markupNewPct" value="15" min="0" max="200" style="width: 80px; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg, var(--bg-secondary)); color: var(--text-color); font-weight: bold;">
+                                        <span style="font-size: 0.85rem; font-weight: bold; color: var(--text-color);">%</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #3b82f6; margin-bottom: 4px;">
+                                        Markup Margin Part Second (%)
+                                    </label>
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <input type="number" id="markupSecondPct" value="25" min="0" max="200" style="width: 80px; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg, var(--bg-secondary)); color: var(--text-color); font-weight: bold;">
+                                        <span style="font-size: 0.85rem; font-weight: bold; color: var(--text-color);">%</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; justify-content: center;">
+                                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; cursor: pointer; color: var(--text-color);">
+                                        <input type="checkbox" id="roundTo10kCheck" checked style="accent-color: var(--color-primary); width: 16px; height: 16px;">
+                                        <span>Bulatkan ke Rp 10.000 terdekat (Contoh: Rp 1.543.000 &rarr; Rp 1.550.000)</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Tombol Aksi -->
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                <button type="button" id="btnSyncSheet" onclick="window.syncRakitFromGoogleSheets()" class="btn btn-primary" style="padding: 9px 18px; font-size: 0.875rem;">
+                                    <i class="fas fa-sync-alt"></i> Tarik &amp; Sinkronkan dari Google Sheets
+                                </button>
+                                <button type="button" onclick="window.applyMarkupToCurrentData()" class="btn btn-outline" style="padding: 9px 15px; font-size: 0.85rem;" title="Menaikkan harga komponen saat ini secara proporsional sesuai margin di atas">
+                                    <i class="fas fa-percentage"></i> Terapkan Markup ke Data Saat Ini
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Kategori Selector -->
                         <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                             <label style="font-weight: 600; font-size: 0.9rem;">Pilih Kategori:</label>
