@@ -318,7 +318,114 @@
             return /^mon_/i.test(item?.id || "") || /\bmonitor\b|\bdisplay\b/i.test(item?.nama || "");
         }
 
+        const DEFAULT_PC_BUILDER_DISPLAY_SETTINGS = {
+            monitor: { visible: true, label: "Monitor", order: 1 },
+            aksesori: { visible: true, label: "Aksesori (bisa pilih lebih dari satu)", order: 2 }
+        };
+        let pcBuilderDisplaySettingsLoaded = false;
+
+        function normalizePcBuilderDisplaySettings(settings) {
+            const normalized = {};
+            Object.entries(DEFAULT_PC_BUILDER_DISPLAY_SETTINGS).forEach(([category, defaults]) => {
+                const value = settings?.[category] || {};
+                const label = typeof value.label === "string" ? value.label.trim().slice(0, 40) : "";
+                normalized[category] = {
+                    visible: typeof value.visible === "boolean" ? value.visible : defaults.visible,
+                    label: label || defaults.label,
+                    order: Number(value.order) === 1 || Number(value.order) === 2
+                        ? Number(value.order)
+                        : defaults.order
+                };
+            });
+            return normalized;
+        }
+
+        window.loadPcBuilderDisplaySettings = async () => {
+            const status = document.getElementById("pcBuilderDisplayStatus");
+            const saveButton = document.getElementById("btnSavePcBuilderDisplay");
+            pcBuilderDisplaySettingsLoaded = false;
+            if (saveButton) saveButton.disabled = true;
+
+            try {
+                const snapshot = await get(ref(db, "pengaturan_toko/pc_builder_display"));
+                const settings = normalizePcBuilderDisplaySettings(snapshot.exists() ? snapshot.val() : null);
+                document.getElementById("pcBuilderShowMonitor").checked = settings.monitor.visible;
+                document.getElementById("pcBuilderMonitorLabel").value = settings.monitor.label;
+                document.getElementById("pcBuilderMonitorOrder").value = String(settings.monitor.order);
+                document.getElementById("pcBuilderShowAccessories").checked = settings.aksesori.visible;
+                document.getElementById("pcBuilderAccessoriesLabel").value = settings.aksesori.label;
+                document.getElementById("pcBuilderAccessoriesOrder").value = String(settings.aksesori.order);
+                pcBuilderDisplaySettingsLoaded = true;
+                if (saveButton) saveButton.disabled = false;
+                if (status) status.hidden = true;
+            } catch (err) {
+                console.error("Gagal memuat pengaturan tampilan simulasi:", err);
+                if (status) {
+                    status.innerText = "Pengaturan tampilan gagal dimuat. Periksa izin baca Firebase pada /pengaturan_toko.";
+                    status.hidden = false;
+                }
+            }
+        };
+
+        window.savePcBuilderDisplaySettings = async () => {
+            if (!pcBuilderDisplaySettingsLoaded) return;
+
+            const status = document.getElementById("pcBuilderDisplayStatus");
+            const saveButton = document.getElementById("btnSavePcBuilderDisplay");
+            const monitorLabel = document.getElementById("pcBuilderMonitorLabel").value.trim();
+            const accessoriesLabel = document.getElementById("pcBuilderAccessoriesLabel").value.trim();
+            if (!monitorLabel || !accessoriesLabel) {
+                if (status) {
+                    status.innerText = "Nama kategori Monitor dan Aksesori harus diisi.";
+                    status.hidden = false;
+                }
+                return;
+            }
+            const monitorOrder = Number(document.getElementById("pcBuilderMonitorOrder").value) === 2 ? 2 : 1;
+            const accessoriesOrder = Number(document.getElementById("pcBuilderAccessoriesOrder").value) === 2 ? 2 : 1;
+            const bothCategoriesVisible = document.getElementById("pcBuilderShowMonitor").checked
+                && document.getElementById("pcBuilderShowAccessories").checked;
+            if (bothCategoriesVisible && monitorOrder === accessoriesOrder) {
+                if (status) {
+                    status.innerText = "Pilih urutan yang berbeda agar posisi Monitor dan Aksesori tidak sama.";
+                    status.hidden = false;
+                }
+                return;
+            }
+
+            const settings = {
+                monitor: {
+                    visible: document.getElementById("pcBuilderShowMonitor").checked,
+                    label: monitorLabel.slice(0, 40),
+                    order: monitorOrder
+                },
+                aksesori: {
+                    visible: document.getElementById("pcBuilderShowAccessories").checked,
+                    label: accessoriesLabel.slice(0, 40),
+                    order: accessoriesOrder
+                }
+            };
+
+            if (saveButton) saveButton.disabled = true;
+            if (status) {
+                status.innerText = "Menyimpan pengaturan tampilan...";
+                status.hidden = false;
+            }
+
+            try {
+                await set(ref(db, "pengaturan_toko/pc_builder_display"), settings);
+                pcBuilderDisplaySettingsLoaded = true;
+                if (status) status.innerText = "Tampilan menu berhasil disimpan. Muat ulang halaman simulasi untuk melihat perubahan.";
+            } catch (err) {
+                console.error("Gagal menyimpan pengaturan tampilan simulasi:", err);
+                if (status) status.innerText = "Pengaturan gagal disimpan. Periksa izin tulis Firebase untuk /pengaturan_toko.";
+            } finally {
+                if (saveButton) saveButton.disabled = false;
+            }
+        };
+
         window.loadRakitPcDataAdmin = async () => {
+            await window.loadPcBuilderDisplaySettings();
             const status = document.getElementById('rakitCatalogLoadStatus');
             const saveButton = document.getElementById('btnSaveRakitComponents');
             window.rakitCatalogLoaded = false;
@@ -652,12 +759,17 @@
                     if (catKey === 'case') catKey = 'casing';
                     if (catKey === 'pendingin' || catKey === 'fan') catKey = 'cooler';
                     if (catKey === 'aksesoris' || catKey === 'accessories') catKey = 'aksesori';
-
-                    if (!newCatalog[catKey]) continue;
+                    if (catKey === 'extrastorage') catKey = 'extraStorage';
 
                     const id = (row[1] || '').trim() || `${catKey}_${i}`;
                     const nama = (row[2] || '').trim();
                     if (!nama) continue;
+                    if (!newCatalog[catKey]) {
+                        throw new Error(`Kategori "${row[0]}" tidak dikenali pada baris ${i + 1}. Periksa nama kategori di Google Sheets.`);
+                    }
+                    const targetCategory = catKey === "aksesori" && isRakitMonitor({ id, nama })
+                        ? "monitor"
+                        : catKey;
 
                     let rawHargaNew = Number(String(row[3] || '').replace(/[^0-9]/g, '')) || 0;
                     let rawHargaSecond = Number(String(row[4] || '').replace(/[^0-9]/g, '')) || 0;
@@ -667,7 +779,7 @@
                     if (rawHargaNew > 0 && markupNew > 0) rawHargaNew = applyMarkupMath(rawHargaNew, markupNew, round10k);
                     if (rawHargaSecond > 0 && markupSecond > 0) rawHargaSecond = applyMarkupMath(rawHargaSecond, markupSecond, round10k);
 
-                    newCatalog[catKey].items.push({
+                    newCatalog[targetCategory].items.push({
                         id,
                         nama,
                         hargaNew: rawHargaNew,

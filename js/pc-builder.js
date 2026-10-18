@@ -122,11 +122,8 @@ export const DEFAULT_COMPONENTS = {
         icon: "fa-desktop",
         items: [
             { id: "mon_0", nama: "Tanpa Monitor", hargaNew: 0, hargaSecond: 0 },
-            { id: "mon_1", nama: "Monitor 19 Inch HD (Office / Standar)", hargaNew: 750000, hargaSecond: 450000, wattage: 18 },
-            { id: "mon_2", nama: "Monitor 22 Inch Full HD 75Hz / 100Hz", hargaNew: 980000, hargaSecond: 650000, wattage: 22 },
-            { id: "mon_3", nama: "Monitor 24 Inch IPS Full HD 100Hz", hargaNew: 1250000, hargaSecond: 850000, wattage: 25 },
-            { id: "mon_4", nama: "Monitor Gaming 24 Inch IPS 165Hz / 180Hz", hargaNew: 1750000, hargaSecond: 1250000, wattage: 30 },
-            { id: "mon_5", nama: "Monitor Gaming 27 Inch IPS 2K QHD 165Hz+", hargaNew: 3250000, hargaSecond: 2350000, wattage: 40 }
+            { id: "mon_1", nama: "Monitor 22 Inch 75Hz Full HD IPS", hargaNew: 1350000, hargaSecond: 850000, wattage: 0 },
+            { id: "mon_2", nama: "Monitor Gaming 24 Inch 100Hz-180Hz IPS Full HD", hargaNew: 1950000, hargaSecond: 1350000, wattage: 0 }
         ]
     },
     aksesori: {
@@ -358,6 +355,10 @@ class PCBuilderController {
         this.componentsData = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
         this.catalogUnsubscribe = null;
         this.selectedParts = {};
+        this.displaySettings = {
+            monitor: { visible: true, label: "Monitor", order: 1 },
+            aksesori: { visible: true, label: "Aksesori (bisa pilih lebih dari satu)", order: 2 }
+        };
         this.services = {
             jasaRakit: true,
             installOs: true
@@ -378,7 +379,49 @@ class PCBuilderController {
         });
     }
 
+    applyDisplaySettings(settings) {
+        const defaults = {
+            monitor: { visible: true, label: "Monitor", order: 1 },
+            aksesori: { visible: true, label: "Aksesori (bisa pilih lebih dari satu)", order: 2 }
+        };
+
+        Object.entries(defaults).forEach(([category, defaultSettings]) => {
+            const value = settings?.[category] || {};
+            const label = typeof value.label === "string" ? value.label.trim().slice(0, 40) : "";
+            this.displaySettings[category] = {
+                visible: typeof value.visible === "boolean" ? value.visible : defaultSettings.visible,
+                label: label || defaultSettings.label,
+                order: Number(value.order) === 1 || Number(value.order) === 2
+                    ? Number(value.order)
+                    : defaultSettings.order
+            };
+
+            if (this.componentsData[category]) {
+                this.componentsData[category].categoryName = this.displaySettings[category].label;
+            }
+            if (!this.displaySettings[category].visible) {
+                this.selectedParts[category] = category === "aksesori"
+                    ? []
+                    : { id: "mon_0", condition: "new" };
+            }
+        });
+    }
+
+    isCategoryVisible(category) {
+        return !this.displaySettings[category] || this.displaySettings[category].visible;
+    }
+
+    getOrderedCategoryKeys() {
+        const regularCategories = Object.keys(this.componentsData)
+            .filter(category => category !== "monitor" && category !== "aksesori" && this.isCategoryVisible(category));
+        const configurableCategories = ["monitor", "aksesori"]
+            .filter(category => this.componentsData[category] && this.isCategoryVisible(category))
+            .sort((first, second) => this.displaySettings[first].order - this.displaySettings[second].order);
+        return [...regularCategories, ...configurableCategories];
+    }
+
     init() {
+        this.applyDisplaySettings(window.tokoSettings?.pc_builder_display);
         this.renderCategorySlots();
         this.recalculate();
         this.updatePresetEstimates();
@@ -443,6 +486,7 @@ class PCBuilderController {
                 }
 
                 this.componentsData = nextComponents;
+                this.applyDisplaySettings(this.displaySettings);
                 Object.keys(this.selectedParts).forEach(catKey => {
                     const items = this.componentsData[catKey].items;
                     if (catKey === "aksesori") {
@@ -482,6 +526,7 @@ class PCBuilderController {
             let catalogItemMissing = false;
 
             Object.entries(preset.parts).forEach(([catKey, part]) => {
+                if (!this.isCategoryVisible(catKey)) return;
                 const items = this.componentsData[catKey]?.items || [];
                 const selections = Array.isArray(part) ? part : part ? [part] : [];
                 selections.forEach(selection => {
@@ -511,7 +556,7 @@ class PCBuilderController {
         const container = document.getElementById("builder-parts-list");
         if (!container) return;
 
-        container.innerHTML = Object.keys(this.componentsData).map(catKey => {
+        container.innerHTML = this.getOrderedCategoryKeys().map(catKey => {
             const cat = this.componentsData[catKey];
             if (catKey === "aksesori") return this.renderAccessorySlot(cat);
 
@@ -523,7 +568,7 @@ class PCBuilderController {
                 <div class="part-slot-header">
                     <div class="part-slot-title">
                         <div class="part-slot-icon"><i class="fas ${cat.icon}"></i></div>
-                        <span>${cat.categoryName}</span>
+                        <span>${escapeBuilderText(cat.categoryName)}</span>
                     </div>
                     ${currentItem.hargaNew > 0 || currentItem.hargaSecond > 0 ? `
                         <button type="button" class="part-slot-reset" onclick="window.pcBuilder.resetSlot('${catKey}')" title="Reset slot ini">
@@ -614,7 +659,7 @@ class PCBuilderController {
                 <div class="part-slot-header">
                     <div class="part-slot-title">
                         <div class="part-slot-icon"><i class="fas ${cat.icon}"></i></div>
-                        <span>${cat.categoryName}</span>
+                        <span>${escapeBuilderText(cat.categoryName)}</span>
                     </div>
                     ${hasSelected ? `
                         <button type="button" class="part-slot-reset" data-accessory-reset>
@@ -778,6 +823,7 @@ class PCBuilderController {
         const selectedItemsForSummary = [];
 
         Object.keys(this.selectedParts).forEach(catKey => {
+            if (!this.isCategoryVisible(catKey)) return;
             const cat = this.componentsData[catKey];
             this.getSelectedParts(catKey).forEach(sel => {
                 const item = cat.items.find(i => i.id === sel.id);
@@ -926,6 +972,7 @@ class PCBuilderController {
         if (!preset) return;
 
         const unavailablePart = Object.entries(preset.parts).find(([catKey, parts]) => {
+            if (!this.isCategoryVisible(catKey)) return false;
             const selections = Array.isArray(parts) ? parts : parts ? [parts] : [];
             return selections.some(part => {
                 const item = this.componentsData[catKey]?.items.find(component => component.id === part.id);
@@ -942,7 +989,7 @@ class PCBuilderController {
 
         // Set parts
         Object.keys(preset.parts).forEach(catKey => {
-            if (this.componentsData[catKey]) {
+            if (this.componentsData[catKey] && this.isCategoryVisible(catKey)) {
                 const parts = preset.parts[catKey];
                 this.selectedParts[catKey] = catKey === "aksesori"
                     ? (Array.isArray(parts) ? parts.map(part => ({ ...part })) : parts ? [{ ...parts }] : [])
@@ -1001,6 +1048,7 @@ class PCBuilderController {
         let totalWatt = 50;
 
         Object.keys(this.selectedParts).forEach(catKey => {
+            if (!this.isCategoryVisible(catKey)) return;
             const cat = this.componentsData[catKey];
             this.getSelectedParts(catKey).forEach(sel => {
                 const item = cat.items.find(i => i.id === sel.id);
@@ -1048,6 +1096,7 @@ Apakah semua part di atas ready stok? Mohon konfirmasi ketersediaan dan proses p
         let count = 0;
 
         Object.keys(this.selectedParts).forEach(catKey => {
+            if (!this.isCategoryVisible(catKey)) return;
             const cat = this.componentsData[catKey];
             this.getSelectedParts(catKey).forEach(sel => {
                 const item = cat.items.find(i => i.id === sel.id);

@@ -475,6 +475,47 @@
                             </div>
                         </div>
 
+                        <div class="settings-card" style="margin-bottom: 20px; background: rgba(13, 148, 136, 0.06);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;">
+                                <div>
+                                    <h4 style="margin: 0 0 5px;"><i class="fas fa-sliders-h"></i> Tampilan Kategori Simulasi</h4>
+                                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Atur nama, visibilitas, dan urutan Monitor serta Aksesori pada halaman simulasi. Pilihan aksesori jamak tetap aktif.</p>
+                                    <p id="pcBuilderDisplayStatus" role="status" aria-live="polite" hidden style="color: #f59e0b; font-size: 0.85rem; margin: 8px 0 0;"></p>
+                                </div>
+                                <button type="button" id="btnSavePcBuilderDisplay" onclick="window.savePcBuilderDisplaySettings()" class="btn btn-primary" style="font-size: 0.85rem; padding: 8px 14px;" disabled>
+                                    <i class="fas fa-save"></i> Simpan Tampilan Menu
+                                </button>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 16px;">
+                                <div style="padding: 14px; border: 1px solid var(--border-color); border-radius: 8px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 12px;">
+                                        <input type="checkbox" id="pcBuilderShowMonitor" style="accent-color: var(--color-primary);">
+                                        Tampilkan kategori Monitor
+                                    </label>
+                                    <label for="pcBuilderMonitorLabel" style="display: block; font-size: 0.8rem; margin-bottom: 5px;">Nama kategori</label>
+                                    <input type="text" id="pcBuilderMonitorLabel" maxlength="40" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg, var(--bg-secondary)); color: var(--text-color);">
+                                    <label for="pcBuilderMonitorOrder" style="display: block; font-size: 0.8rem; margin: 10px 0 5px;">Urutan di bagian akhir</label>
+                                    <select id="pcBuilderMonitorOrder" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg, var(--bg-secondary)); color: var(--text-color);">
+                                        <option value="1">Pertama</option>
+                                        <option value="2">Kedua</option>
+                                    </select>
+                                </div>
+                                <div style="padding: 14px; border: 1px solid var(--border-color); border-radius: 8px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 12px;">
+                                        <input type="checkbox" id="pcBuilderShowAccessories" style="accent-color: var(--color-primary);">
+                                        Tampilkan kategori Aksesori
+                                    </label>
+                                    <label for="pcBuilderAccessoriesLabel" style="display: block; font-size: 0.8rem; margin-bottom: 5px;">Nama kategori</label>
+                                    <input type="text" id="pcBuilderAccessoriesLabel" maxlength="40" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg, var(--bg-secondary)); color: var(--text-color);">
+                                    <label for="pcBuilderAccessoriesOrder" style="display: block; font-size: 0.8rem; margin: 10px 0 5px;">Urutan di bagian akhir</label>
+                                    <select id="pcBuilderAccessoriesOrder" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg, var(--bg-secondary)); color: var(--text-color);">
+                                        <option value="1">Pertama</option>
+                                        <option value="2">Kedua</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Panel Integrasi Google Sheets & Kontrol Markup Massal -->
                         <div style="background: rgba(13, 148, 136, 0.08); border: 1px solid rgba(13, 148, 136, 0.25); border-radius: 8px; padding: 18px; margin-bottom: 25px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
@@ -554,7 +595,8 @@
                                 <option value="psu">Power Supply (PSU)</option>
                                 <option value="casing">Casing PC</option>
                                 <option value="cooler">CPU Cooler (Pendingin)</option>
-                                <option value="aksesori">Aksesori & Monitor</option>
+                                <option value="monitor">Monitor</option>
+                                <option value="aksesori">Aksesori (bisa pilih lebih dari satu)</option>
                             </select>
                         </div>
 
