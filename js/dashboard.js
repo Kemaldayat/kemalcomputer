@@ -404,8 +404,8 @@
             w.insertAdjacentHTML('beforeend', html);
         };
 
-        window.saveRakitPcSettings = async (showAlert = true) => {
-            window.collectCurrentRakitCategoryInputs();
+        window.saveRakitPcSettings = async (showAlert = true, collectInputs = true) => {
+            if (collectInputs) window.collectCurrentRakitCategoryInputs();
             if (!window.rakitComponents) return;
             try {
                 await set(ref(db, 'komponen_rakit'), window.rakitComponents);
@@ -450,7 +450,7 @@
             });
 
             try {
-                await window.saveRakitPcSettings(false);
+                await window.saveRakitPcSettings(false, false);
                 window.renderRakitCategory(window.currentRakitCategory);
                 showModal(`Berhasil menerapkan markup (+${markupNew}% Baru, +${markupSecond}% Second) ke seluruh komponen!`, "info");
             } catch (err) {

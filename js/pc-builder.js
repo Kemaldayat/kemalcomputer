@@ -141,10 +141,10 @@ export const PRESETS = {
             cpu: { id: "cpu_1", condition: "second" },
             mobo: { id: "mobo_1", condition: "second" },
             ram: { id: "ram_1", condition: "second" },
-            vga: { id: "vga_0", condition: "new" },
+            vga: { id: "vga_2", condition: "second" },
             ssd: { id: "ssd_1", condition: "new" },
             extraStorage: { id: "extra_0", condition: "new" },
-            psu: { id: "psu_1", condition: "new" },
+            psu: { id: "psu_2", condition: "new" },
             casing: { id: "case_1", condition: "new" },
             cooler: { id: "cooler_0", condition: "new" },
             aksesori: { id: "aks_0", condition: "new" }
@@ -195,6 +195,102 @@ export const PRESETS = {
             psu: { id: "psu_4", condition: "new" },
             casing: { id: "case_4", condition: "new" },
             cooler: { id: "cooler_3", condition: "new" },
+            aksesori: { id: "aks_0", condition: "new" }
+        }
+    },
+    office_all_new: {
+        nama: "Paket Office All New",
+        deskripsi: "PC baru untuk kasir, administrasi, belajar, dan penggunaan harian.",
+        parts: {
+            cpu: { id: "cpu_3", condition: "new" },
+            mobo: { id: "mobo_2", condition: "new" },
+            ram: { id: "ram_2", condition: "new" },
+            vga: { id: "vga_2", condition: "new" },
+            ssd: { id: "ssd_2", condition: "new" },
+            extraStorage: { id: "extra_0", condition: "new" },
+            psu: { id: "psu_2", condition: "new" },
+            casing: { id: "case_1", condition: "new" },
+            cooler: { id: "cooler_0", condition: "new" },
+            aksesori: { id: "aks_0", condition: "new" }
+        }
+    },
+    gaming_mix_value: {
+        nama: "Paket Gaming Mix Hemat",
+        deskripsi: "Rakitan hemat dengan kombinasi part second dan baru untuk game 1080p.",
+        parts: {
+            cpu: { id: "cpu_6", condition: "second" },
+            mobo: { id: "mobo_4", condition: "second" },
+            ram: { id: "ram_2", condition: "new" },
+            vga: { id: "vga_2", condition: "second" },
+            ssd: { id: "ssd_2", condition: "new" },
+            extraStorage: { id: "extra_0", condition: "new" },
+            psu: { id: "psu_2", condition: "new" },
+            casing: { id: "case_2", condition: "new" },
+            cooler: { id: "cooler_0", condition: "new" },
+            aksesori: { id: "aks_0", condition: "new" }
+        }
+    },
+    gaming_rx6600: {
+        nama: "Paket Gaming RX 6600 All New",
+        deskripsi: "Rakitan all-new untuk gaming 1080p dengan Radeon RX 6600.",
+        parts: {
+            cpu: { id: "cpu_7", condition: "new" },
+            mobo: { id: "mobo_5", condition: "new" },
+            ram: { id: "ram_2", condition: "new" },
+            vga: { id: "vga_4", condition: "new" },
+            ssd: { id: "ssd_3", condition: "new" },
+            extraStorage: { id: "extra_0", condition: "new" },
+            psu: { id: "psu_3", condition: "new" },
+            casing: { id: "case_2", condition: "new" },
+            cooler: { id: "cooler_1", condition: "new" },
+            aksesori: { id: "aks_0", condition: "new" }
+        }
+    },
+    creator_ryzen: {
+        nama: "Paket Editing Ryzen 7",
+        deskripsi: "Untuk editing, desain, dan multitasking dengan RAM 32GB dan storage tambahan.",
+        parts: {
+            cpu: { id: "cpu_8", condition: "new" },
+            mobo: { id: "mobo_5", condition: "new" },
+            ram: { id: "ram_3", condition: "new" },
+            vga: { id: "vga_3", condition: "new" },
+            ssd: { id: "ssd_4", condition: "new" },
+            extraStorage: { id: "extra_2", condition: "new" },
+            psu: { id: "psu_4", condition: "new" },
+            casing: { id: "case_3", condition: "new" },
+            cooler: { id: "cooler_2", condition: "new" },
+            aksesori: { id: "aks_0", condition: "new" }
+        }
+    },
+    gaming_am5_4060: {
+        nama: "Paket Gaming AM5 RTX 4060",
+        deskripsi: "Platform AM5 generasi baru dengan DDR5 dan RTX 4060.",
+        parts: {
+            cpu: { id: "cpu_9", condition: "new" },
+            mobo: { id: "mobo_6", condition: "new" },
+            ram: { id: "ram_4", condition: "new" },
+            vga: { id: "vga_6", condition: "new" },
+            ssd: { id: "ssd_4", condition: "new" },
+            extraStorage: { id: "extra_0", condition: "new" },
+            psu: { id: "psu_4", condition: "new" },
+            casing: { id: "case_4", condition: "new" },
+            cooler: { id: "cooler_1", condition: "new" },
+            aksesori: { id: "aks_0", condition: "new" }
+        }
+    },
+    gaming_am5_4070: {
+        nama: "Paket Gaming AM5 RTX 4070",
+        deskripsi: "Kelas performa tinggi dengan RTX 4070, DDR5 32GB, dan PSU 750W.",
+        parts: {
+            cpu: { id: "cpu_9", condition: "new" },
+            mobo: { id: "mobo_6", condition: "new" },
+            ram: { id: "ram_5", condition: "new" },
+            vga: { id: "vga_7", condition: "new" },
+            ssd: { id: "ssd_4", condition: "new" },
+            extraStorage: { id: "extra_0", condition: "new" },
+            psu: { id: "psu_5", condition: "new" },
+            casing: { id: "case_4", condition: "new" },
+            cooler: { id: "cooler_2", condition: "new" },
             aksesori: { id: "aks_0", condition: "new" }
         }
     }
