@@ -729,9 +729,15 @@
                 }
                 const csvText = await response.text();
                 
-                const rows = parseCSVToRows(csvText);
+                let rows = parseCSVToRows(csvText);
+                if (rows.length > 1 && rows.every(row => row.length === 1) && rows.some(row => row[0].includes(","))) {
+                    rows = parseCSVToRows(rows.map(row => row[0]).join("\n"));
+                }
                 if (rows.length < 2) {
                     throw new Error("Tabel Google Sheet kosong atau tidak memiliki baris data.");
+                }
+                if (rows[0].length < 5) {
+                    throw new Error("Google Sheets terbaca sebagai satu kolom. Pastikan header dan data terpisah ke kolom Kategori, ID, Nama Komponen, Harga Baru, dan Harga Second.");
                 }
 
                 const markupNew = Number(document.getElementById('markupNewPct')?.value) || 0;
