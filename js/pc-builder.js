@@ -12,15 +12,15 @@ export const DEFAULT_COMPONENTS = {
         icon: "fa-microchip",
         items: [
             { id: "cpu_0", nama: "-- Pilih Processor --", hargaNew: 0, hargaSecond: 0, wattage: 0, socket: "" },
-            { id: "cpu_1", nama: "Intel Core i3-10105F (4C/8T up to 4.4GHz)", hargaNew: 1050000, hargaSecond: 750000, wattage: 65, socket: "LGA1200", ramType: "DDR4" },
-            { id: "cpu_2", nama: "Intel Core i5-10400F (6C/12T up to 4.3GHz)", hargaNew: 1650000, hargaSecond: 1250000, wattage: 65, socket: "LGA1200", ramType: "DDR4" },
-            { id: "cpu_3", nama: "Intel Core i3-12100F (4C/8T up to 4.3GHz)", hargaNew: 1350000, hargaSecond: 1050000, wattage: 60, socket: "LGA1700", ramType: "DDR4" },
-            { id: "cpu_4", nama: "Intel Core i5-12400F (6C/12T up to 4.4GHz)", hargaNew: 1850000, hargaSecond: 1450000, wattage: 65, socket: "LGA1700", ramType: "DDR4" },
-            { id: "cpu_5", nama: "Intel Core i5-13400F (10C/16T up to 4.6GHz)", hargaNew: 3100000, hargaSecond: 2350000, wattage: 65, socket: "LGA1700", ramType: "DDR4" },
-            { id: "cpu_6", nama: "AMD Ryzen 5 3600 (6C/12T up to 4.2GHz)", hargaNew: 1350000, hargaSecond: 950000, wattage: 65, socket: "AM4", ramType: "DDR4" },
-            { id: "cpu_7", nama: "AMD Ryzen 5 5600 (6C/12T up to 4.4GHz)", hargaNew: 1800000, hargaSecond: 1350000, wattage: 65, socket: "AM4", ramType: "DDR4" },
-            { id: "cpu_8", nama: "AMD Ryzen 7 5700X (8C/16T up to 4.6GHz)", hargaNew: 2650000, hargaSecond: 1950000, wattage: 65, socket: "AM4", ramType: "DDR4" },
-            { id: "cpu_9", nama: "AMD Ryzen 5 7500F (6C/12T Zen 4 AM5)", hargaNew: 2750000, hargaSecond: 2100000, wattage: 65, socket: "AM5", ramType: "DDR5" }
+            { id: "cpu_1", nama: "Intel Core i3-10105F (4C/8T up to 4.4GHz)", hargaNew: 1250000, hargaSecond: 850000, wattage: 65, socket: "LGA1200", ramType: "DDR4" },
+            { id: "cpu_2", nama: "Intel Core i5-10400F (6C/12T up to 4.3GHz)", hargaNew: 1950000, hargaSecond: 1350000, wattage: 65, socket: "LGA1200", ramType: "DDR4" },
+            { id: "cpu_3", nama: "Intel Core i3-12100F (4C/8T up to 4.3GHz)", hargaNew: 1550000, hargaSecond: 1150000, wattage: 60, socket: "LGA1700", ramType: "DDR4" },
+            { id: "cpu_4", nama: "Intel Core i5-12400F (6C/12T up to 4.4GHz)", hargaNew: 2250000, hargaSecond: 1650000, wattage: 65, socket: "LGA1700", ramType: "DDR4" },
+            { id: "cpu_5", nama: "Intel Core i5-13400F (10C/16T up to 4.6GHz)", hargaNew: 3650000, hargaSecond: 2750000, wattage: 65, socket: "LGA1700", ramType: "DDR4" },
+            { id: "cpu_6", nama: "AMD Ryzen 5 3600 (6C/12T up to 4.2GHz)", hargaNew: 1550000, hargaSecond: 1100000, wattage: 65, socket: "AM4", ramType: "DDR4" },
+            { id: "cpu_7", nama: "AMD Ryzen 5 5600 (6C/12T up to 4.4GHz)", hargaNew: 2150000, hargaSecond: 1550000, wattage: 65, socket: "AM4", ramType: "DDR4" },
+            { id: "cpu_8", nama: "AMD Ryzen 7 5700X (8C/16T up to 4.6GHz)", hargaNew: 3150000, hargaSecond: 2350000, wattage: 65, socket: "AM4", ramType: "DDR4" },
+            { id: "cpu_9", nama: "AMD Ryzen 5 7500F (6C/12T Zen 4 AM5)", hargaNew: 3150000, hargaSecond: 2450000, wattage: 65, socket: "AM5", ramType: "DDR5" }
         ]
     },
     mobo: {
@@ -28,12 +28,12 @@ export const DEFAULT_COMPONENTS = {
         icon: "fa-server",
         items: [
             { id: "mobo_0", nama: "-- Pilih Motherboard --", hargaNew: 0, hargaSecond: 0, socket: "" },
-            { id: "mobo_1", nama: "H510M Socket LGA1200 DDR4", hargaNew: 950000, hargaSecond: 650000, socket: "LGA1200", ramType: "DDR4" },
-            { id: "mobo_2", nama: "H610M Socket LGA1700 DDR4", hargaNew: 1150000, hargaSecond: 850000, socket: "LGA1700", ramType: "DDR4" },
-            { id: "mobo_3", nama: "B660M / B760M Gaming Socket LGA1700 DDR4", hargaNew: 1750000, hargaSecond: 1250000, socket: "LGA1700", ramType: "DDR4" },
-            { id: "mobo_4", nama: "A520M / A320M Socket AM4 DDR4", hargaNew: 850000, hargaSecond: 550000, socket: "AM4", ramType: "DDR4" },
-            { id: "mobo_5", nama: "B450M / B550M Gaming Socket AM4 DDR4", hargaNew: 1350000, hargaSecond: 850000, socket: "AM4", ramType: "DDR4" },
-            { id: "mobo_6", nama: "B650M Gaming Socket AM5 DDR5", hargaNew: 2150000, hargaSecond: 1650000, socket: "AM5", ramType: "DDR5" }
+            { id: "mobo_1", nama: "H510M Socket LGA1200 DDR4", hargaNew: 1150000, hargaSecond: 750000, socket: "LGA1200", ramType: "DDR4" },
+            { id: "mobo_2", nama: "H610M Socket LGA1700 DDR4", hargaNew: 1350000, hargaSecond: 950000, socket: "LGA1700", ramType: "DDR4" },
+            { id: "mobo_3", nama: "B660M / B760M Gaming Socket LGA1700 DDR4", hargaNew: 2150000, hargaSecond: 1450000, socket: "LGA1700", ramType: "DDR4" },
+            { id: "mobo_4", nama: "A520M / A320M Socket AM4 DDR4", hargaNew: 1050000, hargaSecond: 650000, socket: "AM4", ramType: "DDR4" },
+            { id: "mobo_5", nama: "B450M / B550M Gaming Socket AM4 DDR4", hargaNew: 1650000, hargaSecond: 1050000, socket: "AM4", ramType: "DDR4" },
+            { id: "mobo_6", nama: "B650M Gaming Socket AM5 DDR5", hargaNew: 2550000, hargaSecond: 1850000, socket: "AM5", ramType: "DDR5" }
         ]
     },
     ram: {
@@ -41,11 +41,11 @@ export const DEFAULT_COMPONENTS = {
         icon: "fa-memory",
         items: [
             { id: "ram_0", nama: "-- Pilih RAM --", hargaNew: 0, hargaSecond: 0 },
-            { id: "ram_1", nama: "8GB DDR4 3200MHz (1x8GB Single Channel)", hargaNew: 290000, hargaSecond: 190000, ramType: "DDR4" },
-            { id: "ram_2", nama: "16GB DDR4 3200MHz (2x8GB Dual Channel)", hargaNew: 580000, hargaSecond: 390000, ramType: "DDR4" },
-            { id: "ram_3", nama: "32GB DDR4 3200MHz (2x16GB Dual Channel)", hargaNew: 1100000, hargaSecond: 750000, ramType: "DDR4" },
-            { id: "ram_4", nama: "16GB DDR5 5600MHz (2x8GB / 1x16GB)", hargaNew: 890000, hargaSecond: 650000, ramType: "DDR5" },
-            { id: "ram_5", nama: "32GB DDR5 6000MHz (2x16GB Dual Channel RGB)", hargaNew: 1850000, hargaSecond: 1300000, ramType: "DDR5" }
+            { id: "ram_1", nama: "8GB DDR4 3200MHz (1x8GB Single Channel)", hargaNew: 380000, hargaSecond: 240000, ramType: "DDR4" },
+            { id: "ram_2", nama: "16GB DDR4 3200MHz (2x8GB Dual Channel)", hargaNew: 750000, hargaSecond: 480000, ramType: "DDR4" },
+            { id: "ram_3", nama: "32GB DDR4 3200MHz (2x16GB Dual Channel)", hargaNew: 1450000, hargaSecond: 950000, ramType: "DDR4" },
+            { id: "ram_4", nama: "16GB DDR5 5600MHz (2x8GB / 1x16GB)", hargaNew: 1150000, hargaSecond: 780000, ramType: "DDR5" },
+            { id: "ram_5", nama: "32GB DDR5 6000MHz (2x16GB Dual Channel RGB)", hargaNew: 2250000, hargaSecond: 1550000, ramType: "DDR5" }
         ]
     },
     vga: {
@@ -53,13 +53,13 @@ export const DEFAULT_COMPONENTS = {
         icon: "fa-gamepad",
         items: [
             { id: "vga_0", nama: "Onboard Graphic (Tanpa VGA Card / Khusus Office)", hargaNew: 0, hargaSecond: 0, wattage: 0 },
-            { id: "vga_1", nama: "AMD Radeon RX 580 8GB GDDR5", hargaNew: 0, hargaSecond: 950000, wattage: 150, onlySecond: true },
-            { id: "vga_2", nama: "GeForce GTX 1650 4GB GDDR6", hargaNew: 1950000, hargaSecond: 1250000, wattage: 75 },
-            { id: "vga_3", nama: "GeForce GTX 1660 Super 6GB GDDR6", hargaNew: 2650000, hargaSecond: 1650000, wattage: 125 },
-            { id: "vga_4", nama: "AMD Radeon RX 6600 8GB GDDR6", hargaNew: 3150000, hargaSecond: 2250000, wattage: 132 },
-            { id: "vga_5", nama: "GeForce RTX 3060 12GB GDDR6", hargaNew: 4550000, hargaSecond: 3250000, wattage: 170 },
-            { id: "vga_6", nama: "GeForce RTX 4060 8GB GDDR6", hargaNew: 5250000, hargaSecond: 4250000, wattage: 115 },
-            { id: "vga_7", nama: "GeForce RTX 4070 12GB GDDR6X", hargaNew: 9850000, hargaSecond: 7500000, wattage: 200 }
+            { id: "vga_1", nama: "AMD Radeon RX 580 8GB GDDR5", hargaNew: 0, hargaSecond: 1250000, wattage: 150, onlySecond: true },
+            { id: "vga_2", nama: "GeForce GTX 1650 4GB GDDR6", hargaNew: 2450000, hargaSecond: 1550000, wattage: 75 },
+            { id: "vga_3", nama: "GeForce GTX 1660 Super 6GB GDDR6", hargaNew: 3350000, hargaSecond: 1950000, wattage: 125 },
+            { id: "vga_4", nama: "AMD Radeon RX 6600 8GB GDDR6", hargaNew: 3750000, hargaSecond: 2650000, wattage: 132 },
+            { id: "vga_5", nama: "GeForce RTX 3060 12GB GDDR6", hargaNew: 5250000, hargaSecond: 3850000, wattage: 170 },
+            { id: "vga_6", nama: "GeForce RTX 4060 8GB GDDR6", hargaNew: 5850000, hargaSecond: 4650000, wattage: 115 },
+            { id: "vga_7", nama: "GeForce RTX 4070 12GB GDDR6X", hargaNew: 10950000, hargaSecond: 8450000, wattage: 200 }
         ]
     },
     ssd: {
@@ -67,10 +67,10 @@ export const DEFAULT_COMPONENTS = {
         icon: "fa-hdd",
         items: [
             { id: "ssd_0", nama: "-- Pilih SSD Utama --", hargaNew: 0, hargaSecond: 0 },
-            { id: "ssd_1", nama: "SSD SATA 256GB 2.5 Inch", hargaNew: 275000, hargaSecond: 180000 },
-            { id: "ssd_2", nama: "SSD NVMe M.2 256GB PCIe Gen 3", hargaNew: 350000, hargaSecond: 240000 },
-            { id: "ssd_3", nama: "SSD NVMe M.2 512GB PCIe Gen 4 High Speed", hargaNew: 590000, hargaSecond: 420000 },
-            { id: "ssd_4", nama: "SSD NVMe M.2 1TB PCIe Gen 4 Ultra Fast", hargaNew: 1050000, hargaSecond: 750000 }
+            { id: "ssd_1", nama: "SSD SATA 256GB 2.5 Inch", hargaNew: 350000, hargaSecond: 220000 },
+            { id: "ssd_2", nama: "SSD NVMe M.2 256GB PCIe Gen 3", hargaNew: 450000, hargaSecond: 280000 },
+            { id: "ssd_3", nama: "SSD NVMe M.2 512GB PCIe Gen 4 High Speed", hargaNew: 750000, hargaSecond: 490000 },
+            { id: "ssd_4", nama: "SSD NVMe M.2 1TB PCIe Gen 4 Ultra Fast", hargaNew: 1350000, hargaSecond: 890000 }
         ]
     },
     extraStorage: {
@@ -78,10 +78,10 @@ export const DEFAULT_COMPONENTS = {
         icon: "fa-database",
         items: [
             { id: "extra_0", nama: "Tanpa Tambahan Storage", hargaNew: 0, hargaSecond: 0 },
-            { id: "extra_1", nama: "HDD 500GB 7200RPM (Seagate/WD Blue)", hargaNew: 250000, hargaSecond: 120000 },
-            { id: "extra_2", nama: "HDD 1TB 7200RPM (Seagate/WD Blue)", hargaNew: 550000, hargaSecond: 250000 },
-            { id: "extra_3", nama: "HDD 2TB 7200RPM (Seagate Barracuda)", hargaNew: 850000, hargaSecond: 450000 },
-            { id: "extra_4", nama: "Extra SSD SATA 512GB 2.5 Inch", hargaNew: 500000, hargaSecond: 350000 }
+            { id: "extra_1", nama: "HDD 500GB 7200RPM (Seagate/WD Blue)", hargaNew: 320000, hargaSecond: 160000 },
+            { id: "extra_2", nama: "HDD 1TB 7200RPM (Seagate/WD Blue)", hargaNew: 680000, hargaSecond: 350000 },
+            { id: "extra_3", nama: "HDD 2TB 7200RPM (Seagate Barracuda)", hargaNew: 1050000, hargaSecond: 580000 },
+            { id: "extra_4", nama: "Extra SSD SATA 512GB 2.5 Inch", hargaNew: 620000, hargaSecond: 420000 }
         ]
     },
     psu: {
@@ -89,11 +89,11 @@ export const DEFAULT_COMPONENTS = {
         icon: "fa-bolt",
         items: [
             { id: "psu_0", nama: "-- Pilih Power Supply --", hargaNew: 0, hargaSecond: 0, capacity: 0 },
-            { id: "psu_1", nama: "PSU Standar 450W / 500W (Khusus Office Non-VGA)", hargaNew: 220000, hargaSecond: 120000, capacity: 450 },
-            { id: "psu_2", nama: "PSU 500W 80+ Bronze Certified (FSP / DeepCool)", hargaNew: 520000, hargaSecond: 350000, capacity: 500 },
-            { id: "psu_3", nama: "PSU 550W - 600W 80+ Bronze Certified", hargaNew: 680000, hargaSecond: 450000, capacity: 600 },
-            { id: "psu_4", nama: "PSU 650W 80+ Bronze/Gold (MSI MAG / Corsair)", hargaNew: 950000, hargaSecond: 650000, capacity: 650 },
-            { id: "psu_5", nama: "PSU 750W 80+ Gold Modular", hargaNew: 1450000, hargaSecond: 950000, capacity: 750 }
+            { id: "psu_1", nama: "PSU Standar 450W / 500W (Khusus Office Non-VGA)", hargaNew: 280000, hargaSecond: 160000, capacity: 450 },
+            { id: "psu_2", nama: "PSU 500W 80+ Bronze Certified (FSP / DeepCool)", hargaNew: 680000, hargaSecond: 450000, capacity: 500 },
+            { id: "psu_3", nama: "PSU 550W - 600W 80+ Bronze Certified", hargaNew: 820000, hargaSecond: 520000, capacity: 600 },
+            { id: "psu_4", nama: "PSU 650W 80+ Bronze/Gold (MSI MAG / Corsair)", hargaNew: 1150000, hargaSecond: 780000, capacity: 650 },
+            { id: "psu_5", nama: "PSU 750W 80+ Gold Modular", hargaNew: 1750000, hargaSecond: 1150000, capacity: 750 }
         ]
     },
     casing: {
@@ -101,10 +101,10 @@ export const DEFAULT_COMPONENTS = {
         icon: "fa-cube",
         items: [
             { id: "case_0", nama: "-- Pilih Casing PC --", hargaNew: 0, hargaSecond: 0 },
-            { id: "case_1", nama: "Casing Standar Office (Black Minimalist)", hargaNew: 180000, hargaSecond: 90000 },
-            { id: "case_2", nama: "Casing Gaming Mid-Tower RGB (Termasuk 3 Fan)", hargaNew: 380000, hargaSecond: 240000 },
-            { id: "case_3", nama: "Casing Tempered Glass Modern + 4 Fan ARGB", hargaNew: 520000, hargaSecond: 340000 },
-            { id: "case_4", nama: "Casing Panoramic Aquarium Dual Tempered Glass", hargaNew: 650000, hargaSecond: 420000 }
+            { id: "case_1", nama: "Casing Standar Office (Black Minimalist)", hargaNew: 250000, hargaSecond: 120000 },
+            { id: "case_2", nama: "Casing Gaming Mid-Tower RGB (Termasuk 3 Fan)", hargaNew: 480000, hargaSecond: 290000 },
+            { id: "case_3", nama: "Casing Tempered Glass Modern + 4 Fan ARGB", hargaNew: 650000, hargaSecond: 420000 },
+            { id: "case_4", nama: "Casing Panoramic Aquarium Dual Tempered Glass", hargaNew: 790000, hargaSecond: 490000 }
         ]
     },
     cooler: {
@@ -112,9 +112,9 @@ export const DEFAULT_COMPONENTS = {
         icon: "fa-fan",
         items: [
             { id: "cooler_0", nama: "Stock Cooler Bawaan Processor (Gratis)", hargaNew: 0, hargaSecond: 0 },
-            { id: "cooler_1", nama: "Air Cooler Single Tower 4 Heatpipe RGB", hargaNew: 210000, hargaSecond: 120000 },
-            { id: "cooler_2", nama: "Air Cooler Dual Tower 6 Heatpipe Heavy Duty", hargaNew: 490000, hargaSecond: 320000 },
-            { id: "cooler_3", nama: "Liquid Cooler AIO 240mm ARGB Water Cooling", hargaNew: 790000, hargaSecond: 480000 }
+            { id: "cooler_1", nama: "Air Cooler Single Tower 4 Heatpipe RGB", hargaNew: 280000, hargaSecond: 160000 },
+            { id: "cooler_2", nama: "Air Cooler Dual Tower 6 Heatpipe Heavy Duty", hargaNew: 580000, hargaSecond: 380000 },
+            { id: "cooler_3", nama: "Liquid Cooler AIO 240mm ARGB Water Cooling", hargaNew: 950000, hargaSecond: 580000 }
         ]
     },
     aksesori: {
@@ -122,14 +122,15 @@ export const DEFAULT_COMPONENTS = {
         icon: "fa-tv",
         items: [
             { id: "aks_0", nama: "Tanpa Aksesori Tambahan", hargaNew: 0, hargaSecond: 0 },
-            { id: "aks_1", nama: "USB Wifi Dongle + Bluetooth 5.0", hargaNew: 75000, hargaSecond: 45000 },
-            { id: "aks_2", nama: "PCIe Wifi Dual Band Antena Luar + Bluetooth", hargaNew: 185000, hargaSecond: 125000 },
-            { id: "aks_3", nama: "Monitor 22 Inch 75Hz Full HD IPS", hargaNew: 1150000, hargaSecond: 750000 },
-            { id: "aks_4", nama: "Monitor Gaming 24 Inch 100Hz-180Hz IPS Full HD", hargaNew: 1650000, hargaSecond: 1150000 },
-            { id: "aks_5", nama: "Combo Keyboard & Mouse RGB Gaming", hargaNew: 140000, hargaSecond: 80000 }
+            { id: "aks_1", nama: "USB Wifi Dongle + Bluetooth 5.0", hargaNew: 95000, hargaSecond: 55000 },
+            { id: "aks_2", nama: "PCIe Wifi Dual Band Antena Luar + Bluetooth", hargaNew: 245000, hargaSecond: 160000 },
+            { id: "aks_3", nama: "Monitor 22 Inch 75Hz Full HD IPS", hargaNew: 1350000, hargaSecond: 850000 },
+            { id: "aks_4", nama: "Monitor Gaming 24 Inch 100Hz-180Hz IPS Full HD", hargaNew: 1950000, hargaSecond: 1350000 },
+            { id: "aks_5", nama: "Combo Keyboard & Mouse RGB Gaming", hargaNew: 185000, hargaSecond: 95000 }
         ]
     }
 };
+
 
 // Preset Paket Racikan
 export const PRESETS = {
