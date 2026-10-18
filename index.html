@@ -10,6 +10,7 @@
     
     <!-- Design System: Vanilla CSS -->
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/pc-builder.css">
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -285,6 +286,7 @@
             <div class="flex items-center">
                 <nav class="nav-links" style="margin-right: 15px;">
                     <a href="#" onclick="showPage('home-page')">Beranda</a>
+                    <a href="#" onclick="showPage('simulasi-page')"><i class="fas fa-microchip"></i> Simulasi Rakit</a>
                     <a href="#" onclick="showPage('reservation-page')">Konsultasi AI</a>
                     <a href="#" onclick="showPage('tracking-page')">Cek Status</a>
                 </nav>
@@ -295,6 +297,7 @@
 
     <div id="mobile-menu" class="hidden">
         <a href="#" onclick="showPage('home-page')" style="font-weight: 600; color: var(--color-text);"><i class="fas fa-home"></i> Beranda</a>
+        <a href="#" onclick="showPage('simulasi-page')" style="font-weight: 600; color: var(--color-primary-light);"><i class="fas fa-microchip"></i> Simulasi Rakit PC</a>
         <a href="#" onclick="showPage('reservation-page')" style="font-weight: 600; color: var(--color-text);"><i class="fas fa-robot"></i> Konsultasi AI</a>
         <a href="#" onclick="showPage('tracking-page')" style="font-weight: 600; color: var(--color-text);"><i class="fas fa-search-location"></i> Cek Status</a>
     </div>
@@ -377,6 +380,30 @@
                     <p>Solusi tepat untuk kebutuhan PC Kantor, Sekolah, Desain, hingga Gaming.</p>
                 </div>
                 <div id="katalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"></div>
+            </div>
+
+            <!-- Teaser Banner: Simulasi Rakit PC (Mix Baru & Second) -->
+            <div class="pc-builder-teaser reveal">
+                <div class="pc-builder-teaser-content">
+                    <div>
+                        <div class="glow-badge"><i class="fas fa-magic"></i> Fitur Baru</div>
+                        <h2 class="pc-builder-teaser-title">Simulasi Rakit PC Impian Real-Time</h2>
+                        <p class="pc-builder-teaser-desc">
+                            Kustom racikan PC Anda sendiri. Bebas mix komponen <strong>Baru &amp; Second</strong> berkualitas untuk menghemat hingga jutaan rupiah, lengkap dengan kalkulator daya (wattage) &amp; konsultasi instan ke WhatsApp.
+                        </p>
+                        <div class="pc-builder-features-pill">
+                            <span class="pc-builder-feature-tag"><i class="fas fa-tags"></i> Mix Baru &amp; Second</span>
+                            <span class="pc-builder-feature-tag"><i class="fas fa-bolt"></i> Cek Estimasi Wattage</span>
+                            <span class="pc-builder-feature-tag"><i class="fas fa-shield-alt"></i> Garansi Resmi &amp; Toko</span>
+                            <span class="pc-builder-feature-tag"><i class="fab fa-whatsapp"></i> Order Langsung via WA</span>
+                        </div>
+                    </div>
+                    <div style="flex-shrink: 0;">
+                        <button onclick="showPage('simulasi-page')" class="btn btn-primary" style="padding: 1rem 1.75rem; font-size: 1rem; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);">
+                            <i class="fas fa-tools"></i> Mulai Rakit Sekarang
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Layanan -->
@@ -665,6 +692,162 @@
                     </div>
                     <div id="trackingContent"></div>
                 </div>
+            </div>
+        </section>
+
+        <!-- 4. SIMULASI RAKIT PC PAGE -->
+        <section id="simulasi-page" class="page-content hidden">
+            <!-- Header & Presets -->
+            <div class="simulasi-header reveal">
+                <div class="service-icon-wrapper" style="margin: 0 auto 1rem auto; background: rgba(13, 148, 136, 0.15); color: var(--color-primary-light);">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <h1 class="simulasi-title">Simulasi Rakit PC &amp; Estimasi Real-Time</h1>
+                <p class="simulasi-subtitle">
+                    Rancang PC idaman Anda sesuai kebutuhan dan anggaran. Bebas kombinasikan komponen <strong>Baru (New)</strong> dan <strong>Bekas (Second QC Passed)</strong> untuk memaksimalkan performa dengan harga terhemat.
+                </p>
+
+                <!-- Quick Presets -->
+                <div class="preset-wrapper">
+                    <span style="display: flex; align-items: center; font-size: 0.85rem; font-weight: 700; color: var(--color-text-muted); margin-right: 0.5rem;">
+                        <i class="fas fa-bolt" style="color: #f59e0b; margin-right: 0.35rem;"></i> Rekomendasi Cepat:
+                    </span>
+                    <button type="button" class="preset-btn" data-preset="office" onclick="window.pcBuilder.applyPreset('office')">
+                        <i class="fas fa-briefcase"></i> Office &amp; Kasir Hemat (~2.8Jt)
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="gaming_budget" onclick="window.pcBuilder.applyPreset('gaming_budget')">
+                        <i class="fas fa-gamepad"></i> Gaming Budget 1080p (~4.9Jt)
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="gaming_streamer" onclick="window.pcBuilder.applyPreset('gaming_streamer')">
+                        <i class="fas fa-video"></i> Gaming &amp; Render Populer (~7.8Jt)
+                    </button>
+                    <button type="button" class="preset-btn" data-preset="all_new_high" onclick="window.pcBuilder.applyPreset('all_new_high')">
+                        <i class="fas fa-crown" style="color: #f59e0b;"></i> All New High Spec (~11.5Jt)
+                    </button>
+                    <button type="button" class="preset-btn" onclick="window.pcBuilder.resetAll()" title="Kosongkan semua pilihan" style="color: var(--color-danger); border-color: rgba(239, 68, 68, 0.3);">
+                        <i class="fas fa-trash-alt"></i> Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Builder Layout Grid -->
+            <div class="builder-layout">
+                <!-- Left: Parts Selection -->
+                <div class="builder-parts-container" id="builder-parts-list">
+                    <!-- Rendered dynamically by pc-builder.js -->
+                    <div style="text-align: center; padding: 3rem 0; color: var(--color-text-muted);">
+                        <div class="spinner" style="margin: 0 auto 1rem auto;"></div>
+                        Memuat modul komponen rakit PC...
+                    </div>
+                </div>
+
+                <!-- Right: Sticky Summary Box -->
+                <div class="builder-summary-card">
+                    <div class="summary-header">
+                        <h3><i class="fas fa-receipt" style="color: var(--color-primary-light);"></i> Ringkasan Racikan</h3>
+                        <span class="summary-counter-badge" id="summary-counter">0 Komponen</span>
+                    </div>
+
+                    <!-- Selected Items Mini List -->
+                    <div class="summary-items-list" id="summary-items-list">
+                        <div style="text-align: center; color: var(--color-text-muted); padding: 1.5rem 0; font-size: 0.85rem;">
+                            Belum ada komponen dipilih.<br>Silakan pilih komponen di samping.
+                        </div>
+                    </div>
+
+                    <!-- Savings Callout -->
+                    <div class="savings-callout" id="summary-savings-box">
+                        <div style="font-size: 0.775rem; text-transform: uppercase; font-weight: 700; color: #10b981; letter-spacing: 0.5px; margin-bottom: 0.2rem;">
+                            🎉 Estimasi Penghematan Mix Part:
+                        </div>
+                        <div class="savings-amount" id="summary-savings-amount">Rp 0</div>
+                        <div style="font-size: 0.725rem; color: #94a3b8; margin-top: 0.2rem;">
+                            Dibandingkan membeli seluruh unit dalam kondisi Baru.
+                        </div>
+                    </div>
+
+                    <!-- Mix Composition Bar -->
+                    <div class="composition-bar-wrap">
+                        <div class="composition-label">
+                            <span id="comp-label-new">Baru: 0%</span>
+                            <span id="comp-label-second">Second: 0%</span>
+                        </div>
+                        <div class="composition-progress">
+                            <div class="comp-bar-new" id="comp-bar-new" style="width: 50%;"></div>
+                            <div class="comp-bar-second" id="comp-bar-second" style="width: 50%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Wattage & PSU Recommendation -->
+                    <div class="wattage-meter-box">
+                        <div class="wattage-header">
+                            <span><i class="fas fa-bolt" style="color: #f59e0b;"></i> Estimasi Konsumsi Daya</span>
+                            <span class="wattage-val" id="summary-wattage">± 50 Watt</span>
+                        </div>
+                        <div class="wattage-note">
+                            Rekomendasi PSU: <strong id="summary-psu-rec" style="color: var(--color-text);">Minimal 450W 80+</strong>
+                        </div>
+                        <div class="wattage-warning" id="summary-psu-warning"></div>
+                    </div>
+
+                    <!-- Subtotal Breakdown Table -->
+                    <table class="subtotal-table">
+                        <tbody>
+                            <tr>
+                                <td>Subtotal Part Baru (New)</td>
+                                <td id="summary-subtotal-new">Rp 0</td>
+                            </tr>
+                            <tr>
+                                <td>Subtotal Part Second (QC Passed)</td>
+                                <td id="summary-subtotal-second">Rp 0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Services Option Checkboxes -->
+                    <div class="services-checkboxes">
+                        <label class="service-check-item">
+                            <span><i class="fas fa-wrench" style="color: var(--color-primary-light); margin-right: 0.35rem;"></i> Jasa Rakit &amp; Cable Management</span>
+                            <span style="font-weight: 700; color: var(--color-success); font-size: 0.775rem;">GRATIS</span>
+                        </label>
+                        <label class="service-check-item">
+                            <span><i class="fas fa-compact-disc" style="color: var(--color-primary-light); margin-right: 0.35rem;"></i> Install Windows &amp; Software Siap Pakai</span>
+                            <span style="font-weight: 700; color: var(--color-success); font-size: 0.775rem;">GRATIS</span>
+                        </label>
+                    </div>
+
+                    <!-- Grand Total -->
+                    <div class="grand-total-container">
+                        <div class="grand-total-label">Total Estimasi Keseluruhan:</div>
+                        <div class="grand-total-price" id="summary-grand-total">Rp 0</div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="summary-actions">
+                        <button type="button" class="btn-pesan-wa" onclick="window.pcBuilder.generateWhatsAppOrder()">
+                            <i class="fab fa-whatsapp" style="font-size: 1.25rem;"></i> Pesan / Konsultasi via WA
+                        </button>
+                        <div class="summary-sub-actions">
+                            <button type="button" class="btn btn-outline" style="font-size: 0.825rem; padding: 0.65rem;" onclick="window.pcBuilder.copySpecification()">
+                                <i class="fas fa-copy"></i> Salin Spek
+                            </button>
+                            <button type="button" class="btn btn-outline" style="font-size: 0.825rem; padding: 0.65rem;" onclick="window.pcBuilder.printQuotation()">
+                                <i class="fas fa-print"></i> Cetak / PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Sticky Bottom Bar -->
+            <div class="mobile-builder-bar" id="mobile-builder-bar">
+                <div>
+                    <div style="font-size: 0.725rem; color: var(--color-text-muted); text-transform: uppercase;">Total Estimasi:</div>
+                    <div class="mobile-bar-total-val" id="mobile-bar-total">Rp 0</div>
+                </div>
+                <button type="button" class="btn btn-primary" style="padding: 0.55rem 1rem; font-size: 0.85rem;" onclick="window.pcBuilder.generateWhatsAppOrder()">
+                    <i class="fab fa-whatsapp"></i> Chat WA
+                </button>
             </div>
         </section>
 

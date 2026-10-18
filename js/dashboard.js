@@ -1,4 +1,5 @@
         import { db, auth, adminEmail, firebaseConfig, signOut, onAuthStateChanged, dbRef as ref, get, set, remove, onValue } from "./firebase-config.js";
+        import { DEFAULT_COMPONENTS } from "./pc-builder.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
         const IMGBB_API_KEY = "0f505a6d586e11b597f5a191a8c76f9f"; // Variabel harus di bawah import
@@ -120,7 +121,7 @@
             document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
             element.classList.add('active'); document.getElementById(tabId).classList.add('active');
             document.getElementById('topbarTitle').innerText = titleText;
-            const settingsTabs = ['tab-identitas', 'tab-tampilan', 'tab-sosmed', 'tab-sistem', 'tab-katalog'];
+            const settingsTabs = ['tab-identitas', 'tab-tampilan', 'tab-sosmed', 'tab-sistem', 'tab-katalog', 'tab-rakit-pc'];
             if (settingsTabs.includes(tabId)) document.getElementById('floatingSaveBtn').classList.add('show');
             else document.getElementById('floatingSaveBtn').classList.remove('show');
             
@@ -294,6 +295,120 @@
             w.insertAdjacentHTML('beforeend', html);
         };
 
+        // --- MANAJEMEN KOMPONEN RAKIT PC CMS ---
+        window.currentRakitCategory = 'cpu';
+        window.rakitComponents = null;
+
+        window.loadRakitPcDataAdmin = async () => {
+            try {
+                const snapshot = await get(ref(db, 'komponen_rakit'));
+                if (snapshot.exists()) {
+                    window.rakitComponents = snapshot.val();
+                } else {
+                    window.rakitComponents = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
+                }
+            } catch (err) {
+                console.error("Gagal load komponen_rakit admin:", err);
+                window.rakitComponents = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
+            }
+            window.renderRakitCategory(window.currentRakitCategory);
+        };
+
+        window.filterRakitCategory = (catKey) => {
+            window.collectCurrentRakitCategoryInputs();
+            window.currentRakitCategory = catKey;
+            window.renderRakitCategory(catKey);
+        };
+
+        window.collectCurrentRakitCategoryInputs = () => {
+            if (!window.rakitComponents || !window.rakitComponents[window.currentRakitCategory]) return;
+            const items = [];
+            document.querySelectorAll('#rakitPcWrapper .dynamic-item').forEach((el, index) => {
+                const nama = el.querySelector('.rakit-nama').value.trim();
+                const hargaNew = Number(el.querySelector('.rakit-harga-new').value) || 0;
+                const hargaSecond = Number(el.querySelector('.rakit-harga-second').value) || 0;
+                const wattage = Number(el.querySelector('.rakit-wattage').value) || 0;
+                const socket = el.querySelector('.rakit-socket')?.value.trim() || '';
+                const id = el.dataset.id || `${window.currentRakitCategory}_${index}`;
+                if (nama) {
+                    items.push({ id, nama, hargaNew, hargaSecond, wattage, socket });
+                }
+            });
+            window.rakitComponents[window.currentRakitCategory].items = items;
+        };
+
+        window.renderRakitCategory = (catKey) => {
+            const w = document.getElementById('rakitPcWrapper');
+            if (!w || !window.rakitComponents) return;
+            w.innerHTML = '';
+            
+            const cat = window.rakitComponents[catKey] || DEFAULT_COMPONENTS[catKey];
+            if (!cat || !cat.items) return;
+
+            cat.items.forEach(item => {
+                window.addRakitItemUI(item.nama, item.hargaNew, item.hargaSecond, item.wattage || 0, item.socket || '', item.id);
+            });
+        };
+
+        window.addRakitItemUI = (nama = '', hargaNew = 0, hargaSecond = 0, wattage = 0, socket = '', id = '') => {
+            const w = document.getElementById('rakitPcWrapper');
+            if (!w) return;
+            const itemId = id || `${window.currentRakitCategory}_${Date.now()}`;
+            const inputStyle = `padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; background:var(--input-bg, var(--bg-secondary)); color:var(--text-color); font-family:inherit; font-size:0.9em; box-sizing:border-box;`;
+            
+            const html = `
+            <div class="dynamic-item" data-id="${itemId}" style="margin-bottom:12px; padding:15px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary, rgba(255,255,255,0.03)); position:relative;">
+                <button type="button" onclick="this.closest('.dynamic-item').remove()" class="btn-remove-item" title="Hapus Komponen" style="position:absolute; right:10px; top:10px; background:rgba(239,68,68,0.2); color:#ef4444; border:none; border-radius:4px; width:26px; height:26px; font-weight:bold; cursor:pointer;">×</button>
+                <div style="margin-bottom:8px; padding-right:30px;">
+                    <label style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Nama Komponen</label>
+                    <input type="text" class="rakit-nama" placeholder="Contoh: Intel Core i5-12400F" value="${nama}" style="width:100%; ${inputStyle}">
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                    <div>
+                        <label style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:#10b981; display:block; margin-bottom:4px;">Harga Baru (Rp)</label>
+                        <input type="number" class="rakit-harga-new" placeholder="0 = Tidak Ada" value="${hargaNew}" style="width:100%; ${inputStyle}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:#3b82f6; display:block; margin-bottom:4px;">Harga Second (Rp)</label>
+                        <input type="number" class="rakit-harga-second" placeholder="0 = Tidak Ada" value="${hargaSecond}" style="width:100%; ${inputStyle}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:#f59e0b; display:block; margin-bottom:4px;">Daya (W) / Socket</label>
+                        <div style="display:flex; gap:6px;">
+                            <input type="number" class="rakit-wattage" placeholder="Watt" value="${wattage}" style="width:50%; ${inputStyle}">
+                            <input type="text" class="rakit-socket" placeholder="LGA/DDR" value="${socket}" style="width:50%; ${inputStyle}">
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            w.insertAdjacentHTML('beforeend', html);
+        };
+
+        window.saveRakitPcSettings = async (showAlert = true) => {
+            window.collectCurrentRakitCategoryInputs();
+            if (!window.rakitComponents) return;
+            try {
+                await set(ref(db, 'komponen_rakit'), window.rakitComponents);
+                if (showAlert) showModal("Daftar komponen rakit PC berhasil diperbarui!", "info");
+            } catch (err) {
+                console.error("Gagal simpan komponen rakit:", err);
+                if (showAlert) showModal("Gagal menyimpan komponen rakit.", "info");
+            }
+        };
+
+        window.initDefaultComponentsInFirebase = async () => {
+            if (!confirm("Muat ulang seluruh komponen default rekomendasi pasar Indonesia? Perubahan manual Anda pada komponen akan digantikan katalog default.")) return;
+            try {
+                window.rakitComponents = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
+                await set(ref(db, 'komponen_rakit'), window.rakitComponents);
+                window.renderRakitCategory(window.currentRakitCategory);
+                showModal("Katalog komponen default berhasil dimuat ke database!", "info");
+            } catch (err) {
+                console.error("Gagal memuat default komponen:", err);
+                showModal("Gagal memuat default komponen.", "info");
+            }
+        };
+
         document.getElementById('setSliderFile').addEventListener('change', function (e) { if (e.target.files.length === 0) return; window.pendingSliders = window.pendingSliders.concat(Array.from(e.target.files)); renderSliderPreviews(); this.value = ''; });
 
         window.renderSliderPreviews = async () => {
@@ -427,6 +542,9 @@
                     } else {
                         addKatalogUI('PC Admin Core i3', '3500000', '', 'Spesifikasi: Core i3 gen 4 Ram 4 Gb...');
                         addKatalogUI('PC Kantor Editing', '7500000', '', 'Spesifikasi: Core i3 gen 10 Ram 8 Gb SSD...');
+                    }
+                    if (window.loadRakitPcDataAdmin) {
+                        window.loadRakitPcDataAdmin();
                     }
                 }
             } catch (error) { console.error("Gagal memuat pengaturan:", error); }
@@ -564,6 +682,9 @@
 
             try {
                 await set(ref(db, 'pengaturan_toko'), dataToSave);
+                if (window.saveRakitPcSettings) {
+                    await window.saveRakitPcSettings(false);
+                }
                 showModal("Pengaturan CMS Berhasil Disimpan!", "info", () => { loadWebsiteSettings(); });
             } catch (err) { showModal("Gagal menyimpan pengaturan.", "info"); }
             btn.innerHTML = "<i class='fas fa-save'></i> Simpan Pengaturan CMS"; btn.disabled = false;

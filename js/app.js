@@ -1,4 +1,5 @@
 import { db, dbRef as ref, get, child, push } from "./firebase-config.js";
+import { pcBuilder } from "./pc-builder.js";
 
 // Utility: Anti-blocker for ImgBB
 const antiBlokir = (url) => {
@@ -26,7 +27,6 @@ let slides = [];
 window.tokoSettings = {};
 
 // Handle Navigation
-const pages = document.querySelectorAll('.page-content');
 const mobileMenuBtn = document.getElementById('mobile-menu-btn');
 const mobileMenu = document.getElementById('mobile-menu');
 const pageLoader = document.getElementById('page-loader');
@@ -36,10 +36,21 @@ window.showPage = (pageId) => {
     pageLoader.classList.remove('hidden');
     
     setTimeout(() => {
-        pages.forEach(page => page.classList.add('hidden'));
+        const pagesList = document.querySelectorAll('.page-content');
+        pagesList.forEach(page => page.classList.add('hidden'));
         const newPage = document.getElementById(pageId);
         if (newPage) newPage.classList.remove('hidden');
         
+        // Mobile builder bar visibility
+        const mobileBar = document.getElementById('mobile-builder-bar');
+        if (mobileBar) {
+            if (pageId === 'simulasi-page') {
+                if (window.pcBuilder) window.pcBuilder.recalculate();
+            } else {
+                mobileBar.classList.remove('show');
+            }
+        }
+
         setTimeout(() => { 
             pageLoader.classList.add('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -185,6 +196,7 @@ async function loadWebsiteSettings() {
             if (data.wa) {
                 const waNumber = data.wa.replace(/[^0-9]/g, '');
                 globalWaNumber = waNumber;
+                window.globalWaNumber = waNumber;
                 if(document.getElementById('footerWaLink')) {
                     document.getElementById('footerWaLink').innerText = `+${waNumber}`; 
                     document.getElementById('footerWaLink').href = `tel:+${waNumber}`;
@@ -1034,8 +1046,14 @@ window.printCustomerInvoice = async () => {
 document.addEventListener('DOMContentLoaded', async () => {
     await loadWebsiteSettings(); 
 
+    // Initialize PC Builder
+    if (window.pcBuilder) {
+        window.pcBuilder.init();
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const codeFromUrl = urlParams.get('code');
+    const pageFromUrl = urlParams.get('page') || (window.location.hash ? window.location.hash.replace('#', '') : null);
 
     if (codeFromUrl) {
         showPage('tracking-page');
@@ -1045,6 +1063,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.trackService(codeFromUrl.toUpperCase());
             }
         }, 600);
+    } else if (pageFromUrl === 'simulasi-page' || pageFromUrl === 'simulasi' || pageFromUrl === 'rakit-pc') {
+        showPage('simulasi-page');
     } else {
         showPage('home-page');
     }

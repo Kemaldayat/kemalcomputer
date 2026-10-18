@@ -1,0 +1,707 @@
+/* ==========================================================================
+   PC Builder & Simulasi Rakit PC - Kemal Computer
+   Responsive, Dark Mode First, Glassmorphism & Modern Design Tokens
+   ========================================================================== */
+
+/* Teaser Banner di Beranda */
+.pc-builder-teaser {
+    background: linear-gradient(135deg, rgba(13, 148, 136, 0.18) 0%, rgba(19, 28, 46, 0.95) 50%, rgba(59, 130, 246, 0.15) 100%);
+    border: 1px solid rgba(13, 148, 136, 0.35);
+    border-radius: var(--radius-2xl);
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 30px -10px rgba(13, 148, 136, 0.3);
+    margin-bottom: 2.5rem;
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.pc-builder-teaser:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 35px -10px rgba(13, 148, 136, 0.4);
+    border-color: var(--color-primary-light);
+}
+
+.pc-builder-teaser-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+    .pc-builder-teaser-content {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+
+.pc-builder-teaser .glow-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.85rem;
+    background: rgba(13, 148, 136, 0.25);
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary-light);
+    border-radius: 999px;
+    font-size: 0.825rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pc-builder-teaser-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1.25;
+    color: #ffffff;
+    margin: 0.5rem 0;
+}
+
+.pc-builder-teaser-desc {
+    color: #94a3b8;
+    font-size: 0.975rem;
+    max-width: 620px;
+    line-height: 1.6;
+}
+
+.pc-builder-features-pill {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+.pc-builder-feature-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.825rem;
+    color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pc-builder-feature-tag i {
+    color: var(--color-primary-light);
+}
+
+/* ==========================================================================
+   SIMULASI PAGE LAYOUT
+   ========================================================================== */
+.simulasi-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    position: relative;
+}
+
+.simulasi-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, #ffffff 30%, var(--color-primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.simulasi-subtitle {
+    color: var(--color-text-muted);
+    font-size: 1.05rem;
+    max-width: 680px;
+    margin: 0 auto 1.75rem;
+    line-height: 1.6;
+}
+
+/* Preset Picker Pills */
+.preset-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.preset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.15rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: var(--shadow-sm);
+}
+
+.preset-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary-light);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.preset-btn.active {
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: #ffffff;
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);
+}
+
+/* Main Grid Container */
+.builder-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+@media (min-width: 1024px) {
+    .builder-layout {
+        grid-template-columns: 1.65fr 1fr;
+    }
+}
+
+/* Komponen List Cards */
+.builder-parts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.part-slot-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 1.25rem;
+    transition: all var(--transition-normal);
+    position: relative;
+    box-shadow: var(--shadow-sm);
+}
+
+.part-slot-card:hover {
+    border-color: rgba(13, 148, 136, 0.4);
+    box-shadow: var(--shadow-md);
+}
+
+.part-slot-card.has-selected {
+    border-color: rgba(13, 148, 136, 0.6);
+    background: linear-gradient(to right, rgba(13, 148, 136, 0.03), var(--color-surface));
+}
+
+.part-slot-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.85rem;
+}
+
+.part-slot-title {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.part-slot-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-md);
+    background: rgba(13, 148, 136, 0.12);
+    color: var(--color-primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+}
+
+.part-slot-reset {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.part-slot-reset:hover {
+    color: var(--color-danger);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.part-select-wrapper {
+    margin-bottom: 0.85rem;
+}
+
+.part-select-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    color: var(--color-text);
+    font-size: 0.925rem;
+    font-family: inherit;
+    transition: all var(--transition-fast);
+    outline: none;
+    cursor: pointer;
+}
+
+.part-select-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+/* Condition Toggle Switch (Baru vs Second) */
+.part-controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.condition-toggle-group {
+    display: inline-flex;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 3px;
+    gap: 3px;
+}
+
+.condition-toggle-btn {
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--radius-lg);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.condition-toggle-btn:hover:not(:disabled) {
+    color: var(--color-text);
+}
+
+.condition-toggle-btn.active.btn-new {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
+}
+
+.condition-toggle-btn.active.btn-second {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.35);
+}
+
+.condition-toggle-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.part-price-tag {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--color-primary-light);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.part-warranty-chip {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    display: block;
+    margin-top: 0.25rem;
+}
+
+/* ==========================================================================
+   STICKY SUMMARY PANEL (RIGHT COLUMN)
+   ========================================================================== */
+.builder-summary-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+    padding: 1.75rem;
+    box-shadow: var(--shadow-lg);
+    position: sticky;
+    top: 5rem;
+    transition: all var(--transition-normal);
+}
+
+.summary-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 1.25rem;
+}
+
+.summary-header h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.summary-counter-badge {
+    background: rgba(13, 148, 136, 0.15);
+    color: var(--color-primary-light);
+    border: 1px solid rgba(13, 148, 136, 0.3);
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-xl);
+    font-size: 0.775rem;
+    font-weight: 700;
+}
+
+/* Selected Items Mini List */
+.summary-items-list {
+    max-height: 220px;
+    overflow-y: auto;
+    margin-bottom: 1.25rem;
+    padding-right: 0.25rem;
+}
+
+.summary-items-list::-webkit-scrollbar {
+    width: 5px;
+}
+.summary-items-list::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 4px;
+}
+
+.summary-item-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+    font-size: 0.85rem;
+}
+
+.summary-item-name {
+    color: var(--color-text);
+    font-weight: 500;
+    line-height: 1.35;
+    flex: 1;
+}
+
+.summary-item-badge {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.675rem;
+    font-weight: 700;
+    margin-right: 0.35rem;
+}
+
+.summary-item-badge.badge-new {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.summary-item-badge.badge-second {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.summary-item-price {
+    font-weight: 700;
+    color: var(--color-text);
+    white-space: nowrap;
+}
+
+/* Mix Composition Bar */
+.composition-bar-wrap {
+    margin-bottom: 1.25rem;
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+}
+
+.composition-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.775rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    margin-bottom: 0.45rem;
+}
+
+.composition-progress {
+    height: 8px;
+    width: 100%;
+    border-radius: 4px;
+    background: #1e293b;
+    display: flex;
+    overflow: hidden;
+}
+
+.comp-bar-new {
+    background: #10b981;
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.comp-bar-second {
+    background: #3b82f6;
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+/* Wattage Meter */
+.wattage-meter-box {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 0.85rem;
+    margin-bottom: 1.25rem;
+}
+
+.wattage-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.45rem;
+}
+
+.wattage-val {
+    color: #f59e0b;
+    font-weight: 700;
+}
+
+.wattage-note {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+}
+
+.wattage-warning {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--radius-sm);
+    display: none;
+}
+
+/* Breakdown Numbers */
+.subtotal-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.25rem;
+    font-size: 0.9rem;
+}
+
+.subtotal-table tr td {
+    padding: 0.45rem 0;
+    color: var(--color-text-muted);
+}
+
+.subtotal-table tr td:last-child {
+    text-align: right;
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+/* Service Options Checkboxes */
+.services-checkboxes {
+    margin-bottom: 1.25rem;
+    padding: 0.75rem;
+    background: rgba(13, 148, 136, 0.05);
+    border: 1px solid rgba(13, 148, 136, 0.2);
+    border-radius: var(--radius-lg);
+}
+
+.service-check-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.825rem;
+    cursor: pointer;
+    padding: 0.35rem 0;
+}
+
+.service-check-item input[type="checkbox"] {
+    accent-color: var(--color-primary);
+    width: 16px;
+    height: 16px;
+}
+
+/* Savings Badge */
+.savings-callout {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.08) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: var(--radius-lg);
+    padding: 0.85rem;
+    margin-bottom: 1.25rem;
+    text-align: center;
+    display: none;
+}
+
+.savings-callout.show {
+    display: block;
+    animation: pulseSaving 2s infinite ease-in-out;
+}
+
+@keyframes pulseSaving {
+    0%, 100% { border-color: rgba(16, 185, 129, 0.35); }
+    50% { border-color: rgba(16, 185, 129, 0.8); }
+}
+
+.savings-amount {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #10b981;
+}
+
+/* Total Price Highlight */
+.grand-total-container {
+    padding-top: 1rem;
+    border-top: 2px solid var(--color-border);
+    margin-bottom: 1.5rem;
+}
+
+.grand-total-label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--color-text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.grand-total-price {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--color-primary-light);
+    line-height: 1.1;
+}
+
+/* Action Buttons */
+.summary-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.btn-pesan-wa {
+    background: #25D366 !important;
+    color: white !important;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.95rem;
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    transition: all var(--transition-normal);
+    border: none;
+    box-shadow: 0 4px 14px rgba(37, 211, 102, 0.4);
+    cursor: pointer;
+    text-decoration: none;
+    width: 100%;
+}
+
+.btn-pesan-wa:hover {
+    background: #1eb857 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+}
+
+.summary-sub-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+/* Mobile Sticky Bottom Builder Bar */
+.mobile-builder-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    padding: 0.75rem 1.25rem;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 90;
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 1023px) {
+    .mobile-builder-bar.show {
+        display: flex;
+    }
+}
+
+.mobile-bar-total-val {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--color-primary-light);
+}
+
+/* ==========================================================================
+   PRINT INVOICE STYLES (Cetak / PDF Simulasi)
+   ========================================================================== */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    
+    #print-simulation-modal,
+    #print-simulation-modal * {
+        visibility: visible;
+    }
+
+    #print-simulation-modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: #ffffff !important;
+        color: #000000 !important;
+        display: block !important;
+        padding: 20px;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+}
