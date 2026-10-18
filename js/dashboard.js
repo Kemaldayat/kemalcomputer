@@ -929,11 +929,11 @@
 
             try {
                 await set(ref(db, 'pengaturan_toko'), dataToSave);
-                if (window.saveRakitPcSettings) {
-                    await window.saveRakitPcSettings(false);
-                }
                 showModal("Pengaturan CMS Berhasil Disimpan!", "info", () => { loadWebsiteSettings(); });
-            } catch (err) { showModal("Gagal menyimpan pengaturan.", "info"); }
+            } catch (err) {
+                console.error("Gagal menyimpan pengaturan CMS:", err);
+                showModal(`Gagal menyimpan pengaturan CMS: ${String(err?.message || err)}`, "info");
+            }
             btn.innerHTML = "<i class='fas fa-save'></i> Simpan Pengaturan CMS"; btn.disabled = false;
         });
 

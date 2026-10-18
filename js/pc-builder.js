@@ -420,6 +420,9 @@ class PCBuilderController {
                 const loadWarning = document.getElementById("builder-catalog-warning");
                 if (loadWarning) loadWarning.hidden = false;
                 console.error("Gagal memuat komponen_rakit dari Firebase; katalog default tetap digunakan:", error);
+                this.updatePresetEstimates();
+                this.renderCategorySlots();
+                this.recalculate();
             }
         );
     }
