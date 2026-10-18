@@ -298,6 +298,7 @@
         // --- MANAJEMEN KOMPONEN RAKIT PC CMS ---
         window.currentRakitCategory = 'cpu';
         window.rakitComponents = null;
+        window.rakitCatalogLoaded = false;
 
         function applyMarkupMath(price, pct, round10k) {
             if (!price || price <= 0) return 0;
@@ -309,6 +310,15 @@
         }
 
         window.loadRakitPcDataAdmin = async () => {
+            const status = document.getElementById('rakitCatalogLoadStatus');
+            const saveButton = document.getElementById('btnSaveRakitComponents');
+            window.rakitCatalogLoaded = false;
+            if (status) {
+                status.hidden = false;
+                status.innerText = 'Memuat katalog komponen dari Firebase...';
+            }
+            if (saveButton) saveButton.disabled = true;
+
             try {
                 const snapshot = await get(ref(db, 'komponen_rakit'));
                 if (snapshot.exists()) {
@@ -317,19 +327,35 @@
                     window.rakitComponents = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
                 }
 
-                // Load sheet & markup settings
-                const sheetSnap = await get(ref(db, 'pengaturan_toko/sheet_settings'));
-                if (sheetSnap.exists()) {
-                    const s = sheetSnap.val();
-                    if (s.sheetUrl && document.getElementById('rakitSheetUrl')) document.getElementById('rakitSheetUrl').value = s.sheetUrl;
-                    if (s.markupNewPct !== undefined && document.getElementById('markupNewPct')) document.getElementById('markupNewPct').value = s.markupNewPct;
-                    if (s.markupSecondPct !== undefined && document.getElementById('markupSecondPct')) document.getElementById('markupSecondPct').value = s.markupSecondPct;
-                    if (s.roundTo10k !== undefined && document.getElementById('roundTo10kCheck')) document.getElementById('roundTo10kCheck').checked = s.roundTo10k;
-                    if (s.lastSyncTime && document.getElementById('sheetSyncStatus')) document.getElementById('sheetSyncStatus').innerText = `Terakhir sync: ${s.lastSyncTime}`;
-                }
+                window.rakitCatalogLoaded = true;
+                if (saveButton) saveButton.disabled = false;
+                if (status) status.hidden = true;
             } catch (err) {
                 console.error("Gagal load komponen_rakit admin:", err);
                 window.rakitComponents = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
+                if (status) {
+                    status.innerText = 'Katalog gagal dimuat dari Firebase. Data default hanya pratinjau; simpan komponen dinonaktifkan agar katalog tersimpan tidak tertimpa. Periksa izin RTDB untuk /komponen_rakit.';
+                }
+            }
+
+            if (window.rakitCatalogLoaded) {
+                try {
+                    const sheetSnap = await get(ref(db, 'pengaturan_toko/sheet_settings'));
+                    if (sheetSnap.exists()) {
+                        const s = sheetSnap.val();
+                        if (s.sheetUrl && document.getElementById('rakitSheetUrl')) document.getElementById('rakitSheetUrl').value = s.sheetUrl;
+                        if (s.markupNewPct !== undefined && document.getElementById('markupNewPct')) document.getElementById('markupNewPct').value = s.markupNewPct;
+                        if (s.markupSecondPct !== undefined && document.getElementById('markupSecondPct')) document.getElementById('markupSecondPct').value = s.markupSecondPct;
+                        if (s.roundTo10k !== undefined && document.getElementById('roundTo10kCheck')) document.getElementById('roundTo10kCheck').checked = s.roundTo10k;
+                        if (s.lastSyncTime && document.getElementById('sheetSyncStatus')) document.getElementById('sheetSyncStatus').innerText = `Terakhir sync: ${s.lastSyncTime}`;
+                    }
+                } catch (err) {
+                    console.error("Gagal load pengaturan Google Sheets dan markup:", err);
+                    if (status) {
+                        status.hidden = false;
+                        status.innerText = 'Katalog berhasil dimuat, tetapi pengaturan Sheet/markup gagal dimuat. Periksa izin RTDB untuk /pengaturan_toko/sheet_settings.';
+                    }
+                }
             }
             window.renderRakitCategory(window.currentRakitCategory);
         };
@@ -405,6 +431,14 @@
         };
 
         window.saveRakitPcSettings = async (showAlert = true, collectInputs = true) => {
+            if (!window.rakitCatalogLoaded) {
+                const message = "Katalog belum berhasil dimuat dari Firebase. Komponen tidak disimpan agar data yang ada tidak tertimpa. Periksa izin baca /komponen_rakit, lalu muat ulang dashboard.";
+                if (showAlert) {
+                    showModal(message, "info");
+                    return;
+                }
+                throw new Error(message);
+            }
             if (collectInputs) window.collectCurrentRakitCategoryInputs();
             if (!window.rakitComponents) return;
             try {
@@ -422,7 +456,7 @@
                 if (showAlert) showModal("Daftar komponen rakit PC berhasil diperbarui!", "info");
             } catch (err) {
                 console.error("Gagal simpan komponen rakit:", err);
-                if (showAlert) showModal("Gagal menyimpan komponen rakit.", "info");
+                if (showAlert) showModal(`Gagal menyimpan komponen rakit: ${String(err?.message || err)}`, "info");
                 else throw err;
             }
         };

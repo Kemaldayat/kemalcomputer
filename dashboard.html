@@ -463,12 +463,13 @@
                             <div>
                                 <h3 style="margin-bottom: 4px;"><i class="fas fa-microchip"></i> Master Komponen Simulasi Rakit PC</h3>
                                 <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Kelola daftar komponen, harga Baru (New), harga Bekas (Second), daya (Watt), dan garansi yang tampil di kalkulator real-time.</p>
+                                <p id="rakitCatalogLoadStatus" role="status" aria-live="polite" hidden style="color: #f59e0b; font-size: 0.85rem; margin: 8px 0 0;"></p>
                             </div>
                             <div style="display: flex; gap: 8px;">
                                 <button type="button" onclick="window.initDefaultComponentsInFirebase()" class="btn btn-outline" style="font-size: 0.8rem; padding: 8px 12px;">
                                     <i class="fas fa-sync-alt"></i> Muat Default
                                 </button>
-                                <button type="button" onclick="window.saveRakitPcSettings()" class="btn btn-primary" style="font-size: 0.85rem; padding: 8px 16px;">
+                                <button type="button" id="btnSaveRakitComponents" onclick="window.saveRakitPcSettings()" class="btn btn-primary" style="font-size: 0.85rem; padding: 8px 16px;" disabled>
                                     <i class="fas fa-save"></i> Simpan Komponen
                                 </button>
                             </div>
