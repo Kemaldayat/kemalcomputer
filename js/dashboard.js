@@ -423,6 +423,7 @@
             } catch (err) {
                 console.error("Gagal simpan komponen rakit:", err);
                 if (showAlert) showModal("Gagal menyimpan komponen rakit.", "info");
+                else throw err;
             }
         };
 
@@ -448,9 +449,13 @@
                 }
             });
 
-            await window.saveRakitPcSettings(false);
-            window.renderRakitCategory(window.currentRakitCategory);
-            showModal(`Berhasil menerapkan markup (+${markupNew}% Baru, +${markupSecond}% Second) ke seluruh komponen!`, "info");
+            try {
+                await window.saveRakitPcSettings(false);
+                window.renderRakitCategory(window.currentRakitCategory);
+                showModal(`Berhasil menerapkan markup (+${markupNew}% Baru, +${markupSecond}% Second) ke seluruh komponen!`, "info");
+            } catch (err) {
+                showModal(`Markup gagal disimpan: ${err.message}`, "info");
+            }
         };
 
         window.downloadRakitCsvTemplate = () => {

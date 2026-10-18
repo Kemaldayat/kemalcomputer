@@ -3,7 +3,7 @@
  * Kemal Computer - Real-time Price, Mix Condition (New & Second), Wattage Estimator
  */
 
-import { db, dbRef as ref, get, onValue } from "./firebase-config.js";
+import { db, dbRef as ref, onValue } from "./firebase-config.js";
 
 // Master Komponen Default (Katalog Komprehensif Pasar Komputer Indonesia)
 export const DEFAULT_COMPONENTS = {
@@ -203,6 +203,7 @@ export const PRESETS = {
 class PCBuilderController {
     constructor() {
         this.componentsData = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
+        this.catalogUnsubscribe = null;
         this.selectedParts = {};
         this.services = {
             jasaRakit: true,
@@ -225,28 +226,51 @@ class PCBuilderController {
         });
     }
 
-    async init() {
-        // Coba sinkronisasi data dari Firebase
-        try {
-            const snapshot = await get(ref(db, "komponen_rakit"));
-            if (snapshot.exists()) {
-                const fbData = snapshot.val();
-                if (fbData && typeof fbData === "object") {
-                    // Merge data Firebase dengan default
-                    Object.keys(fbData).forEach(cat => {
-                        if (this.componentsData[cat]) {
-                            this.componentsData[cat].items = fbData[cat].items || fbData[cat];
-                        }
-                    });
-                }
-            }
-        } catch (e) {
-            console.warn("Gagal memuat komponen_rakit dari Firebase, menggunakan katalog default:", e);
-        }
-
-        // Render Antarmuka
+    init() {
         this.renderCategorySlots();
         this.recalculate();
+
+        if (this.catalogUnsubscribe) return;
+
+        this.catalogUnsubscribe = onValue(
+            ref(db, "komponen_rakit"),
+            snapshot => {
+                const nextComponents = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
+                const fbData = snapshot.exists() ? snapshot.val() : null;
+
+                if (fbData && typeof fbData === "object") {
+                    Object.keys(nextComponents).forEach(catKey => {
+                        const categoryData = fbData[catKey];
+                        if (!categoryData || typeof categoryData !== "object") return;
+
+                        const items = Array.isArray(categoryData.items)
+                            ? categoryData.items
+                            : Array.isArray(categoryData)
+                                ? categoryData
+                                : null;
+
+                        if (items) nextComponents[catKey].items = items;
+                    });
+                }
+
+                this.componentsData = nextComponents;
+                Object.keys(this.selectedParts).forEach(catKey => {
+                    const items = this.componentsData[catKey].items;
+                    if (!items.some(item => item.id === this.selectedParts[catKey].id)) {
+                        this.selectedParts[catKey] = {
+                            id: items[0]?.id || `${catKey}_0`,
+                            condition: "new"
+                        };
+                    }
+                });
+
+                this.renderCategorySlots();
+                this.recalculate();
+            },
+            error => {
+                console.error("Gagal memuat komponen_rakit dari Firebase; katalog default tetap digunakan:", error);
+            }
+        );
     }
 
     renderCategorySlots() {
