@@ -784,8 +784,7 @@ class PCBuilderController {
 
         const unavailablePart = Object.entries(preset.parts).find(([catKey, part]) => {
             const item = this.componentsData[catKey]?.items.find(component => component.id === part.id);
-            if (!item) return true;
-            return part.condition === "second" ? !itemHasSecond(item) : !itemHasNew(item);
+            return !itemHasPresetPrice(item, part.condition);
         });
 
         if (unavailablePart) {
@@ -944,6 +943,14 @@ function itemHasSecond(item) {
     if (!item) return false;
     if (item.onlyNew) return false;
     return item.hargaSecond > 0;
+}
+
+function itemHasPresetPrice(item, condition) {
+    if (!item) return false;
+    if (condition === "second") return itemHasSecond(item);
+    if (itemHasNew(item)) return true;
+    return !item.onlySecond && item.hargaNew === 0
+        && ["vga_0", "extra_0", "cooler_0", "aks_0"].includes(item.id);
 }
 
 // Singleton Export
