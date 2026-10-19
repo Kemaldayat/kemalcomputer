@@ -1126,7 +1126,156 @@ Apakah semua part di atas ready stok? Mohon konfirmasi ketersediaan dan proses p
     }
 
     printQuotation() {
-        window.print();
+        const selectedParts = [];
+        let subtotalNew = 0;
+        let subtotalSecond = 0;
+        let totalWattage = 50;
+        let selectedPsuWattage = 0;
+
+        Object.keys(this.selectedParts).forEach(catKey => {
+            if (!this.isCategoryVisible(catKey)) return;
+            const category = this.componentsData[catKey];
+            if (!category) return;
+
+            this.getSelectedParts(catKey).forEach(selection => {
+                const item = category.items.find(component => component.id === selection.id);
+                if (!item || (item.hargaNew <= 0 && item.hargaSecond <= 0)) return;
+
+                const isSecond = selection.condition === "second";
+                const price = isSecond ? item.hargaSecond : item.hargaNew;
+                if (isSecond) subtotalSecond += price;
+                else subtotalNew += price;
+                if (item.wattage) totalWattage += item.wattage;
+                if (catKey === "psu" && item.capacity) selectedPsuWattage = item.capacity;
+
+                selectedParts.push({
+                    category: category.categoryName,
+                    name: item.nama,
+                    condition: isSecond ? "Second" : "Baru",
+                    price
+                });
+            });
+        });
+
+        if (selectedParts.length === 0) {
+            const message = "Pilih minimal satu komponen sebelum mencetak penawaran.";
+            if (window.showSweetAlert) window.showSweetAlert(message, "warning");
+            else alert(message);
+            return;
+        }
+
+        const printWindow = window.open("", "_blank");
+        if (!printWindow) {
+            const message = "Halaman cetak diblokir oleh browser. Izinkan pop-up untuk situs ini, lalu coba lagi.";
+            if (window.showSweetAlert) window.showSweetAlert(message, "warning");
+            else alert(message);
+            return;
+        }
+
+        const formatPrice = amount => `Rp ${amount.toLocaleString("id-ID")}`;
+        let serviceCost = 0;
+        if (!this.promoGratisJasa) {
+            if (this.services.jasaRakit) serviceCost += this.biayaJasaRakit;
+            if (this.services.installOs) serviceCost += this.biayaInstallOs;
+        }
+        const grandTotal = subtotalNew + subtotalSecond + serviceCost;
+        const recommendedPsu = Math.ceil((totalWattage * 1.35) / 50) * 50;
+        const psuWarning = selectedPsuWattage > 0 && selectedPsuWattage < recommendedPsu;
+        const storeName = escapeBuilderText(window.tokoSettings?.namaToko || "Kemal Computer");
+        const rows = selectedParts.map((part, index) => `
+            <tr>
+                <td class="number">${index + 1}</td>
+                <td><strong>${escapeBuilderText(part.category)}</strong><span class="part-name">${escapeBuilderText(part.name)}</span></td>
+                <td><span class="condition ${part.condition === "Second" ? "second" : ""}">${part.condition}</span></td>
+                <td class="price">${formatPrice(part.price)}</td>
+            </tr>`).join("");
+
+        printWindow.document.open();
+        printWindow.document.write(`<!DOCTYPE html>
+            <html lang="id">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Penawaran Simulasi Rakit PC - ${storeName}</title>
+                <style>
+                    * { box-sizing: border-box; }
+                    body { margin: 0; padding: 36px; color: #172033; background: #f1f5f9; font: 14px/1.5 Arial, sans-serif; }
+                    .sheet { max-width: 820px; margin: 0 auto; padding: 40px; background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; }
+                    header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 24px; border-bottom: 2px solid #0d9488; }
+                    h1 { margin: 0 0 6px; font-size: 24px; }
+                    .muted { color: #64748b; }
+                    .eyebrow { color: #0d9488; font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; }
+                    .date { text-align: right; white-space: nowrap; }
+                    h2 { margin: 28px 0 12px; font-size: 16px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th, td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; }
+                    th { color: #64748b; background: #f8fafc; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; }
+                    .number { width: 36px; color: #64748b; }
+                    .part-name { display: block; margin-top: 3px; color: #475569; }
+                    .condition { display: inline-block; padding: 3px 8px; border-radius: 99px; color: #047857; background: #d1fae5; font-size: 11px; font-weight: 700; }
+                    .condition.second { color: #b45309; background: #fef3c7; }
+                    .price { text-align: right; white-space: nowrap; font-weight: 700; }
+                    .totals { width: min(100%, 360px); margin: 20px 0 0 auto; }
+                    .totals td { padding: 8px 0; border: 0; }
+                    .totals td:last-child { text-align: right; font-weight: 600; }
+                    .grand-total td { padding-top: 14px; border-top: 2px solid #0d9488; color: #0f766e; font-size: 18px; font-weight: 800; }
+                    .power { margin-top: 24px; padding: 14px 16px; border-radius: 10px; color: #334155; background: #f1f5f9; }
+                    .warning { margin-top: 12px; padding: 12px 14px; border-radius: 8px; color: #92400e; background: #fef3c7; }
+                    footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 12px; text-align: center; }
+                    .print-button { display: block; margin: 0 auto 18px; padding: 10px 18px; border: 0; border-radius: 8px; color: #fff; background: #0d9488; font-size: 14px; font-weight: 700; cursor: pointer; }
+                    @media (max-width: 600px) {
+                        body { padding: 12px; }
+                        .sheet { padding: 22px 16px; border-radius: 10px; }
+                        header { gap: 12px; }
+                        h1 { font-size: 20px; }
+                        th, td { padding: 10px 6px; }
+                        .number { width: 26px; }
+                    }
+                    @media print {
+                        @page { size: A4; margin: 14mm; }
+                        body { padding: 0; background: #fff; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+                        .sheet { max-width: none; padding: 0; border: 0; border-radius: 0; }
+                        .print-button { display: none; }
+                        tr { break-inside: avoid; }
+                    }
+                </style>
+            </head>
+            <body>
+                <button class="print-button" type="button" onclick="window.print()">Cetak / Simpan sebagai PDF</button>
+                <main class="sheet">
+                    <header>
+                        <div>
+                            <div class="eyebrow">Penawaran Simulasi Rakit PC</div>
+                            <h1>${storeName}</h1>
+                            <div class="muted">Rincian komponen dan estimasi biaya</div>
+                        </div>
+                        <div class="date"><div class="muted">Tanggal</div><strong>${new Intl.DateTimeFormat("id-ID", { dateStyle: "long" }).format(new Date())}</strong></div>
+                    </header>
+                    <h2>Daftar Komponen</h2>
+                    <table>
+                        <thead><tr><th>No.</th><th>Komponen</th><th>Kondisi</th><th style="text-align:right">Harga</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                    <table class="totals">
+                        <tbody>
+                            <tr><td>Subtotal part baru</td><td>${formatPrice(subtotalNew)}</td></tr>
+                            <tr><td>Subtotal part second</td><td>${formatPrice(subtotalSecond)}</td></tr>
+                            <tr><td>Jasa rakit &amp; instalasi</td><td>${this.promoGratisJasa ? "Gratis (promo)" : formatPrice(serviceCost)}</td></tr>
+                            <tr class="grand-total"><td>Total estimasi</td><td>${formatPrice(grandTotal)}</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="power"><strong>Estimasi daya:</strong> ± ${totalWattage} Watt &nbsp; · &nbsp; <strong>Rekomendasi PSU:</strong> Minimal ${recommendedPsu}W 80+</div>
+                    ${psuWarning ? `<div class="warning"><strong>Perhatian:</strong> PSU pilihan ${selectedPsuWattage}W berada di bawah rekomendasi ${recommendedPsu}W.</div>` : ""}
+                    <footer>Harga dan ketersediaan komponen dapat berubah. Silakan konfirmasi kepada ${storeName} sebelum pemesanan.</footer>
+                </main>
+            </body>
+            </html>`);
+        printWindow.document.close();
+        window.setTimeout(() => {
+            if (printWindow.closed) return;
+            printWindow.focus();
+            printWindow.print();
+        }, 250);
     }
 }
 
