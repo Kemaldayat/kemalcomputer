@@ -520,6 +520,7 @@
 .preset-card .preset-card-arrow {
     display: none;
 }
+}
 
 @media (max-width: 420px) {
     .preset-card {
