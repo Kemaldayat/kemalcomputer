@@ -49,6 +49,7 @@
         let servicesData = {}; let customersData = {}; let expensesData = {};
         window.financeChartInstance = null;
         let currentTabFilter = 'Semua';
+        let currentServicePage = 1;
 
         // Variabel CMS
         window.existingPhotos = []; window.pendingFiles = [];
@@ -1165,7 +1166,7 @@
                         }
 
                         const row = tableBody.insertRow(); row.setAttribute('data-id', code); row.setAttribute('data-status', s.status);
-                        row.innerHTML = `<td>${escapeHTML(s.nama)}</td><td>${dText}</td><td>${escapeHTML(s.kerusakan)}</td><td>${escapeHTML(s.nomorHp) || '-'}</td><td class="biaya-text">${formatRupiah(s.biaya)}</td><td class="biaya-text" style="color: var(--warning-color);">${formatRupiah(s.modal_komponen || 0)}</td><td class="status-column"><span class="status-badge ${bClass}">${s.status}</span>${garansiBadge}</td><td>${payBadge}</td><td>${escapeHTML(s.keterangan) || '-'}</td><td><strong style="color:var(--primary-color)">${escapeHTML(code)}</strong></td><td class="action-buttons action-column"><button class="icon-btn print-button" onclick="printInvoice('${code}')"><i class="fas fa-print"></i></button><button class="icon-btn whatsapp-button" onclick="sendWhatsappNotification('${code}')"><i class="fab fa-whatsapp"></i></button><button class="icon-btn edit-button" onclick="openEditModal('${code}')"><i class="fas fa-edit"></i></button><button class="icon-btn delete-button" onclick="deleteService('${code}')"><i class="fas fa-trash"></i></button></td>`;
+                        row.innerHTML = `<td data-label="Pelanggan"><strong>${escapeHTML(s.nama)}</strong></td><td data-label="Perangkat">${dText}</td><td data-label="Keluhan">${escapeHTML(s.kerusakan)}</td><td data-label="No. HP">${escapeHTML(s.nomorHp) || '-'}</td><td data-label="Biaya" class="biaya-text">${formatRupiah(s.biaya)}</td><td data-label="Modal Komponen" class="biaya-text cost-column" style="color: var(--warning-color);">${formatRupiah(s.modal_komponen || 0)}</td><td data-label="Status" class="status-column"><span class="status-badge ${bClass}">${s.status}</span>${garansiBadge}</td><td data-label="Pembayaran">${payBadge}</td><td data-label="Keterangan">${escapeHTML(s.keterangan) || '-'}</td><td data-label="Invoice"><strong style="color:var(--primary-color)">${escapeHTML(code)}</strong></td><td data-label="Aksi" class="action-buttons action-column"><button class="icon-btn print-button" title="Cetak invoice" aria-label="Cetak invoice" onclick="printInvoice('${code}')"><i class="fas fa-print"></i></button><button class="icon-btn whatsapp-button" title="Hubungi via WhatsApp" aria-label="Hubungi via WhatsApp" onclick="sendWhatsappNotification('${code}')"><i class="fab fa-whatsapp"></i></button><button class="icon-btn edit-button" title="Edit servis" aria-label="Edit servis" onclick="openEditModal('${code}')"><i class="fas fa-edit"></i></button><button class="icon-btn delete-button" title="Hapus servis" aria-label="Hapus servis" onclick="deleteService('${code}')"><i class="fas fa-trash"></i></button></td>`;
 
                         const hp = s.nomorHp ? s.nomorHp.trim() : 'Tanpa Nomor';
                         if (!customersData[hp]) customersData[hp] = { nama: s.nama, hp: hp, totSrv: 0, totB: 0, riwayat: [] };
@@ -1178,6 +1179,16 @@
                         rBody.innerHTML = `<td><strong>${escapeHTML(c.nama)}</strong></td><td>${escapeHTML(c.hp)}</td><td style="text-align: center;"><span class="status-badge" style="background-color:var(--info-color)">${c.totSrv} Kali</span></td><td class="biaya-text">${formatRupiah(c.totB)}</td><td style="white-space: normal; min-width: 200px;">${rBadges || '-'}</td><td class="action-column"><button class="btn btn-primary" style="padding: 8px 12px; font-size: 0.85em;" onclick="contactCustomer('${escapeHTML(c.hp)}', '${escapeHTML(c.nama)}')"><i class="fab fa-whatsapp"></i> Chat</button></td>`;
                     }
                 }
+                 const overviewCounts = {
+                     waiting: Object.values(servicesData).filter(service => service.status === 'Menunggu').length,
+                     process: Object.values(servicesData).filter(service => service.status === 'Proses').length,
+                     ready: Object.values(servicesData).filter(service => service.status === 'Selesai').length,
+                     customers: Object.keys(customersData).length
+                 };
+                 document.getElementById('overviewWaiting').textContent = overviewCounts.waiting;
+                 document.getElementById('overviewProcess').textContent = overviewCounts.process;
+                 document.getElementById('overviewReady').textContent = overviewCounts.ready;
+                 document.getElementById('overviewCustomers').textContent = overviewCounts.customers;
                  filterTableServices(); filterTableCustomers(); calculateFinance();
                  if (window.applyRoleGating) window.applyRoleGating(window.currentUserRole);
              });
@@ -1530,12 +1541,36 @@
 
         window.filterByTab = (status, el) => {
             currentTabFilter = status;
+            currentServicePage = 1;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
             window.filterTableServices();
         };
 
-        window.filterTableServices = () => {
+        const renderServicePagination = (matchCount, pageSize) => {
+            const pagination = document.getElementById('servicePagination');
+            if (!pagination) return;
+            const pageCount = Math.max(1, Math.ceil(matchCount / pageSize));
+            currentServicePage = Math.min(currentServicePage, pageCount);
+            const start = matchCount ? ((currentServicePage - 1) * pageSize) + 1 : 0;
+            const end = Math.min(currentServicePage * pageSize, matchCount);
+
+            pagination.innerHTML = `
+                <span class="pagination-summary">Menampilkan ${start}–${end} dari ${matchCount} servis</span>
+                <div class="pagination-actions">
+                    <button type="button" class="pagination-button" aria-label="Halaman sebelumnya" ${currentServicePage <= 1 ? 'disabled' : ''} onclick="changeServicePage(${currentServicePage - 1})"><i class="fas fa-chevron-left"></i><span>Sebelumnya</span></button>
+                    <span class="pagination-page">Halaman ${currentServicePage} dari ${pageCount}</span>
+                    <button type="button" class="pagination-button" aria-label="Halaman berikutnya" ${currentServicePage >= pageCount ? 'disabled' : ''} onclick="changeServicePage(${currentServicePage + 1})"><span>Berikutnya</span><i class="fas fa-chevron-right"></i></button>
+                </div>`;
+        };
+
+        window.changeServicePage = (page) => {
+            currentServicePage = Math.max(1, page);
+            window.filterTableServices(false);
+        };
+
+        window.filterTableServices = (resetPage = true) => {
+            if (resetPage) currentServicePage = 1;
             const searchInput = document.getElementById('searchInputServices');
             const searchText = searchInput ? searchInput.value.toLowerCase() : '';
             const tbody = document.querySelector('#serviceTable tbody');
@@ -1544,27 +1579,40 @@
             const noDataRows = tbody.querySelectorAll('.no-data-row');
             noDataRows.forEach(r => r.remove());
 
-            const rows = tbody.querySelectorAll('tr');
-            let hasVisibleData = false;
-
-            rows.forEach(row => {
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const matchingRows = rows.filter(row => {
                 const status = row.getAttribute('data-status');
                 const matchesStatus = (currentTabFilter === 'Semua' || status === currentTabFilter);
                 const matchesSearch = row.textContent.toLowerCase().includes(searchText);
-
-                if (matchesStatus && matchesSearch) {
-                    row.style.display = '';
-                    hasVisibleData = true;
-                } else {
-                    row.style.display = 'none';
-                }
+                return matchesStatus && matchesSearch;
             });
 
-            if (!hasVisibleData && rows.length > 0) {
+            const pageSize = window.matchMedia('(max-width: 768px)').matches ? 5 : 10;
+            const pageCount = Math.max(1, Math.ceil(matchingRows.length / pageSize));
+            currentServicePage = Math.min(currentServicePage, pageCount);
+            const firstRow = (currentServicePage - 1) * pageSize;
+            const visibleRows = new Set(matchingRows.slice(firstRow, firstRow + pageSize));
+            rows.forEach(row => { row.style.display = visibleRows.has(row) ? '' : 'none'; });
+
+            if (matchingRows.length === 0) {
                 const colCount = document.querySelector('#serviceTable thead tr').children.length;
-                tbody.insertAdjacentHTML('beforeend', `<tr class="no-data-row"><td colspan="${colCount}" style="text-align:center; padding:30px; color:var(--text-light);"><i class="fas fa-box-open fa-2x" style="display:block;margin-bottom:10px"></i> Tidak ada data untuk kategori "${currentTabFilter}".</td></tr>`);
+                const emptyMessage = rows.length === 0
+                    ? 'Belum ada antrian servis.'
+                    : `Tidak ada data untuk kategori "${currentTabFilter}".`;
+                tbody.insertAdjacentHTML('beforeend', `<tr class="no-data-row"><td colspan="${colCount}" style="text-align:center; padding:30px; color:var(--text-light);"><i class="fas fa-box-open fa-2x" style="display:block;margin-bottom:10px"></i> ${emptyMessage}</td></tr>`);
             }
+            renderServicePagination(matchingRows.length, pageSize);
         };
+
+        let servicePaginationBreakpoint = window.matchMedia('(max-width: 768px)').matches;
+        window.addEventListener('resize', () => {
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
+            if (isMobile !== servicePaginationBreakpoint) {
+                servicePaginationBreakpoint = isMobile;
+                currentServicePage = 1;
+                window.filterTableServices();
+            }
+        });
 
         window.filterTableCustomers = () => { const t = document.getElementById('searchInputCustomers').value.toLowerCase(), r = document.getElementById('customerTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr'); let f = false, h = false; document.querySelector('#customerTable .no-data-row')?.remove(); for (let i = 0; i < r.length; i++) if (!r[i].classList.contains('no-data-row')) h = true; for (let i = 0; i < r.length; i++) { if (r[i].classList.contains('no-data-row')) continue; if (r[i].textContent.toLowerCase().includes(t)) { r[i].style.display = ""; f = true; } else r[i].style.display = "none"; } if (!f && h) renderNoDataRow(document.getElementById('customerTable').getElementsByTagName('tbody')[0], 'Tidak ditemukan.', 6, true); };
         const renderNoDataRow = (tb, msg, col, isS = false) => { tb.innerHTML += `<tr class="no-data-row"><td colspan="${col}" style="text-align:center; padding:30px; color:${isS ? 'var(--danger-color)' : 'var(--text-light)'};">${isS ? '<i class="fas fa-search"></i>' : '<i class="fas fa-box-open fa-2x" style="display:block;margin-bottom:10px"></i>'} ${msg}</td></tr>`; };
