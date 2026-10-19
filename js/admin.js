@@ -171,7 +171,8 @@ if (addServiceForm) {
                 biaya: Number(biaya) || 0,
                 modal_komponen: Number(modalKomponen) || 0,
                 keterangan: keterangan,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                completedAt: status === 'Selesai' || status === 'Diambil' ? new Date().toISOString() : null
             });
             
             window.showSweetAlert(`Data sukses disimpan! Nomor Invoice: ${serviceCode}`, 'success', () => {

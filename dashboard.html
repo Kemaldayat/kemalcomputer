@@ -102,24 +102,39 @@
                     </div>
                     <a href="admin.html" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Tambah Antrian</a>
                 </section>
-                <section class="overview-grid" aria-label="Ringkasan status servis">
-                    <article class="overview-card">
+                <section class="overview-grid overview-status-grid" aria-label="Ringkasan status servis">
+                    <button type="button" class="overview-card overview-card-action" onclick="filterServicesByOverview('waiting')">
                         <span class="overview-icon waiting"><i class="fas fa-hourglass-half"></i></span>
                         <div><p>Menunggu</p><strong id="overviewWaiting">0</strong></div>
-                    </article>
-                    <article class="overview-card">
+                    </button>
+                    <button type="button" class="overview-card overview-card-action" onclick="filterServicesByOverview('process')">
                         <span class="overview-icon process"><i class="fas fa-tools"></i></span>
                         <div><p>Sedang Diproses</p><strong id="overviewProcess">0</strong></div>
-                    </article>
-                    <article class="overview-card">
+                    </button>
+                    <button type="button" class="overview-card overview-card-action" onclick="filterServicesByOverview('ready')">
                         <span class="overview-icon ready"><i class="fas fa-check-circle"></i></span>
                         <div><p>Siap Diambil</p><strong id="overviewReady">0</strong></div>
-                    </article>
-                    <article class="overview-card">
-                        <span class="overview-icon customers"><i class="fas fa-users"></i></span>
-                        <div><p>Total Pelanggan</p><strong id="overviewCustomers">0</strong></div>
-                    </article>
+                    </button>
                 </section>
+                <section class="overview-grid overview-metrics-grid" aria-label="Metrik operasional hari ini">
+                    <button type="button" class="overview-card overview-card-action" onclick="filterServicesByOverview('overdue')">
+                        <span class="overview-icon overdue"><i class="fas fa-exclamation-circle"></i></span>
+                        <div><p>Terlambat <small>&gt; 5 hari</small></p><strong id="overviewOverdue">0</strong></div>
+                    </button>
+                    <button type="button" class="overview-card overview-card-action" onclick="filterServicesByOverview('unpaid')">
+                        <span class="overview-icon unpaid"><i class="fas fa-wallet"></i></span>
+                        <div><p>Belum Dibayar</p><strong id="overviewUnpaid">0</strong></div>
+                    </button>
+                    <button type="button" class="overview-card overview-card-action" onclick="filterServicesByOverview('today')">
+                        <span class="overview-icon today"><i class="fas fa-calendar-day"></i></span>
+                        <div><p>Servis Masuk Hari Ini</p><strong id="overviewToday">0</strong></div>
+                    </button>
+                    <button type="button" class="overview-card overview-card-action" onclick="filterServicesByOverview('revenueToday')">
+                        <span class="overview-icon revenue"><i class="fas fa-coins"></i></span>
+                        <div><p>Pendapatan Hari Ini</p><strong id="overviewRevenue">Rp 0</strong></div>
+                    </button>
+                </section>
+                <p class="overview-footnote">Pendapatan dihitung dari servis yang selesai hari ini dan waktu selesainya tercatat.</p>
                 <section class="overview-next-step">
                     <div>
                         <h3>Kelola antrian servis</h3>

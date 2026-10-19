@@ -50,6 +50,19 @@
         window.financeChartInstance = null;
         let currentTabFilter = 'Semua';
         let currentServicePage = 1;
+        let currentServiceQuickFilter = null;
+        const parseServiceDate = (value) => {
+            if (!value) return null;
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        };
+        const localDateKey = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        const isCompletedService = (service) => service.status === 'Selesai' || service.status === 'Diambil';
 
         // Variabel CMS
         window.existingPhotos = []; window.pendingFiles = [];
@@ -1166,6 +1179,8 @@
                         }
 
                         const row = tableBody.insertRow(); row.setAttribute('data-id', code); row.setAttribute('data-status', s.status);
+                        row.dataset.timestamp = s.timestamp || '';
+                        row.dataset.completedAt = s.completedAt || '';
                         row.innerHTML = `<td data-label="Pelanggan"><strong>${escapeHTML(s.nama)}</strong></td><td data-label="Perangkat">${dText}</td><td data-label="Keluhan">${escapeHTML(s.kerusakan)}</td><td data-label="No. HP">${escapeHTML(s.nomorHp) || '-'}</td><td data-label="Biaya" class="biaya-text">${formatRupiah(s.biaya)}</td><td data-label="Modal Komponen" class="biaya-text cost-column" style="color: var(--warning-color);">${formatRupiah(s.modal_komponen || 0)}</td><td data-label="Status" class="status-column"><span class="status-badge ${bClass}">${s.status}</span>${garansiBadge}</td><td data-label="Pembayaran">${payBadge}</td><td data-label="Keterangan">${escapeHTML(s.keterangan) || '-'}</td><td data-label="Invoice"><strong style="color:var(--primary-color)">${escapeHTML(code)}</strong></td><td data-label="Aksi" class="action-buttons action-column"><button class="icon-btn print-button" title="Cetak invoice" aria-label="Cetak invoice" onclick="printInvoice('${code}')"><i class="fas fa-print"></i></button><button class="icon-btn whatsapp-button" title="Hubungi via WhatsApp" aria-label="Hubungi via WhatsApp" onclick="sendWhatsappNotification('${code}')"><i class="fab fa-whatsapp"></i></button><button class="icon-btn edit-button" title="Edit servis" aria-label="Edit servis" onclick="openEditModal('${code}')"><i class="fas fa-edit"></i></button><button class="icon-btn delete-button" title="Hapus servis" aria-label="Hapus servis" onclick="deleteService('${code}')"><i class="fas fa-trash"></i></button></td>`;
 
                         const hp = s.nomorHp ? s.nomorHp.trim() : 'Tanpa Nomor';
@@ -1179,16 +1194,35 @@
                         rBody.innerHTML = `<td><strong>${escapeHTML(c.nama)}</strong></td><td>${escapeHTML(c.hp)}</td><td style="text-align: center;"><span class="status-badge" style="background-color:var(--info-color)">${c.totSrv} Kali</span></td><td class="biaya-text">${formatRupiah(c.totB)}</td><td style="white-space: normal; min-width: 200px;">${rBadges || '-'}</td><td class="action-column"><button class="btn btn-primary" style="padding: 8px 12px; font-size: 0.85em;" onclick="contactCustomer('${escapeHTML(c.hp)}', '${escapeHTML(c.nama)}')"><i class="fab fa-whatsapp"></i> Chat</button></td>`;
                     }
                 }
-                 const overviewCounts = {
-                     waiting: Object.values(servicesData).filter(service => service.status === 'Menunggu').length,
-                     process: Object.values(servicesData).filter(service => service.status === 'Proses').length,
-                     ready: Object.values(servicesData).filter(service => service.status === 'Selesai').length,
-                     customers: Object.keys(customersData).length
-                 };
+                 const todayKey = localDateKey(new Date());
+                 const overviewCounts = { waiting: 0, process: 0, ready: 0, overdue: 0, unpaid: 0, today: 0, revenue: 0 };
+                 Object.values(servicesData).forEach(service => {
+                     if (service.status === 'Menunggu') overviewCounts.waiting += 1;
+                     if (service.status === 'Proses') overviewCounts.process += 1;
+                     if (service.status === 'Selesai') overviewCounts.ready += 1;
+                     if (service.payment_status !== 'Lunas') overviewCounts.unpaid += 1;
+
+                     const createdAt = parseServiceDate(service.timestamp);
+                     if (createdAt && localDateKey(createdAt) === todayKey) overviewCounts.today += 1;
+                     if ((service.status === 'Menunggu' || service.status === 'Proses') &&
+                         createdAt && (Date.now() - createdAt.getTime()) > 5 * 24 * 60 * 60 * 1000) {
+                         overviewCounts.overdue += 1;
+                     }
+
+                     const completedAt = parseServiceDate(service.completedAt);
+                     if (isCompletedService(service) && completedAt && localDateKey(completedAt) === todayKey) {
+                         overviewCounts.revenue += Number(service.biaya) || 0;
+                     }
+                 });
                  document.getElementById('overviewWaiting').textContent = overviewCounts.waiting;
                  document.getElementById('overviewProcess').textContent = overviewCounts.process;
                  document.getElementById('overviewReady').textContent = overviewCounts.ready;
-                 document.getElementById('overviewCustomers').textContent = overviewCounts.customers;
+                 document.getElementById('overviewOverdue').textContent = overviewCounts.overdue;
+                 document.getElementById('overviewUnpaid').textContent = overviewCounts.unpaid;
+                 document.getElementById('overviewToday').textContent = overviewCounts.today;
+                 document.getElementById('overviewRevenue').textContent = new Intl.NumberFormat('id-ID', {
+                     style: 'currency', currency: 'IDR', maximumFractionDigits: 0
+                 }).format(overviewCounts.revenue);
                  filterTableServices(); filterTableCustomers(); calculateFinance();
                  if (window.applyRoleGating) window.applyRoleGating(window.currentUserRole);
              });
@@ -1507,7 +1541,13 @@
                     } catch (e) { console.error("Error processing photo:", e); }
                 }
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-                const d = { nama: nm, device: dv, kerusakan: kr, nomorHp: hp, biaya: Number(by) || 0, modal_komponen: Number(mk) || 0, status: st, payment_status: pst, keterangan: kt, timestamp: servicesData[code]?.timestamp || new Date().toISOString() };
+                const existingService = servicesData[code] || {};
+                const wasCompleted = isCompletedService(existingService);
+                const isCompleted = st === 'Selesai' || st === 'Diambil';
+                const completedAt = isCompleted
+                    ? (existingService.completedAt || (!wasCompleted ? new Date().toISOString() : null))
+                    : null;
+                const d = { nama: nm, device: dv, kerusakan: kr, nomorHp: hp, biaya: Number(by) || 0, modal_komponen: Number(mk) || 0, status: st, payment_status: pst, keterangan: kt, timestamp: existingService.timestamp || new Date().toISOString(), completedAt };
                 
                 // Mengelola input garansi
                 if (st === 'Selesai' || st === 'Diambil') {
@@ -1541,9 +1581,23 @@
 
         window.filterByTab = (status, el) => {
             currentTabFilter = status;
+            currentServiceQuickFilter = null;
             currentServicePage = 1;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
+            window.filterTableServices();
+        };
+
+        window.filterServicesByOverview = (filter) => {
+            currentServiceQuickFilter = filter;
+            currentTabFilter = ['waiting', 'process', 'ready'].includes(filter)
+                ? ({ waiting: 'Menunggu', process: 'Proses', ready: 'Selesai' })[filter]
+                : 'Semua';
+            document.querySelectorAll('#statusTabs .tab-btn').forEach(button => {
+                const isActive = button.getAttribute('onclick')?.includes(`'${currentTabFilter}'`);
+                button.classList.toggle('active', Boolean(isActive));
+            });
+            window.openTab('tab-services', document.getElementById('menu-services'), 'Antrian Servis');
             window.filterTableServices();
         };
 
@@ -1584,7 +1638,27 @@
                 const status = row.getAttribute('data-status');
                 const matchesStatus = (currentTabFilter === 'Semua' || status === currentTabFilter);
                 const matchesSearch = row.textContent.toLowerCase().includes(searchText);
-                return matchesStatus && matchesSearch;
+                const service = servicesData[row.getAttribute('data-id')] || {};
+                const createdAt = parseServiceDate(service.timestamp);
+                const completedAt = parseServiceDate(service.completedAt);
+                let matchesQuickFilter = true;
+                switch (currentServiceQuickFilter) {
+                    case 'overdue':
+                        matchesQuickFilter = (status === 'Menunggu' || status === 'Proses') &&
+                            createdAt && (Date.now() - createdAt.getTime()) > 5 * 24 * 60 * 60 * 1000;
+                        break;
+                    case 'unpaid':
+                        matchesQuickFilter = service.payment_status !== 'Lunas';
+                        break;
+                    case 'today':
+                        matchesQuickFilter = createdAt && localDateKey(createdAt) === localDateKey(new Date());
+                        break;
+                    case 'revenueToday':
+                        matchesQuickFilter = isCompletedService(service) && completedAt &&
+                            localDateKey(completedAt) === localDateKey(new Date());
+                        break;
+                }
+                return matchesStatus && matchesSearch && matchesQuickFilter;
             });
 
             const pageSize = window.matchMedia('(max-width: 768px)').matches ? 5 : 10;
