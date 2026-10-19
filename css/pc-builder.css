@@ -449,6 +449,125 @@
     padding: 0 0.2rem;
 }
 
+.compatibility-card {
+    margin: 0 0 1.25rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.compatibility-card[data-state="compatible"] {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: linear-gradient(110deg, rgba(16, 185, 129, 0.07), var(--color-surface) 55%);
+}
+
+.compatibility-card[data-state="warning"] {
+    border-color: rgba(239, 68, 68, 0.45);
+    background: linear-gradient(110deg, rgba(239, 68, 68, 0.08), var(--color-surface) 55%);
+}
+
+.compatibility-card[data-state="partial"] {
+    border-color: rgba(245, 158, 11, 0.4);
+}
+
+.compatibility-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.compatibility-icon {
+    display: grid;
+    flex: 0 0 2.4rem;
+    width: 2.4rem;
+    height: 2.4rem;
+    place-items: center;
+    border-radius: var(--radius-md);
+    color: var(--color-primary-light);
+    background: rgba(13, 148, 136, 0.12);
+}
+
+.compatibility-card h3 {
+    margin: 0 0 0.2rem;
+    color: var(--color-text);
+    font-size: 0.9rem;
+}
+
+.compatibility-card p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+    line-height: 1.45;
+}
+
+.compatibility-checks {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem 1rem;
+    margin: 0.85rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.compatibility-check {
+    display: grid;
+    grid-template-columns: 1.25rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.25rem 0.5rem;
+    min-width: 0;
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
+}
+
+.compatibility-check-icon {
+    grid-row: span 2;
+    display: grid;
+    width: 1.2rem;
+    height: 1.2rem;
+    place-items: center;
+    border-radius: 50%;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.12);
+    font-size: 0.62rem;
+}
+
+.compatibility-check[data-state="fail"] .compatibility-check-icon {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.12);
+}
+
+.compatibility-check[data-state="unknown"] .compatibility-check-icon {
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+}
+
+.compatibility-check-label {
+    min-width: 0;
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.compatibility-check-detail {
+    grid-column: 2;
+    overflow: hidden;
+    color: var(--color-text-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.compatibility-check strong {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    color: #10b981;
+    font-size: 0.68rem;
+    white-space: nowrap;
+}
+
+.compatibility-check[data-state="fail"] strong { color: #ef4444; }
+.compatibility-check[data-state="unknown"] strong { color: #f59e0b; }
+
 .summary-help-text {
     margin: -0.5rem 0 1rem;
     color: var(--color-text-muted);
@@ -467,6 +586,59 @@
     grid-template-columns: 1fr;
     gap: 2rem;
     align-items: flex-start;
+}
+
+@media (min-width: 1200px) {
+    .builder-parts-container {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+        gap: 0.85rem;
+    }
+
+    .builder-parts-container > #card-slot-aksesori {
+        grid-column: 1 / -1;
+    }
+
+    .part-slot-card {
+        min-width: 0;
+        padding: 1rem;
+    }
+
+    .part-slot-title {
+        gap: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .part-slot-icon {
+        width: 30px;
+        height: 30px;
+        flex: 0 0 30px;
+    }
+
+    .part-select-input {
+        min-width: 0;
+        padding: 0.7rem 0.75rem;
+        font-size: 0.82rem;
+    }
+
+    .part-controls-row {
+        align-items: flex-end;
+        gap: 0.5rem;
+    }
+
+    .condition-toggle-btn {
+        padding: 0.35rem 0.55rem;
+        font-size: 0.72rem;
+    }
+
+    .part-price-tag {
+        font-size: 0.9rem;
+    }
+
+    .part-warranty-chip {
+        font-size: 0.68rem;
+    }
 }
 
 @media (min-width: 1024px) {
@@ -496,6 +668,10 @@
         align-items: flex-start;
         flex-direction: column;
         gap: 0.75rem;
+    }
+
+    .compatibility-checks {
+        grid-template-columns: 1fr;
     }
 
     .preset-reset-btn {

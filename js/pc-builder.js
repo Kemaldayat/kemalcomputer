@@ -871,6 +871,7 @@ class PCBuilderController {
             selectedCount,
             selectedItemsForSummary
         });
+        this.updateCompatibilityStatus();
     }
 
     updateSummaryUI(data) {
@@ -965,6 +966,83 @@ class PCBuilderController {
                 `).join('');
             }
         }
+    }
+
+    updateCompatibilityStatus() {
+        const summary = document.getElementById("compatibility-summary");
+        const checksList = document.getElementById("compatibility-checks");
+        const card = document.getElementById("compatibility-card");
+        if (!summary || !checksList || !card) return;
+
+        const getSelectedItem = categoryKey => {
+            const category = this.componentsData[categoryKey];
+            const selection = this.selectedParts[categoryKey];
+            if (!category || !selection || selection.id === `${categoryKey}_0`) return null;
+            return category.items.find(item => item.id === selection.id) || null;
+        };
+        const cpu = getSelectedItem("cpu");
+        const motherboard = getSelectedItem("mobo");
+        const ram = getSelectedItem("ram");
+        const checks = [];
+
+        if (cpu && motherboard) {
+            if (cpu.socket && motherboard.socket) {
+                checks.push({
+                    label: "Socket processor & motherboard",
+                    status: cpu.socket === motherboard.socket ? "pass" : "fail",
+                    detail: `${cpu.socket} · ${motherboard.socket}`
+                });
+            } else {
+                checks.push({ label: "Socket processor & motherboard", status: "unknown", detail: "Data socket belum lengkap di katalog." });
+            }
+
+            if (cpu.ramType && motherboard.ramType) {
+                checks.push({
+                    label: "Memori processor & motherboard",
+                    status: cpu.ramType === motherboard.ramType ? "pass" : "fail",
+                    detail: `${cpu.ramType} · ${motherboard.ramType}`
+                });
+            }
+        }
+
+        if (motherboard && ram) {
+            if (motherboard.ramType && ram.ramType) {
+                checks.push({
+                    label: "Jenis RAM & motherboard",
+                    status: motherboard.ramType === ram.ramType ? "pass" : "fail",
+                    detail: `${ram.ramType} · ${motherboard.ramType}`
+                });
+            } else {
+                checks.push({ label: "Jenis RAM & motherboard", status: "unknown", detail: "Data jenis RAM belum lengkap di katalog." });
+            }
+        }
+
+        if (checks.length === 0) {
+            card.dataset.state = "pending";
+            summary.textContent = "Pilih processor, motherboard, dan RAM untuk mulai memeriksa.";
+            checksList.innerHTML = "";
+            return;
+        }
+
+        const hasMismatch = checks.some(check => check.status === "fail");
+        const hasUnknown = checks.some(check => check.status === "unknown");
+        card.dataset.state = hasMismatch ? "warning" : hasUnknown ? "partial" : "compatible";
+        summary.textContent = hasMismatch
+            ? "Ada komponen yang tidak cocok. Periksa pilihan socket atau tipe memorinya."
+            : hasUnknown
+                ? "Sebagian kompatibilitas belum dapat dipastikan karena data katalog belum lengkap."
+                : "Komponen yang dipilih sudah cocok berdasarkan data socket dan tipe memori.";
+
+        const icons = { pass: "fa-check", fail: "fa-times", unknown: "fa-minus" };
+        const labels = { pass: "Cocok", fail: "Tidak cocok", unknown: "Belum dicek" };
+        checksList.innerHTML = checks.map(check => `
+            <li class="compatibility-check" data-state="${check.status}">
+                <span class="compatibility-check-icon"><i class="fas ${icons[check.status]}"></i></span>
+                <span class="compatibility-check-label">${escapeBuilderText(check.label)}</span>
+                <span class="compatibility-check-detail">${escapeBuilderText(check.detail)}</span>
+                <strong>${labels[check.status]}</strong>
+            </li>
+        `).join("");
     }
 
     applyPreset(presetKey) {
