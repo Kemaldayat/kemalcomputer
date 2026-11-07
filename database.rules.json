@@ -1,0 +1,58 @@
+{
+  "rules": {
+    "pengaturan_toko": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'dayatkemal16@gmail.com'"
+    },
+    "komponen_rakit": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'dayatkemal16@gmail.com'"
+    },
+    "antrian": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "pengeluaran": {
+      ".read": "auth != null && auth.token.email == 'dayatkemal16@gmail.com'",
+      ".write": "auth != null && auth.token.email == 'dayatkemal16@gmail.com'"
+    },
+    "inventaris": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "mutasi_inventaris": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "invoice_pembelian": {
+      ".read": "auth != null && (auth.token.email == 'dayatkemal16@gmail.com' || (root.child('staff').child(auth.uid).child('email').val() == auth.token.email && (root.child('staff').child(auth.uid).child('role').val() == 'Admin' || root.child('staff').child(auth.uid).child('role').val() == 'Kasir' || root.child('staff').child(auth.uid).child('role').val() == 'Teknisi')))",
+      ".write": "auth != null && (auth.token.email == 'dayatkemal16@gmail.com' || (root.child('staff').child(auth.uid).child('email').val() == auth.token.email && (root.child('staff').child(auth.uid).child('role').val() == 'Admin' || root.child('staff').child(auth.uid).child('role').val() == 'Kasir' || root.child('staff').child(auth.uid).child('role').val() == 'Teknisi')))"
+    },
+    "invoice_penjualan": {
+      ".read": "auth != null && (auth.token.email == 'dayatkemal16@gmail.com' || (root.child('staff').child(auth.uid).child('email').val() == auth.token.email && (root.child('staff').child(auth.uid).child('role').val() == 'Admin' || root.child('staff').child(auth.uid).child('role').val() == 'Kasir' || root.child('staff').child(auth.uid).child('role').val() == 'Teknisi')))",
+      ".write": "auth != null && (auth.token.email == 'dayatkemal16@gmail.com' || (root.child('staff').child(auth.uid).child('email').val() == auth.token.email && (root.child('staff').child(auth.uid).child('role').val() == 'Admin' || root.child('staff').child(auth.uid).child('role').val() == 'Kasir' || root.child('staff').child(auth.uid).child('role').val() == 'Teknisi')))"
+    },
+    "garansi": {
+      ".read": "auth != null && (auth.token.email == 'dayatkemal16@gmail.com' || (root.child('staff').child(auth.uid).child('email').val() == auth.token.email && (root.child('staff').child(auth.uid).child('role').val() == 'Admin' || root.child('staff').child(auth.uid).child('role').val() == 'Kasir' || root.child('staff').child(auth.uid).child('role').val() == 'Teknisi')))",
+      ".write": "auth != null && (auth.token.email == 'dayatkemal16@gmail.com' || (root.child('staff').child(auth.uid).child('email').val() == auth.token.email && (root.child('staff').child(auth.uid).child('role').val() == 'Admin' || root.child('staff').child(auth.uid).child('role').val() == 'Kasir' || root.child('staff').child(auth.uid).child('role').val() == 'Teknisi')))"
+    },
+    "pengaturan_dashboard": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+    "testimoni_pending": {
+      ".read": "auth != null && auth.token.email == 'dayatkemal16@gmail.com'",
+      ".write": true
+    },
+    "riwayat_login": {
+      ".read": "auth != null && auth.token.email == 'dayatkemal16@gmail.com'",
+      ".write": "auth != null"
+    },
+    "staff": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.email == 'dayatkemal16@gmail.com'"
+    }
+  }
+}
