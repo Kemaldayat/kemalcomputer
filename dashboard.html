@@ -32,20 +32,24 @@
                     class="fas fa-list-alt"></i> Antrian Servis</button>
             <button class="menu-item" onclick="openTab('tab-customers', this, 'Database Pelanggan')"><i
                     class="fas fa-users"></i> Pelanggan</button>
+        </div>
+
+        <div class="sidebar-category" style="margin-top: 25px;">Transaksi & Keuangan</div>
+        <div class="menu-list">
+            <button class="menu-item" id="menu-sales" onclick="openTab('tab-sales', this, 'Invoice Penjualan')"><i
+                    class="fas fa-file-invoice-dollar"></i> Invoice Penjualan</button>
+            <button class="menu-item" id="menu-purchases" onclick="openTab('tab-purchases', this, 'Invoice Pembelian')"><i
+                    class="fas fa-file-import"></i> Invoice Pembelian</button>
+            <button class="menu-item" id="menu-warranties" onclick="openTab('tab-warranties', this, 'Garansi')"><i
+                    class="fas fa-shield-alt"></i> Garansi</button>
             <button class="menu-item" onclick="openTab('tab-finance', this, 'Laporan Keuangan')"><i
-                    class="fas fa-wallet"></i> Keuangan</button>
+                    class="fas fa-wallet"></i> Laporan Keuangan</button>
         </div>
 
         <div class="sidebar-category" style="margin-top: 25px;">Stok & Produk</div>
         <div class="menu-list">
             <button class="menu-item" onclick="openTab('tab-inventory', this, 'Manajemen Inventaris')"><i
                     class="fas fa-boxes"></i> Inventaris</button>
-            <button class="menu-item" id="menu-purchases" onclick="openTab('tab-purchases', this, 'Invoice Pembelian')"><i
-                    class="fas fa-file-import"></i> Invoice Pembelian</button>
-            <button class="menu-item" id="menu-sales" onclick="openTab('tab-sales', this, 'Invoice Penjualan')"><i
-                    class="fas fa-file-invoice-dollar"></i> Invoice Penjualan</button>
-            <button class="menu-item" id="menu-warranties" onclick="openTab('tab-warranties', this, 'Garansi')"><i
-                    class="fas fa-shield-alt"></i> Garansi</button>
             <button class="menu-item owner-admin-only" style="display: none;" onclick="openTab('tab-katalog', this, 'Katalog Produk')"><i
                     class="fas fa-shopping-bag"></i> Katalog Produk</button>
             <button class="menu-item owner-admin-only" style="display: none;" onclick="openTab('tab-rakit-pc', this, 'Komponen Simulasi Rakit')"><i
@@ -371,15 +375,22 @@
                     <div class="finance-card card-income">
                         <div class="icon"><i class="fas fa-arrow-down"></i></div>
                         <div>
-                            <h3>Pendapatan Bulan Ini</h3>
+                            <h3>Pendapatan Servis & Penjualan Lunas</h3>
                             <p class="amount" id="totalPendapatan">Rp 0</p>
+                        </div>
+                    </div>
+                    <div class="finance-card card-income" style="border-left: 4px solid var(--warning-color);">
+                        <div class="icon" style="background: rgba(245, 158, 11, 0.2); color: var(--warning-color);"><i class="fas fa-hourglass-half"></i></div>
+                        <div>
+                            <h3>Piutang Penjualan</h3>
+                            <p class="amount" id="totalPiutangPenjualan">Rp 0</p>
                         </div>
                     </div>
                     <div class="finance-card card-income" style="border-left: 4px solid var(--warning-color);">
                         <div class="icon" style="background: rgba(245, 158, 11, 0.2); color: var(--warning-color);"><i
                                 class="fas fa-box-open"></i></div>
                         <div>
-                            <h3>Modal Komponen</h3>
+                            <h3>Modal Barang & Komponen</h3>
                             <p class="amount" id="totalModal">Rp 0</p>
                         </div>
                     </div>
@@ -393,7 +404,7 @@
                     <div class="finance-card card-profit">
                         <div class="icon"><i class="fas fa-coins"></i></div>
                         <div>
-                            <h3>Laba Bersih Bulan Ini</h3>
+                            <h3>Laba Bersih (termasuk piutang)</h3>
                             <p class="amount" id="labaBersih">Rp 0</p>
                         </div>
                     </div>
@@ -403,6 +414,24 @@
                         Keuangan Tahun <span id="chartYearDisplay"></span></h3>
                     <div style="position: relative; height: 350px; width: 100%;"><canvas id="financeChart"></canvas>
                     </div>
+                </div>
+                <h2
+                    style="font-size: 1.1em; font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                    Rincian Invoice Penjualan Bulan Ini</h2>
+                <p style="color: var(--text-light); font-size: 0.85rem; margin: -12px 0 16px;">Invoice lunas masuk pendapatan; invoice belum dibayar dicatat sebagai piutang.</p>
+                <div class="table-responsive">
+                    <table id="financeSalesTable">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Nomor Invoice</th>
+                                <th>Pelanggan</th>
+                                <th>Pembayaran</th>
+                                <th>Nominal</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
                 <h2
                     style="font-size: 1.1em; font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">

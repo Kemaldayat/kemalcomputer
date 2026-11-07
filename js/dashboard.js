@@ -220,6 +220,7 @@
                         snapshot.forEach((child) => { transactionData[key][child.key] = child.val(); });
                     }
                     render();
+                    if (key === 'sales' && window.calculateFinance) window.calculateFinance();
                 }, (error) => {
                     console.error(`Gagal memuat ${path}:`, error);
                     showModal(`Gagal memuat data ${path}: ${error.message}`, 'info');
@@ -327,6 +328,8 @@
                 quantities[line.id] = (quantities[line.id] || 0) + line.jumlah;
                 line.nama = item.nama;
                 line.subtotal = line.jumlah * line.harga;
+                line.modal_satuan = Number(item.harga_modal) || 0;
+                line.modal_subtotal = line.jumlah * line.modal_satuan;
             });
             const stockErrors = Object.entries(quantities).filter(([id, quantity]) => quantity > (Number(window.inventoryData[id].stok) || 0));
             if (stockErrors.length) {
@@ -1649,8 +1652,10 @@
         window.calculateFinance = () => {
             const selMonthStr = document.getElementById('financeMonthPicker').value; if (!selMonthStr) return;
             const selYear = selMonthStr.split('-')[0]; document.getElementById('chartYearDisplay').innerText = selYear;
-            let tInc = 0, tExp = 0, tModal = 0; let cInc = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], cExp = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            let tInc = 0, tReceivable = 0, tExp = 0, tModal = 0; let cInc = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], cExp = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             const eTable = document.getElementById('expenseTable').getElementsByTagName('tbody')[0]; eTable.innerHTML = ''; let eCount = 0;
+            const salesTable = document.querySelector('#financeSalesTable tbody'); salesTable.innerHTML = '';
+            let salesCount = 0;
 
             for (const k in servicesData) {
                 const s = servicesData[k];
@@ -1662,6 +1667,30 @@
                     }
                 }
             }
+            for (const [invoiceId, invoice] of Object.entries(transactionData.sales)) {
+                if (!invoice.tanggal) continue;
+                const amount = Number(invoice.total) || 0;
+                const isPaid = invoice.pembayaran === 'Lunas';
+                const items = Array.isArray(invoice.items) ? invoice.items : Object.values(invoice.items || {});
+                if (invoice.tanggal.startsWith(selMonthStr)) {
+                    tModal += items.reduce((sum, item) => {
+                        const lineCost = Number(item.modal_subtotal);
+                        return sum + (Number.isFinite(lineCost)
+                            ? lineCost
+                            : (Number(item.modal_satuan) || 0) * (Number(item.jumlah) || 0));
+                    }, 0);
+                }
+                if (invoice.tanggal.startsWith(selYear) && isPaid) {
+                    cInc[Number(invoice.tanggal.substring(5, 7)) - 1] += amount;
+                }
+                if (!invoice.tanggal.startsWith(selMonthStr)) continue;
+                if (isPaid) tInc += amount;
+                else tReceivable += amount;
+                salesCount++;
+                const row = salesTable.insertRow();
+                row.innerHTML = `<td>${escapeHTML(invoice.tanggal)}</td><td><strong>${escapeHTML(invoiceId)}</strong></td><td>${escapeHTML(invoice.pelanggan || '-')}</td><td><span class="status-badge ${isPaid ? 'status-finished' : 'status-waiting'}">${escapeHTML(invoice.pembayaran || 'Belum Dibayar')}</span></td><td class="biaya-text">${formatRupiah(amount)}</td>`;
+            }
+            if (salesCount === 0) renderNoDataRow(salesTable, 'Belum ada invoice penjualan di bulan ini.', 5);
             for (const k in expensesData) {
                 const e = expensesData[k];
                 if (e.tanggal) {
@@ -1674,8 +1703,9 @@
             }
             if (eCount === 0) renderNoDataRow(eTable, `Belum ada pengeluaran di bulan ini.`, 4);
             document.getElementById('totalPendapatan').innerHTML = formatRupiah(tInc); document.getElementById('totalPengeluaran').innerHTML = formatRupiah(tExp);
+            document.getElementById('totalPiutangPenjualan').innerHTML = formatRupiah(tReceivable);
             if(document.getElementById('totalModal')) document.getElementById('totalModal').innerHTML = formatRupiah(tModal);
-            const laba = tInc - tModal - tExp; document.getElementById('labaBersih').innerHTML = formatRupiah(laba); document.getElementById('labaBersih').style.color = laba < 0 ? 'var(--danger-color)' : 'var(--text-color)';
+            const laba = tInc + tReceivable - tModal - tExp; document.getElementById('labaBersih').innerHTML = formatRupiah(laba); document.getElementById('labaBersih').style.color = laba < 0 ? 'var(--danger-color)' : 'var(--text-color)';
             renderFinanceChart(cInc, cExp);
         };
 
@@ -2286,9 +2316,16 @@
             const labaBersihText = document.getElementById('labaBersih').textContent;
 
             const cleanNum = (text) => text.replace(/[^0-9-]/g, '');
+            let totalPiutangPenjualan = 0;
+            for (const invoice of Object.values(transactionData.sales)) {
+                if (invoice.tanggal?.startsWith(monthPickerVal) && invoice.pembayaran !== 'Lunas') {
+                    totalPiutangPenjualan += Number(invoice.total) || 0;
+                }
+            }
 
             rows.push(['RINGKASAN']);
             rows.push(['Total Pendapatan', cleanNum(totalPendapatanText)]);
+            rows.push(['Piutang Penjualan', totalPiutangPenjualan]);
             rows.push(['Total Modal Komponen', cleanNum(totalModalText)]);
             rows.push(['Total Pengeluaran Toko', cleanNum(totalPengeluaranText)]);
             rows.push(['Laba/Rugi Bersih', cleanNum(labaBersihText)]);
@@ -2309,6 +2346,17 @@
                         amount: Number(s.biaya)
                     });
                 }
+            }
+
+            for (const [key, invoice] of Object.entries(transactionData.sales)) {
+                if (!invoice.tanggal?.startsWith(monthPickerVal)) continue;
+                const isPaid = invoice.pembayaran === 'Lunas';
+                incomeTx.push({
+                    date: invoice.tanggal,
+                    type: isPaid ? 'Pendapatan Penjualan (Lunas)' : 'Piutang Penjualan (Belum Lunas)',
+                    desc: `Invoice ${key} - ${invoice.pelanggan || '-'}`,
+                    amount: Number(invoice.total) || 0
+                });
             }
 
             const expenseTx = [];
