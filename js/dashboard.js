@@ -1,4 +1,5 @@
-        import { db, auth, adminEmail, firebaseConfig, signOut, onAuthStateChanged, dbRef as ref, get, set, remove, onValue } from "./firebase-config.js";
+        import { db, auth, adminEmail, firebaseConfig, signOut, onAuthStateChanged, dbRef as ref, get, set, update, remove, onValue } from "./firebase-config.js";
+        import { DEFAULT_COMPONENTS } from "./pc-builder.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
         const IMGBB_API_KEY = "0f505a6d586e11b597f5a191a8c76f9f"; // Variabel harus di bawah import
@@ -46,8 +47,32 @@
         window.escapeHTML = (str) => String(str || '').replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
 
         let servicesData = {}; let customersData = {}; let expensesData = {};
+        const transactionData = { purchases: {}, sales: {}, warranties: {} };
         window.financeChartInstance = null;
         let currentTabFilter = 'Semua';
+        let currentServicePage = 1;
+        let currentServiceQuickFilter = null;
+        const parseServiceDate = (value) => {
+            if (!value) return null;
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        };
+        const localDateKey = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        const isCompletedService = (service) => service.status === 'Selesai' || service.status === 'Diambil';
+        const formatTransactionCurrency = (amount) => new Intl.NumberFormat('id-ID', {
+            style: 'currency', currency: 'IDR', maximumFractionDigits: 0
+        }).format(Number(amount) || 0);
+        const createTransactionId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+        const getTransactionLines = (type) => Array.from(document.querySelectorAll(`#${type}Lines .transaction-line`)).map((row) => ({
+            id: row.querySelector('.transaction-product').value,
+            jumlah: Number(row.querySelector('.transaction-quantity').value),
+            harga: Number(row.querySelector('.transaction-price').value)
+        }));
 
         // Variabel CMS
         window.existingPhotos = []; window.pendingFiles = [];
@@ -91,6 +116,8 @@
                     loadServices(); 
                     loadExpenses();
                     if(window.loadInventory) window.loadInventory();
+                    loadBusinessTransactions();
+                    loadDashboardPreferences(user.uid);
                     
                     if (userRole === 'Owner') {
                         loadStaffList();
@@ -115,12 +142,259 @@
             }
         });
 
+        window.toggleDashboardCustomization = () => {
+            const panel = document.getElementById('dashboardCustomization');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        };
+        window.saveDashboardPreferences = async () => {
+            const user = auth.currentUser;
+            if (!user) return showModal('Sesi login tidak ditemukan. Silakan login kembali.', 'info');
+            const preferences = {};
+            document.querySelectorAll('[data-dashboard-setting]').forEach((input) => {
+                preferences[input.dataset.dashboardSetting] = input.checked;
+            });
+            try {
+                await set(ref(db, `pengaturan_dashboard/${user.uid}`), preferences);
+                applyDashboardPreferences(preferences);
+                showModal('Tampilan ringkasan berhasil disimpan.', 'info');
+            } catch (error) {
+                console.error('Gagal menyimpan tampilan dashboard:', error);
+                showModal(`Gagal menyimpan tampilan dashboard: ${error.message}`, 'info');
+            }
+        };
+        const applyDashboardPreferences = (preferences = {}) => {
+            document.querySelectorAll('[data-dashboard-setting]').forEach((input) => {
+                const visible = preferences[input.dataset.dashboardSetting] !== false;
+                input.checked = visible;
+            });
+            document.querySelectorAll('[data-dashboard-widget]').forEach((widget) => {
+                widget.style.display = preferences[widget.dataset.dashboardWidget] === false ? 'none' : '';
+            });
+        };
+        const loadDashboardPreferences = async (uid) => {
+            try {
+                const snapshot = await get(ref(db, `pengaturan_dashboard/${uid}`));
+                applyDashboardPreferences(snapshot.exists() ? snapshot.val() : {});
+            } catch (error) {
+                console.error('Gagal memuat tampilan dashboard:', error);
+                showModal(`Gagal memuat pengaturan dashboard: ${error.message}`, 'info');
+            }
+        };
+
+        window.addTransactionLine = (type) => {
+            const target = document.getElementById(`${type}Lines`);
+            const options = Object.entries(window.inventoryData || {}).map(([id, item]) =>
+                `<option value="${escapeHTML(id)}">${escapeHTML(item.nama)} (stok: ${Number(item.stok) || 0})</option>`
+            ).join('');
+            const row = document.createElement('div');
+            row.className = 'transaction-line';
+            row.innerHTML = `<select class="transaction-product" aria-label="Pilih barang" required><option value="">Pilih barang inventaris</option>${options}</select><input class="transaction-quantity" type="number" min="1" step="1" value="1" aria-label="Jumlah" required><input class="transaction-price" type="number" min="0" step="1" placeholder="${type === 'purchase' ? 'Harga modal/unit' : 'Harga jual/unit'}" aria-label="Harga satuan" required><button type="button" class="icon-btn delete-button" aria-label="Hapus barang" title="Hapus barang"><i class="fas fa-trash"></i></button>`;
+            row.querySelector('.transaction-product').addEventListener('change', () => {
+                if (type === 'purchase') {
+                    row.querySelector('.transaction-price').value = window.inventoryData?.[row.querySelector('.transaction-product').value]?.harga_modal ?? '';
+                }
+                updateTransactionTotal(type);
+            });
+            row.querySelectorAll('input').forEach((input) => input.addEventListener('input', () => updateTransactionTotal(type)));
+            row.querySelector('.delete-button').addEventListener('click', () => {
+                row.remove();
+                updateTransactionTotal(type);
+            });
+            target.appendChild(row);
+            updateTransactionTotal(type);
+        };
+        const updateTransactionTotal = (type) => {
+            const total = getTransactionLines(type).reduce((sum, line) => sum + line.jumlah * line.harga, 0);
+            document.getElementById(`${type}Total`).textContent = formatTransactionCurrency(total);
+        };
+        const loadBusinessTransactions = () => {
+            const configs = [
+                { path: 'invoice_pembelian', key: 'purchases', render: renderPurchaseInvoices },
+                { path: 'invoice_penjualan', key: 'sales', render: renderSalesInvoices },
+                { path: 'garansi', key: 'warranties', render: renderWarranties }
+            ];
+            configs.forEach(({ path, key, render }) => {
+                onValue(ref(db, path), (snapshot) => {
+                    transactionData[key] = {};
+                    if (snapshot.exists()) {
+                        snapshot.forEach((child) => { transactionData[key][child.key] = child.val(); });
+                    }
+                    render();
+                }, (error) => {
+                    console.error(`Gagal memuat ${path}:`, error);
+                    showModal(`Gagal memuat data ${path}: ${error.message}`, 'info');
+                });
+            });
+        };
+        const renderPurchaseInvoices = () => renderTransactionInvoices('purchaseInvoiceTable', transactionData.purchases, 'Pemasok');
+        const renderSalesInvoices = () => renderTransactionInvoices('salesInvoiceTable', transactionData.sales, 'Pelanggan');
+        const renderTransactionInvoices = (tableId, records, counterpartyLabel) => {
+            const body = document.querySelector(`#${tableId} tbody`);
+            if (!body) return;
+            body.innerHTML = '';
+            const invoices = Object.entries(records).sort((a, b) => String(b[1].createdAt || '').localeCompare(String(a[1].createdAt || '')));
+            if (!invoices.length) {
+                renderNoDataRow(body, 'Belum ada invoice.', 7);
+                return;
+            }
+            invoices.forEach(([id, invoice]) => {
+                const invoiceItems = Array.isArray(invoice.items) ? invoice.items : Object.values(invoice.items || {});
+                const itemNames = invoiceItems.map((item) => item.nama).join(', ');
+                const row = body.insertRow();
+                row.innerHTML = `<td><strong>${escapeHTML(id)}</strong></td><td>${escapeHTML(invoice.tanggal)}</td><td>${escapeHTML(invoice[counterpartyLabel === 'Pemasok' ? 'pemasok' : 'pelanggan'])}</td><td>${escapeHTML(itemNames)}</td><td class="biaya-text">${formatTransactionCurrency(invoice.total)}</td><td>${escapeHTML(invoice.pembayaran || '-')}</td><td class="action-column"></td>`;
+                const printButton = document.createElement('button');
+                printButton.className = 'icon-btn print-button';
+                printButton.type = 'button';
+                printButton.title = 'Cetak invoice';
+                printButton.setAttribute('aria-label', 'Cetak invoice');
+                printButton.innerHTML = '<i class="fas fa-print"></i>';
+                printButton.addEventListener('click', () => window.printBusinessInvoice(id, counterpartyLabel === 'Pemasok' ? 'purchase' : 'sales'));
+                row.lastElementChild.appendChild(printButton);
+            });
+        };
+        const renderWarranties = () => {
+            const body = document.querySelector('#warrantyTable tbody');
+            if (!body) return;
+            body.innerHTML = '';
+            const warranties = Object.entries(transactionData.warranties).sort((a, b) => String(b[1].createdAt || '').localeCompare(String(a[1].createdAt || '')));
+            if (!warranties.length) {
+                renderNoDataRow(body, 'Belum ada garansi yang terdaftar.', 6);
+                return;
+            }
+            warranties.forEach(([id, warranty]) => {
+                const active = warranty.tanggalSampai >= localDateKey(new Date());
+                const row = body.insertRow();
+                row.innerHTML = `<td><strong>${escapeHTML(id)}</strong></td><td>${escapeHTML(warranty.pelanggan)}<br><small>${escapeHTML(warranty.nomorHp || '-')}</small></td><td>${escapeHTML(warranty.produk)}<br><small>${escapeHTML(warranty.nomorSeri || '-')}</small></td><td>${escapeHTML(warranty.invoice || '-')}</td><td>${escapeHTML(warranty.tanggalMulai)} s.d. ${escapeHTML(warranty.tanggalSampai)}</td><td><span class="status-badge ${active ? 'status-finished' : 'status-waiting'}">${active ? 'Aktif' : 'Kedaluwarsa'}</span></td>`;
+            });
+        };
+
+        document.getElementById('purchaseDate').value = localDateKey(new Date());
+        document.getElementById('salesDate').value = localDateKey(new Date());
+        document.getElementById('warrantyStart').value = localDateKey(new Date());
+        document.getElementById('warrantyEnd').value = localDateKey(new Date());
+        window.addTransactionLine('purchase');
+        window.addTransactionLine('sales');
+        document.getElementById('purchaseInvoiceForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const lines = getTransactionLines('purchase');
+            if (!lines.length || lines.some((line) => !line.id || line.jumlah < 1 || line.harga < 0)) return showModal('Pilih barang, jumlah, dan harga pembelian dengan benar.', 'info');
+            if (lines.some((line) => !window.inventoryData[line.id])) return showModal('Ada barang yang sudah tidak tersedia di inventaris. Muat ulang pilihan barang.', 'info');
+            const updates = {};
+            const totalsByProduct = {};
+            lines.forEach((line) => {
+                const item = window.inventoryData[line.id];
+                totalsByProduct[line.id] = (totalsByProduct[line.id] || 0) + line.jumlah;
+                line.nama = item.nama;
+                line.subtotal = line.jumlah * line.harga;
+            });
+            Object.entries(totalsByProduct).forEach(([id, quantity]) => {
+                updates[`inventaris/${id}/stok`] = (Number(window.inventoryData[id].stok) || 0) + quantity;
+            });
+            const invoiceId = createTransactionId('PB');
+            const invoice = {
+                pemasok: document.getElementById('purchaseSupplier').value.trim(),
+                tanggal: document.getElementById('purchaseDate').value,
+                pembayaran: document.getElementById('purchasePayment').value,
+                catatan: document.getElementById('purchaseNotes').value.trim(),
+                items: lines,
+                total: lines.reduce((sum, line) => sum + line.subtotal, 0),
+                createdAt: new Date().toISOString()
+            };
+            const lastPurchasePrice = {};
+            lines.forEach((line) => { lastPurchasePrice[line.id] = line.harga; });
+            Object.entries(lastPurchasePrice).forEach(([id, price]) => { updates[`inventaris/${id}/harga_modal`] = price; });
+            updates[`invoice_pembelian/${invoiceId}`] = invoice;
+            try {
+                await update(ref(db), updates);
+                document.getElementById('purchaseInvoiceForm').reset();
+                document.getElementById('purchaseDate').value = localDateKey(new Date());
+                document.getElementById('purchaseLines').innerHTML = '';
+                window.addTransactionLine('purchase');
+                showModal(`Invoice pembelian ${invoiceId} berhasil disimpan.`, 'info');
+            } catch (error) {
+                console.error('Gagal menyimpan invoice pembelian:', error);
+                showModal(`Gagal menyimpan invoice pembelian: ${error.message}`, 'info');
+            }
+        });
+        document.getElementById('salesInvoiceForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const lines = getTransactionLines('sales');
+            if (!lines.length || lines.some((line) => !line.id || line.jumlah < 1 || line.harga < 0)) return showModal('Pilih barang, jumlah, dan harga penjualan dengan benar.', 'info');
+            if (lines.some((line) => !window.inventoryData[line.id])) return showModal('Ada barang yang sudah tidak tersedia di inventaris. Muat ulang pilihan barang.', 'info');
+            const quantities = {};
+            lines.forEach((line) => {
+                const item = window.inventoryData[line.id];
+                quantities[line.id] = (quantities[line.id] || 0) + line.jumlah;
+                line.nama = item.nama;
+                line.subtotal = line.jumlah * line.harga;
+            });
+            const stockErrors = Object.entries(quantities).filter(([id, quantity]) => quantity > (Number(window.inventoryData[id].stok) || 0));
+            if (stockErrors.length) {
+                const names = stockErrors.map(([id]) => window.inventoryData[id].nama).join(', ');
+                return showModal(`Stok tidak mencukupi untuk: ${names}.`, 'info');
+            }
+            const invoiceId = createTransactionId('PJ');
+            const updates = {};
+            Object.entries(quantities).forEach(([id, quantity]) => {
+                updates[`inventaris/${id}/stok`] = (Number(window.inventoryData[id].stok) || 0) - quantity;
+            });
+            updates[`invoice_penjualan/${invoiceId}`] = {
+                pelanggan: document.getElementById('salesCustomer').value.trim(),
+                nomorHp: document.getElementById('salesPhone').value.trim(),
+                tanggal: document.getElementById('salesDate').value,
+                pembayaran: document.getElementById('salesPayment').value,
+                catatan: document.getElementById('salesNotes').value.trim(),
+                items: lines,
+                total: lines.reduce((sum, line) => sum + line.subtotal, 0),
+                createdAt: new Date().toISOString()
+            };
+            try {
+                await update(ref(db), updates);
+                document.getElementById('salesInvoiceForm').reset();
+                document.getElementById('salesDate').value = localDateKey(new Date());
+                document.getElementById('salesLines').innerHTML = '';
+                window.addTransactionLine('sales');
+                showModal(`Invoice penjualan ${invoiceId} berhasil disimpan.`, 'info');
+            } catch (error) {
+                console.error('Gagal menyimpan invoice penjualan:', error);
+                showModal(`Gagal menyimpan invoice penjualan: ${error.message}`, 'info');
+            }
+        });
+        document.getElementById('warrantyForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const tanggalMulai = document.getElementById('warrantyStart').value;
+            const tanggalSampai = document.getElementById('warrantyEnd').value;
+            if (tanggalSampai < tanggalMulai) return showModal('Tanggal garansi berakhir tidak boleh sebelum tanggal mulai.', 'info');
+            const id = createTransactionId('GAR');
+            const warranty = {
+                pelanggan: document.getElementById('warrantyCustomer').value.trim(),
+                nomorHp: document.getElementById('warrantyPhone').value.trim(),
+                produk: document.getElementById('warrantyProduct').value.trim(),
+                nomorSeri: document.getElementById('warrantySerial').value.trim(),
+                invoice: document.getElementById('warrantyInvoice').value.trim(),
+                tanggalMulai,
+                tanggalSampai,
+                catatan: document.getElementById('warrantyNotes').value.trim(),
+                createdAt: new Date().toISOString()
+            };
+            try {
+                await set(ref(db, `garansi/${id}`), warranty);
+                document.getElementById('warrantyForm').reset();
+                document.getElementById('warrantyStart').value = localDateKey(new Date());
+                document.getElementById('warrantyEnd').value = localDateKey(new Date());
+                showModal(`Garansi ${id} berhasil disimpan.`, 'info');
+            } catch (error) {
+                console.error('Gagal menyimpan garansi:', error);
+                showModal(`Gagal menyimpan garansi: ${error.message}`, 'info');
+            }
+        });
+
         window.openTab = (tabId, element, titleText) => {
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
             element.classList.add('active'); document.getElementById(tabId).classList.add('active');
             document.getElementById('topbarTitle').innerText = titleText;
-            const settingsTabs = ['tab-identitas', 'tab-tampilan', 'tab-sosmed', 'tab-sistem', 'tab-katalog'];
+            const settingsTabs = ['tab-identitas', 'tab-tampilan', 'tab-sosmed', 'tab-sistem', 'tab-katalog', 'tab-rakit-pc'];
             if (settingsTabs.includes(tabId)) document.getElementById('floatingSaveBtn').classList.add('show');
             else document.getElementById('floatingSaveBtn').classList.remove('show');
             
@@ -157,21 +431,36 @@
         };
 
         const compressImage = (file, maxWidth = 800, maxHeight = 800, quality = 0.7) => {
-            return new Promise((r) => {
-                const reader = new FileReader(); reader.readAsDataURL(file);
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
                 reader.onload = (e) => {
-                    const img = new Image(); img.src = e.target.result;
+                    const img = new Image();
+                    img.src = e.target.result;
                     img.onload = () => {
                         let w = img.width, h = img.height;
                         if (w > h && w > maxWidth) { h *= maxWidth / w; w = maxWidth; }
                         else if (h > maxHeight) { w *= maxHeight / h; h = maxHeight; }
-                        const cvs = document.createElement('canvas'); cvs.width = w; cvs.height = h;
+                        const cvs = document.createElement('canvas');
+                        cvs.width = w;
+                        cvs.height = h;
                         cvs.getContext('2d').drawImage(img, 0, 0, w, h);
 
                         let fileType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-                        cvs.toBlob((b) => r(new File([b], file.name, { type: fileType })), fileType, quality);
+                        cvs.toBlob((b) => resolve(new File([b], file.name, { type: fileType })), fileType, quality);
                     };
+                    img.onerror = (err) => reject(err);
                 };
+                reader.onerror = (err) => reject(err);
+            });
+        };
+
+        const fileToBase64 = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = (error) => reject(error);
             });
         };
 
@@ -182,10 +471,21 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 0%'; btn.disabled = true;
             try {
                 let f = await compressImage(file, 600, 600, 0.8);
-                const res = await uploadToImgBBWithProgress(f, (pct) => {
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${pct}%`;
-                });
-                if (res.success) textInput.value = res.data.url; // Simpan URL asli ke input
+                let finalUrl = "";
+                try {
+                    const res = await uploadToImgBBWithProgress(f, (pct) => {
+                        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${pct}%`;
+                    });
+                    if (res.success) {
+                        finalUrl = res.data.url;
+                    } else {
+                        throw new Error("Upload failed on server");
+                    }
+                } catch (uploadErr) {
+                    console.warn("ImgBB upload failed, falling back to Base64:", uploadErr);
+                    finalUrl = await fileToBase64(f);
+                }
+                textInput.value = finalUrl;
             } catch (e) { window.showSweetAlert("Gagal upload foto.", "error"); console.log(e); }
             btn.innerHTML = '<i class="fas fa-upload"></i> Foto'; btn.disabled = false; inputElem.value = '';
         };
@@ -209,14 +509,23 @@
             btn.disabled = true;
             try {
                 let f = await compressImage(file, 800, 800, 0.8);
-                const res = await uploadToImgBBWithProgress(f, (pct) => {
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${pct}%`;
-                });
-                if (res.success) {
-                    textInput.value = res.data.url;
-                    previewImg.src = antiBlokir(res.data.url);
-                    previewImg.style.display = 'block';
+                let finalUrl = "";
+                try {
+                    const res = await uploadToImgBBWithProgress(f, (pct) => {
+                        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${pct}%`;
+                    });
+                    if (res.success) {
+                        finalUrl = res.data.url;
+                    } else {
+                        throw new Error("Upload failed on server");
+                    }
+                } catch (uploadErr) {
+                    console.warn("ImgBB upload failed, falling back to Base64:", uploadErr);
+                    finalUrl = await fileToBase64(f);
                 }
+                textInput.value = finalUrl;
+                previewImg.src = antiBlokir(finalUrl);
+                previewImg.style.display = 'block';
             } catch (e) { window.showSweetAlert("Gagal upload QRIS.", "error"); console.log(e); }
             btn.innerHTML = '<i class="fas fa-upload"></i> Upload';
             btn.disabled = false;
@@ -257,6 +566,551 @@
                 <textarea class="prod-desc" placeholder="Deskripsi komponen PC..." style="width:100%; ${inputStyle} min-height:80px; resize:vertical;">${desc}</textarea>
             </div>`;
             w.insertAdjacentHTML('beforeend', html);
+        };
+
+        // --- MANAJEMEN KOMPONEN RAKIT PC CMS ---
+        window.currentRakitCategory = 'cpu';
+        window.rakitComponents = null;
+        window.rakitCatalogLoaded = false;
+
+        function applyMarkupMath(price, pct, round10k) {
+            if (!price || price <= 0) return 0;
+            let res = price * (1 + pct / 100);
+            if (round10k) {
+                return Math.round(res / 10000) * 10000;
+            }
+            return Math.round(res / 1000) * 1000;
+        }
+
+        function getRakitCategoryItems(category) {
+            if (Array.isArray(category?.items)) return category.items;
+            return Array.isArray(category) ? category : [];
+        }
+
+        function isRakitMonitor(item) {
+            return /^mon_/i.test(item?.id || "") || /\bmonitor\b|\bdisplay\b/i.test(item?.nama || "");
+        }
+
+        const DEFAULT_PC_BUILDER_DISPLAY_SETTINGS = {
+            monitor: { visible: true, label: "Monitor", order: 1 },
+            aksesori: { visible: true, label: "Aksesori (bisa pilih lebih dari satu)", order: 2 }
+        };
+        let pcBuilderDisplaySettingsLoaded = false;
+
+        function normalizePcBuilderDisplaySettings(settings) {
+            const normalized = {};
+            Object.entries(DEFAULT_PC_BUILDER_DISPLAY_SETTINGS).forEach(([category, defaults]) => {
+                const value = settings?.[category] || {};
+                const label = typeof value.label === "string" ? value.label.trim().slice(0, 40) : "";
+                normalized[category] = {
+                    visible: typeof value.visible === "boolean" ? value.visible : defaults.visible,
+                    label: label || defaults.label,
+                    order: Number(value.order) === 1 || Number(value.order) === 2
+                        ? Number(value.order)
+                        : defaults.order
+                };
+            });
+            return normalized;
+        }
+
+        window.loadPcBuilderDisplaySettings = async () => {
+            const status = document.getElementById("pcBuilderDisplayStatus");
+            const saveButton = document.getElementById("btnSavePcBuilderDisplay");
+            pcBuilderDisplaySettingsLoaded = false;
+            if (saveButton) saveButton.disabled = true;
+
+            try {
+                const snapshot = await get(ref(db, "pengaturan_toko/pc_builder_display"));
+                const settings = normalizePcBuilderDisplaySettings(snapshot.exists() ? snapshot.val() : null);
+                document.getElementById("pcBuilderShowMonitor").checked = settings.monitor.visible;
+                document.getElementById("pcBuilderMonitorLabel").value = settings.monitor.label;
+                document.getElementById("pcBuilderMonitorOrder").value = String(settings.monitor.order);
+                document.getElementById("pcBuilderShowAccessories").checked = settings.aksesori.visible;
+                document.getElementById("pcBuilderAccessoriesLabel").value = settings.aksesori.label;
+                document.getElementById("pcBuilderAccessoriesOrder").value = String(settings.aksesori.order);
+                pcBuilderDisplaySettingsLoaded = true;
+                if (saveButton) saveButton.disabled = false;
+                if (status) status.hidden = true;
+            } catch (err) {
+                console.error("Gagal memuat pengaturan tampilan simulasi:", err);
+                if (status) {
+                    status.innerText = "Pengaturan tampilan gagal dimuat. Periksa izin baca Firebase pada /pengaturan_toko.";
+                    status.hidden = false;
+                }
+            }
+        };
+
+        window.savePcBuilderDisplaySettings = async () => {
+            if (!pcBuilderDisplaySettingsLoaded) return;
+
+            const status = document.getElementById("pcBuilderDisplayStatus");
+            const saveButton = document.getElementById("btnSavePcBuilderDisplay");
+            const monitorLabel = document.getElementById("pcBuilderMonitorLabel").value.trim();
+            const accessoriesLabel = document.getElementById("pcBuilderAccessoriesLabel").value.trim();
+            if (!monitorLabel || !accessoriesLabel) {
+                if (status) {
+                    status.innerText = "Nama kategori Monitor dan Aksesori harus diisi.";
+                    status.hidden = false;
+                }
+                return;
+            }
+            const monitorOrder = Number(document.getElementById("pcBuilderMonitorOrder").value) === 2 ? 2 : 1;
+            const accessoriesOrder = Number(document.getElementById("pcBuilderAccessoriesOrder").value) === 2 ? 2 : 1;
+            const bothCategoriesVisible = document.getElementById("pcBuilderShowMonitor").checked
+                && document.getElementById("pcBuilderShowAccessories").checked;
+            if (bothCategoriesVisible && monitorOrder === accessoriesOrder) {
+                if (status) {
+                    status.innerText = "Pilih urutan yang berbeda agar posisi Monitor dan Aksesori tidak sama.";
+                    status.hidden = false;
+                }
+                return;
+            }
+
+            const settings = {
+                monitor: {
+                    visible: document.getElementById("pcBuilderShowMonitor").checked,
+                    label: monitorLabel.slice(0, 40),
+                    order: monitorOrder
+                },
+                aksesori: {
+                    visible: document.getElementById("pcBuilderShowAccessories").checked,
+                    label: accessoriesLabel.slice(0, 40),
+                    order: accessoriesOrder
+                }
+            };
+
+            if (saveButton) saveButton.disabled = true;
+            if (status) {
+                status.innerText = "Menyimpan pengaturan tampilan...";
+                status.hidden = false;
+            }
+
+            try {
+                await set(ref(db, "pengaturan_toko/pc_builder_display"), settings);
+                pcBuilderDisplaySettingsLoaded = true;
+                if (status) status.innerText = "Tampilan menu berhasil disimpan. Muat ulang halaman simulasi untuk melihat perubahan.";
+            } catch (err) {
+                console.error("Gagal menyimpan pengaturan tampilan simulasi:", err);
+                if (status) status.innerText = "Pengaturan gagal disimpan. Periksa izin tulis Firebase untuk /pengaturan_toko.";
+            } finally {
+                if (saveButton) saveButton.disabled = false;
+            }
+        };
+
+        window.loadRakitPcDataAdmin = async () => {
+            await window.loadPcBuilderDisplaySettings();
+            const status = document.getElementById('rakitCatalogLoadStatus');
+            const saveButton = document.getElementById('btnSaveRakitComponents');
+            window.rakitCatalogLoaded = false;
+            if (status) {
+                status.hidden = false;
+                status.innerText = 'Memuat katalog komponen dari Firebase...';
+            }
+            if (saveButton) saveButton.disabled = true;
+
+            try {
+                const snapshot = await get(ref(db, 'komponen_rakit'));
+                if (snapshot.exists()) {
+                    window.rakitComponents = snapshot.val();
+                    const oldAccessoryCategory = window.rakitComponents.aksesori;
+                    const oldAccessoryItems = getRakitCategoryItems(oldAccessoryCategory);
+                    const monitorCategory = window.rakitComponents.monitor;
+                    const existingMonitorItems = getRakitCategoryItems(monitorCategory);
+                    const movedMonitorItems = oldAccessoryItems.filter(isRakitMonitor);
+                    const monitorItems = [...existingMonitorItems];
+                    movedMonitorItems.forEach(item => {
+                        if (!monitorItems.some(existing => existing.id === item.id)) monitorItems.push(item);
+                    });
+                    const monitorPlaceholder = DEFAULT_COMPONENTS.monitor.items[0];
+
+                    window.rakitComponents.monitor = {
+                        ...DEFAULT_COMPONENTS.monitor,
+                        ...(monitorCategory && !Array.isArray(monitorCategory) ? monitorCategory : {}),
+                        items: monitorItems.some(item => item.id === monitorPlaceholder.id)
+                            ? monitorItems
+                            : [monitorPlaceholder, ...monitorItems]
+                    };
+                    window.rakitComponents.aksesori = {
+                        ...DEFAULT_COMPONENTS.aksesori,
+                        ...(oldAccessoryCategory && !Array.isArray(oldAccessoryCategory) ? oldAccessoryCategory : {}),
+                        items: oldAccessoryItems.filter(item => !isRakitMonitor(item) && item.id !== "aks_0")
+                    };
+                } else {
+                    window.rakitComponents = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
+                }
+
+                window.rakitCatalogLoaded = true;
+                if (saveButton) saveButton.disabled = false;
+                if (status) status.hidden = true;
+            } catch (err) {
+                console.error("Gagal load komponen_rakit admin:", err);
+                window.rakitComponents = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
+                if (status) {
+                    status.innerText = 'Katalog gagal dimuat dari Firebase. Data default hanya pratinjau; simpan komponen dinonaktifkan agar katalog tersimpan tidak tertimpa. Periksa izin RTDB untuk /komponen_rakit.';
+                }
+            }
+
+            if (window.rakitCatalogLoaded) {
+                try {
+                    const sheetSnap = await get(ref(db, 'pengaturan_toko/sheet_settings'));
+                    if (sheetSnap.exists()) {
+                        const s = sheetSnap.val();
+                        if (s.sheetUrl && document.getElementById('rakitSheetUrl')) document.getElementById('rakitSheetUrl').value = s.sheetUrl;
+                        if (s.markupNewPct !== undefined && document.getElementById('markupNewPct')) document.getElementById('markupNewPct').value = s.markupNewPct;
+                        if (s.markupSecondPct !== undefined && document.getElementById('markupSecondPct')) document.getElementById('markupSecondPct').value = s.markupSecondPct;
+                        if (s.roundTo10k !== undefined && document.getElementById('roundTo10kCheck')) document.getElementById('roundTo10kCheck').checked = s.roundTo10k;
+                        if (s.lastSyncTime && document.getElementById('sheetSyncStatus')) document.getElementById('sheetSyncStatus').innerText = `Terakhir sync: ${s.lastSyncTime}`;
+                    }
+                } catch (err) {
+                    console.error("Gagal load pengaturan Google Sheets dan markup:", err);
+                    if (status) {
+                        status.hidden = false;
+                        status.innerText = 'Katalog berhasil dimuat, tetapi pengaturan Sheet/markup gagal dimuat. Periksa izin RTDB untuk /pengaturan_toko/sheet_settings.';
+                    }
+                }
+            }
+            window.renderRakitCategory(window.currentRakitCategory);
+        };
+
+        window.filterRakitCategory = (catKey) => {
+            window.collectCurrentRakitCategoryInputs();
+            window.currentRakitCategory = catKey;
+            window.renderRakitCategory(catKey);
+        };
+
+        window.collectCurrentRakitCategoryInputs = () => {
+            if (!window.rakitComponents || !window.rakitComponents[window.currentRakitCategory]) return;
+            const items = [];
+            document.querySelectorAll('#rakitPcWrapper .dynamic-item').forEach((el, index) => {
+                const nama = el.querySelector('.rakit-nama').value.trim();
+                const hargaNew = Number(el.querySelector('.rakit-harga-new').value) || 0;
+                const hargaSecond = Number(el.querySelector('.rakit-harga-second').value) || 0;
+                const wattage = Number(el.querySelector('.rakit-wattage').value) || 0;
+                const socket = el.querySelector('.rakit-socket')?.value.trim() || '';
+                const id = el.dataset.id || `${window.currentRakitCategory}_${index}`;
+                if (nama) {
+                    items.push({ id, nama, hargaNew, hargaSecond, wattage, socket });
+                }
+            });
+            window.rakitComponents[window.currentRakitCategory].items = items;
+        };
+
+        window.renderRakitCategory = (catKey) => {
+            const w = document.getElementById('rakitPcWrapper');
+            if (!w || !window.rakitComponents) return;
+            w.innerHTML = '';
+            
+            const cat = window.rakitComponents[catKey] || DEFAULT_COMPONENTS[catKey];
+            if (!cat || !cat.items) return;
+
+            cat.items.forEach(item => {
+                window.addRakitItemUI(item.nama, item.hargaNew, item.hargaSecond, item.wattage || 0, item.socket || '', item.id);
+            });
+        };
+
+        window.addRakitItemUI = (nama = '', hargaNew = 0, hargaSecond = 0, wattage = 0, socket = '', id = '') => {
+            const w = document.getElementById('rakitPcWrapper');
+            if (!w) return;
+            const itemId = id || `${window.currentRakitCategory}_${Date.now()}`;
+            const inputStyle = `padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; background:var(--input-bg, var(--bg-secondary)); color:var(--text-color); font-family:inherit; font-size:0.9em; box-sizing:border-box;`;
+            
+            const html = `
+            <div class="dynamic-item" data-id="${itemId}" style="margin-bottom:12px; padding:15px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary, rgba(255,255,255,0.03)); position:relative;">
+                <button type="button" onclick="this.closest('.dynamic-item').remove()" class="btn-remove-item" title="Hapus Komponen" style="position:absolute; right:10px; top:10px; background:rgba(239,68,68,0.2); color:#ef4444; border:none; border-radius:4px; width:26px; height:26px; font-weight:bold; cursor:pointer;">×</button>
+                <div style="margin-bottom:8px; padding-right:30px;">
+                    <label style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Nama Komponen</label>
+                    <input type="text" class="rakit-nama" placeholder="Contoh: Intel Core i5-12400F" value="${nama}" style="width:100%; ${inputStyle}">
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+                    <div>
+                        <label style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:#10b981; display:block; margin-bottom:4px;">Harga Baru (Rp)</label>
+                        <input type="number" class="rakit-harga-new" placeholder="0 = Tidak Ada" value="${hargaNew}" style="width:100%; ${inputStyle}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:#3b82f6; display:block; margin-bottom:4px;">Harga Second (Rp)</label>
+                        <input type="number" class="rakit-harga-second" placeholder="0 = Tidak Ada" value="${hargaSecond}" style="width:100%; ${inputStyle}">
+                    </div>
+                    <div>
+                        <label style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:#f59e0b; display:block; margin-bottom:4px;">Daya (W) / Socket</label>
+                        <div style="display:flex; gap:6px;">
+                            <input type="number" class="rakit-wattage" placeholder="Watt" value="${wattage}" style="width:50%; ${inputStyle}">
+                            <input type="text" class="rakit-socket" placeholder="LGA/DDR" value="${socket}" style="width:50%; ${inputStyle}">
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            w.insertAdjacentHTML('beforeend', html);
+        };
+
+        window.saveRakitPcSettings = async (showAlert = true, collectInputs = true) => {
+            if (!window.rakitCatalogLoaded) {
+                const message = "Katalog belum berhasil dimuat dari Firebase. Komponen tidak disimpan agar data yang ada tidak tertimpa. Periksa izin baca /komponen_rakit, lalu muat ulang dashboard.";
+                if (showAlert) {
+                    showModal(message, "info");
+                    return;
+                }
+                throw new Error(message);
+            }
+            if (collectInputs) window.collectCurrentRakitCategoryInputs();
+            if (!window.rakitComponents) return;
+            try {
+                await set(ref(db, 'komponen_rakit'), window.rakitComponents);
+                
+                // Save sheet & markup fields
+                const sheetSettings = {
+                    sheetUrl: document.getElementById('rakitSheetUrl')?.value.trim() || '',
+                    markupNewPct: Number(document.getElementById('markupNewPct')?.value) || 0,
+                    markupSecondPct: Number(document.getElementById('markupSecondPct')?.value) || 0,
+                    roundTo10k: document.getElementById('roundTo10kCheck')?.checked ?? true
+                };
+                await set(ref(db, 'pengaturan_toko/sheet_settings'), sheetSettings);
+
+                if (showAlert) showModal("Daftar komponen rakit PC berhasil diperbarui!", "info");
+            } catch (err) {
+                console.error("Gagal simpan komponen rakit:", err);
+                if (showAlert) showModal(`Gagal menyimpan komponen rakit: ${String(err?.message || err)}`, "info");
+                else throw err;
+            }
+        };
+
+        window.applyMarkupToCurrentData = async () => {
+            window.collectCurrentRakitCategoryInputs();
+            if (!window.rakitComponents) return;
+
+            const markupNew = Number(document.getElementById('markupNewPct')?.value) || 0;
+            const markupSecond = Number(document.getElementById('markupSecondPct')?.value) || 0;
+            const round10k = document.getElementById('roundTo10kCheck')?.checked ?? true;
+
+            if (!confirm(`Terapkan kenaikan markup +${markupNew}% (Part Baru) dan +${markupSecond}% (Part Second) ke seluruh komponen saat ini?`)) {
+                return;
+            }
+
+            Object.keys(window.rakitComponents).forEach(cat => {
+                const items = window.rakitComponents[cat].items || window.rakitComponents[cat];
+                if (Array.isArray(items)) {
+                    items.forEach(item => {
+                        if (item.hargaNew > 0) item.hargaNew = applyMarkupMath(item.hargaNew, markupNew, round10k);
+                        if (item.hargaSecond > 0) item.hargaSecond = applyMarkupMath(item.hargaSecond, markupSecond, round10k);
+                    });
+                }
+            });
+
+            try {
+                await window.saveRakitPcSettings(false, false);
+                window.renderRakitCategory(window.currentRakitCategory);
+                showModal(`Berhasil menerapkan markup (+${markupNew}% Baru, +${markupSecond}% Second) ke seluruh komponen!`, "info");
+            } catch (err) {
+                showModal(`Markup gagal disimpan: ${err.message}`, "info");
+            }
+        };
+
+        window.downloadRakitCsvTemplate = () => {
+            let csv = "Kategori,ID,Nama Komponen,Harga Baru,Harga Second,Watt,Socket\n";
+            const data = window.rakitComponents || DEFAULT_COMPONENTS;
+            Object.keys(data).forEach(cat => {
+                const items = data[cat].items || data[cat];
+                if (Array.isArray(items)) {
+                    items.forEach(item => {
+                        if (item.hargaNew > 0 || item.hargaSecond > 0) {
+                            const cleanName = `"${(item.nama || '').replace(/"/g, '""')}"`;
+                            const cleanSocket = `"${(item.socket || item.ramType || '').replace(/"/g, '""')}"`;
+                            csv += `${cat},${item.id || ''},${cleanName},${item.hargaNew || 0},${item.hargaSecond || 0},${item.wattage || 0},${cleanSocket}\n`;
+                        }
+                    });
+                }
+            });
+
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "template_komponen_kemalcomputer.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        function parseCSVToRows(text) {
+            const rows = [];
+            let currentRow = [];
+            let currentCell = '';
+            let insideQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const nextChar = text[i + 1];
+
+                if (char === '"') {
+                    if (insideQuotes && nextChar === '"') {
+                        currentCell += '"';
+                        i++;
+                    } else {
+                        insideQuotes = !insideQuotes;
+                    }
+                } else if (char === ',' && !insideQuotes) {
+                    currentRow.push(currentCell.trim());
+                    currentCell = '';
+                } else if ((char === '\r' || char === '\n') && !insideQuotes) {
+                    if (char === '\r' && nextChar === '\n') i++;
+                    currentRow.push(currentCell.trim());
+                    if (currentRow.length > 1 || (currentRow.length === 1 && currentRow[0] !== '')) {
+                        rows.push(currentRow);
+                    }
+                    currentRow = [];
+                    currentCell = '';
+                } else {
+                    currentCell += char;
+                }
+            }
+            if (currentCell || currentRow.length > 0) {
+                currentRow.push(currentCell.trim());
+                if (currentRow.length > 1 || (currentRow.length === 1 && currentRow[0] !== '')) {
+                    rows.push(currentRow);
+                }
+            }
+            return rows;
+        }
+
+        window.syncRakitFromGoogleSheets = async () => {
+            const urlInput = document.getElementById('rakitSheetUrl');
+            const rawUrl = urlInput?.value.trim() || '';
+            if (!rawUrl) {
+                showModal("Silakan tempel (paste) URL Google Sheets Anda terlebih dahulu.", "info");
+                return;
+            }
+
+            const matchId = rawUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+            if (!matchId || !matchId[1]) {
+                showModal("URL Google Sheets tidak valid. Pastikan link memiliki format: https://docs.google.com/spreadsheets/d/.../edit", "info");
+                return;
+            }
+            const sheetId = matchId[1];
+            const matchGid = rawUrl.match(/[#&?]gid=([0-9]+)/);
+            const gid = matchGid ? matchGid[1] : '0';
+
+            const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+
+            const btnSync = document.getElementById('btnSyncSheet');
+            const originalText = btnSync.innerHTML;
+            btnSync.disabled = true;
+            btnSync.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengunduh data Sheet...';
+
+            try {
+                const response = await fetch(csvUrl);
+                if (!response.ok) {
+                    throw new Error("Gagal mengambil data. Pastikan Google Sheet telah dibagikan dengan akses: 'Siapa saja yang memiliki link dapat melihat' (Anyone with the link can view)");
+                }
+                const csvText = await response.text();
+                
+                let rows = parseCSVToRows(csvText);
+                if (rows.length > 1 && rows.every(row => row.length === 1) && rows.some(row => row[0].includes(","))) {
+                    rows = parseCSVToRows(rows.map(row => row[0]).join("\n"));
+                }
+                if (rows.length < 2) {
+                    throw new Error("Tabel Google Sheet kosong atau tidak memiliki baris data.");
+                }
+                if (rows[0].length < 5) {
+                    throw new Error("Google Sheets terbaca sebagai satu kolom. Pastikan header dan data terpisah ke kolom Kategori, ID, Nama Komponen, Harga Baru, dan Harga Second.");
+                }
+
+                const markupNew = Number(document.getElementById('markupNewPct')?.value) || 0;
+                const markupSecond = Number(document.getElementById('markupSecondPct')?.value) || 0;
+                const round10k = document.getElementById('roundTo10kCheck')?.checked ?? true;
+
+                const newCatalog = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
+                Object.keys(newCatalog).forEach(cat => {
+                    const placeholder = newCatalog[cat].items[0] || { id: `${cat}_0`, nama: `-- Pilih ${newCatalog[cat].categoryName} --`, hargaNew: 0, hargaSecond: 0 };
+                    newCatalog[cat].items = cat === 'aksesori' ? [] : [placeholder];
+                });
+
+                let parsedCount = 0;
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (!row || row.length < 3) continue;
+
+                    let catKey = (row[0] || '').trim().toLowerCase();
+                    if (catKey === 'processor' || catKey === 'prosesor') catKey = 'cpu';
+                    if (catKey === 'motherboard' || catKey === 'mainboard') catKey = 'mobo';
+                    if (catKey === 'memory' || catKey === 'memori') catKey = 'ram';
+                    if (catKey === 'gpu' || catKey === 'graphic' || catKey === 'vga card') catKey = 'vga';
+                    if (catKey === 'harddisk' || catKey === 'hdd' || catKey === 'storage tambahan') catKey = 'extraStorage';
+                    if (catKey === 'powersupply' || catKey === 'power supply') catKey = 'psu';
+                    if (catKey === 'case') catKey = 'casing';
+                    if (catKey === 'pendingin' || catKey === 'fan') catKey = 'cooler';
+                    if (catKey === 'aksesoris' || catKey === 'accessories') catKey = 'aksesori';
+                    if (catKey === 'extrastorage') catKey = 'extraStorage';
+
+                    const id = (row[1] || '').trim() || `${catKey}_${i}`;
+                    const nama = (row[2] || '').trim();
+                    if (!nama) continue;
+                    if (!newCatalog[catKey]) {
+                        throw new Error(`Kategori "${row[0]}" tidak dikenali pada baris ${i + 1}. Periksa nama kategori di Google Sheets.`);
+                    }
+                    const targetCategory = catKey === "aksesori" && isRakitMonitor({ id, nama })
+                        ? "monitor"
+                        : catKey;
+
+                    let rawHargaNew = Number(String(row[3] || '').replace(/[^0-9]/g, '')) || 0;
+                    let rawHargaSecond = Number(String(row[4] || '').replace(/[^0-9]/g, '')) || 0;
+                    const wattage = Number(String(row[5] || '').replace(/[^0-9]/g, '')) || 0;
+                    const socket = (row[6] || '').trim();
+
+                    if (rawHargaNew > 0 && markupNew > 0) rawHargaNew = applyMarkupMath(rawHargaNew, markupNew, round10k);
+                    if (rawHargaSecond > 0 && markupSecond > 0) rawHargaSecond = applyMarkupMath(rawHargaSecond, markupSecond, round10k);
+
+                    newCatalog[targetCategory].items.push({
+                        id,
+                        nama,
+                        hargaNew: rawHargaNew,
+                        hargaSecond: rawHargaSecond,
+                        wattage,
+                        socket
+                    });
+                    parsedCount++;
+                }
+
+                if (parsedCount === 0) {
+                    throw new Error("Tidak ada data komponen yang cocok dengan kolom format (Kategori, ID, Nama, Harga Baru, Harga Second). Silakan cek kembali template.");
+                }
+
+                await set(ref(db, 'komponen_rakit'), newCatalog);
+                window.rakitComponents = newCatalog;
+
+                const syncTimeStr = new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date());
+                const sheetSettings = {
+                    sheetUrl: rawUrl,
+                    markupNewPct: markupNew,
+                    markupSecondPct: markupSecond,
+                    roundTo10k: round10k,
+                    lastSyncTime: syncTimeStr
+                };
+                await set(ref(db, 'pengaturan_toko/sheet_settings'), sheetSettings);
+
+                const statusEl = document.getElementById('sheetSyncStatus');
+                if (statusEl) statusEl.innerText = `Terakhir sync: ${syncTimeStr} (${parsedCount} part)`;
+
+                window.renderRakitCategory(window.currentRakitCategory);
+                showModal(`Berhasil! ${parsedCount} komponen dari Google Sheets telah disinkronkan ke database (termasuk markup).`, "info");
+            } catch (err) {
+                console.error("Gagal sinkron Google Sheets:", err);
+                showModal(`Sinkronisasi Gagal: ${err.message}`, "info");
+            } finally {
+                btnSync.disabled = false;
+                btnSync.innerHTML = originalText;
+            }
+        };
+
+        window.initDefaultComponentsInFirebase = async () => {
+            if (!confirm("Muat ulang seluruh komponen default rekomendasi pasar Indonesia? Perubahan manual Anda pada komponen akan digantikan katalog default.")) return;
+            try {
+                window.rakitComponents = JSON.parse(JSON.stringify(DEFAULT_COMPONENTS));
+                await set(ref(db, 'komponen_rakit'), window.rakitComponents);
+                window.renderRakitCategory(window.currentRakitCategory);
+                showModal("Katalog komponen default berhasil dimuat ke database!", "info");
+            } catch (err) {
+                console.error("Gagal memuat default komponen:", err);
+                showModal("Gagal memuat default komponen.", "info");
+            }
         };
 
         document.getElementById('setSliderFile').addEventListener('change', function (e) { if (e.target.files.length === 0) return; window.pendingSliders = window.pendingSliders.concat(Array.from(e.target.files)); renderSliderPreviews(); this.value = ''; });
@@ -393,6 +1247,9 @@
                         addKatalogUI('PC Admin Core i3', '3500000', '', 'Spesifikasi: Core i3 gen 4 Ram 4 Gb...');
                         addKatalogUI('PC Kantor Editing', '7500000', '', 'Spesifikasi: Core i3 gen 10 Ram 8 Gb SSD...');
                     }
+                    if (window.loadRakitPcDataAdmin) {
+                        window.loadRakitPcDataAdmin();
+                    }
                 }
             } catch (error) { console.error("Gagal memuat pengaturan:", error); }
         }
@@ -425,10 +1282,20 @@
                 const btnSave = document.getElementById('btnSaveSettings'); btnSave.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Upload Logo (0%)..."; btnSave.disabled = true;
                 try {
                     let f = await compressImage(file, 800, 800, 0.8);
-                    const res = await uploadToImgBBWithProgress(f, (pct) => {
-                        btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Upload Logo (${pct}%)...`;
-                    });
-                    if (res.success) document.getElementById('setLogoUrl').value = res.data.url;
+                    try {
+                        const res = await uploadToImgBBWithProgress(f, (pct) => {
+                            btnSave.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Upload Logo (${pct}%)...`;
+                        });
+                        if (res.success) {
+                            document.getElementById('setLogoUrl').value = res.data.url;
+                        } else {
+                            throw new Error("Logo upload failed");
+                        }
+                    } catch (uploadErr) {
+                        console.warn("Logo upload to ImgBB failed, falling back to Base64:", uploadErr);
+                        const base64Url = await fileToBase64(f);
+                        document.getElementById('setLogoUrl').value = base64Url;
+                    }
                 } catch (err) { console.log(err); }
                 btnSave.innerHTML = "<i class='fas fa-save'></i> Simpan Pengaturan CMS"; btnSave.disabled = false;
             }
@@ -443,10 +1310,20 @@
             for (let i = 0; i < window.pendingSliders.length; i++) {
                 try {
                     let f = await compressImage(window.pendingSliders[i], 1200, 800, 0.8);
-                    const res = await uploadToImgBBWithProgress(f, (pct) => {
-                        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Slider ${i + 1}/${window.pendingSliders.length} (${pct}%)...`;
-                    });
-                    if (res.success) finalSliders.push(res.data.url);
+                    try {
+                        const res = await uploadToImgBBWithProgress(f, (pct) => {
+                            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Slider ${i + 1}/${window.pendingSliders.length} (${pct}%)...`;
+                        });
+                        if (res.success) {
+                            finalSliders.push(res.data.url);
+                        } else {
+                            throw new Error("Slider upload failed");
+                        }
+                    } catch (uploadErr) {
+                        console.warn("Slider upload to ImgBB failed, falling back to Base64:", uploadErr);
+                        const base64Url = await fileToBase64(f);
+                        finalSliders.push(base64Url);
+                    }
                 } catch (e) { console.log(e); }
             }
 
@@ -510,7 +1387,10 @@
             try {
                 await set(ref(db, 'pengaturan_toko'), dataToSave);
                 showModal("Pengaturan CMS Berhasil Disimpan!", "info", () => { loadWebsiteSettings(); });
-            } catch (err) { showModal("Gagal menyimpan pengaturan.", "info"); }
+            } catch (err) {
+                console.error("Gagal menyimpan pengaturan CMS:", err);
+                showModal(`Gagal menyimpan pengaturan CMS: ${String(err?.message || err)}`, "info");
+            }
             btn.innerHTML = "<i class='fas fa-save'></i> Simpan Pengaturan CMS"; btn.disabled = false;
         });
 
@@ -558,7 +1438,9 @@
                         }
 
                         const row = tableBody.insertRow(); row.setAttribute('data-id', code); row.setAttribute('data-status', s.status);
-                        row.innerHTML = `<td>${escapeHTML(s.nama)}</td><td>${dText}</td><td>${escapeHTML(s.kerusakan)}</td><td>${escapeHTML(s.nomorHp) || '-'}</td><td class="biaya-text">${formatRupiah(s.biaya)}</td><td class="biaya-text" style="color: var(--warning-color);">${formatRupiah(s.modal_komponen || 0)}</td><td class="status-column"><span class="status-badge ${bClass}">${s.status}</span>${garansiBadge}</td><td>${payBadge}</td><td>${escapeHTML(s.keterangan) || '-'}</td><td><strong style="color:var(--primary-color)">${escapeHTML(code)}</strong></td><td class="action-buttons action-column"><button class="icon-btn print-button" onclick="printInvoice('${code}')"><i class="fas fa-print"></i></button><button class="icon-btn whatsapp-button" onclick="sendWhatsappNotification('${code}')"><i class="fab fa-whatsapp"></i></button><button class="icon-btn edit-button" onclick="openEditModal('${code}')"><i class="fas fa-edit"></i></button><button class="icon-btn delete-button" onclick="deleteService('${code}')"><i class="fas fa-trash"></i></button></td>`;
+                        row.dataset.timestamp = s.timestamp || '';
+                        row.dataset.completedAt = s.completedAt || '';
+                        row.innerHTML = `<td data-label="Pelanggan"><strong>${escapeHTML(s.nama)}</strong></td><td data-label="Perangkat">${dText}</td><td data-label="Keluhan">${escapeHTML(s.kerusakan)}</td><td data-label="No. HP">${escapeHTML(s.nomorHp) || '-'}</td><td data-label="Biaya" class="biaya-text">${formatRupiah(s.biaya)}</td><td data-label="Modal Komponen" class="biaya-text cost-column" style="color: var(--warning-color);">${formatRupiah(s.modal_komponen || 0)}</td><td data-label="Status" class="status-column"><span class="status-badge ${bClass}">${s.status}</span>${garansiBadge}</td><td data-label="Pembayaran">${payBadge}</td><td data-label="Keterangan">${escapeHTML(s.keterangan) || '-'}</td><td data-label="Invoice"><strong style="color:var(--primary-color)">${escapeHTML(code)}</strong></td><td data-label="Aksi" class="action-buttons action-column"><button class="icon-btn print-button" title="Cetak invoice" aria-label="Cetak invoice" onclick="printInvoice('${code}')"><i class="fas fa-print"></i></button><button class="icon-btn whatsapp-button" title="Hubungi via WhatsApp" aria-label="Hubungi via WhatsApp" onclick="sendWhatsappNotification('${code}')"><i class="fab fa-whatsapp"></i></button><button class="icon-btn edit-button" title="Edit servis" aria-label="Edit servis" onclick="openEditModal('${code}')"><i class="fas fa-edit"></i></button><button class="icon-btn delete-button" title="Hapus servis" aria-label="Hapus servis" onclick="deleteService('${code}')"><i class="fas fa-trash"></i></button></td>`;
 
                         const hp = s.nomorHp ? s.nomorHp.trim() : 'Tanpa Nomor';
                         if (!customersData[hp]) customersData[hp] = { nama: s.nama, hp: hp, totSrv: 0, totB: 0, riwayat: [] };
@@ -571,6 +1453,35 @@
                         rBody.innerHTML = `<td><strong>${escapeHTML(c.nama)}</strong></td><td>${escapeHTML(c.hp)}</td><td style="text-align: center;"><span class="status-badge" style="background-color:var(--info-color)">${c.totSrv} Kali</span></td><td class="biaya-text">${formatRupiah(c.totB)}</td><td style="white-space: normal; min-width: 200px;">${rBadges || '-'}</td><td class="action-column"><button class="btn btn-primary" style="padding: 8px 12px; font-size: 0.85em;" onclick="contactCustomer('${escapeHTML(c.hp)}', '${escapeHTML(c.nama)}')"><i class="fab fa-whatsapp"></i> Chat</button></td>`;
                     }
                 }
+                 const todayKey = localDateKey(new Date());
+                 const overviewCounts = { waiting: 0, process: 0, ready: 0, overdue: 0, unpaid: 0, today: 0, revenue: 0 };
+                 Object.values(servicesData).forEach(service => {
+                     if (service.status === 'Menunggu') overviewCounts.waiting += 1;
+                     if (service.status === 'Proses') overviewCounts.process += 1;
+                     if (service.status === 'Selesai') overviewCounts.ready += 1;
+                     if (service.payment_status !== 'Lunas') overviewCounts.unpaid += 1;
+
+                     const createdAt = parseServiceDate(service.timestamp);
+                     if (createdAt && localDateKey(createdAt) === todayKey) overviewCounts.today += 1;
+                     if ((service.status === 'Menunggu' || service.status === 'Proses') &&
+                         createdAt && (Date.now() - createdAt.getTime()) > 5 * 24 * 60 * 60 * 1000) {
+                         overviewCounts.overdue += 1;
+                     }
+
+                     const completedAt = parseServiceDate(service.completedAt);
+                     if (isCompletedService(service) && completedAt && localDateKey(completedAt) === todayKey) {
+                         overviewCounts.revenue += Number(service.biaya) || 0;
+                     }
+                 });
+                 document.getElementById('overviewWaiting').textContent = overviewCounts.waiting;
+                 document.getElementById('overviewProcess').textContent = overviewCounts.process;
+                 document.getElementById('overviewReady').textContent = overviewCounts.ready;
+                 document.getElementById('overviewOverdue').textContent = overviewCounts.overdue;
+                 document.getElementById('overviewUnpaid').textContent = overviewCounts.unpaid;
+                 document.getElementById('overviewToday').textContent = overviewCounts.today;
+                 document.getElementById('overviewRevenue').textContent = new Intl.NumberFormat('id-ID', {
+                     style: 'currency', currency: 'IDR', maximumFractionDigits: 0
+                 }).format(overviewCounts.revenue);
                  filterTableServices(); filterTableCustomers(); calculateFinance();
                  if (window.applyRoleGating) window.applyRoleGating(window.currentUserRole);
              });
@@ -579,7 +1490,17 @@
         window.loadExpenses = () => { onValue(ref(db, 'pengeluaran'), (snap) => { expensesData = {}; if (snap.exists()) { snap.forEach((c) => { expensesData[c.key] = c.val(); }); } calculateFinance(); }); };
         
         window.inventoryData = {};
-        window.loadInventory = () => { onValue(ref(db, 'inventaris'), (snap) => { window.inventoryData = {}; if (snap.exists()) { snap.forEach((c) => { window.inventoryData[c.key] = c.val(); }); } window.filterTableInventory(); }); };
+        window.loadInventory = () => { onValue(ref(db, 'inventaris'), (snap) => { window.inventoryData = {}; if (snap.exists()) { snap.forEach((c) => { window.inventoryData[c.key] = c.val(); }); } window.filterTableInventory(); refreshTransactionProductOptions(); }); };
+        const refreshTransactionProductOptions = () => {
+            document.querySelectorAll('.transaction-product').forEach((select) => {
+                const selected = select.value;
+                const options = Object.entries(window.inventoryData || {}).map(([id, item]) =>
+                    `<option value="${escapeHTML(id)}">${escapeHTML(item.nama)} (stok: ${Number(item.stok) || 0})</option>`
+                ).join('');
+                select.innerHTML = `<option value="">Pilih barang inventaris</option>${options}`;
+                if (window.inventoryData?.[selected]) select.value = selected;
+            });
+        };
         window.currentInventoryCategory = 'Semua';
         window.filterInventoryByCategory = (cat, el) => {
             window.currentInventoryCategory = cat;
@@ -781,6 +1702,23 @@
             pw.document.close();
         };
 
+        window.printBusinessInvoice = (invoiceId, type) => {
+            const invoice = transactionData[type === 'purchase' ? 'purchases' : 'sales'][invoiceId];
+            if (!invoice) return showModal('Invoice tidak ditemukan.', 'info');
+            const isPurchase = type === 'purchase';
+            const partyLabel = isPurchase ? 'Pemasok' : 'Pelanggan';
+            const partyName = isPurchase ? invoice.pemasok : invoice.pelanggan;
+            const rows = (Array.isArray(invoice.items) ? invoice.items : Object.values(invoice.items || {})).map((item) =>
+                `<tr><td>${escapeHTML(item.nama)}</td><td>${Number(item.jumlah) || 0}</td><td>${formatTransactionCurrency(item.harga)}</td><td>${formatTransactionCurrency(item.subtotal)}</td></tr>`
+            ).join('');
+            const settings = window.tokoSettings || {};
+            const scriptTag = '<scr' + 'ipt> setTimeout(() => window.print(), 500); </scr' + 'ipt>';
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) return showModal('Jendela cetak diblokir browser. Izinkan pop-up untuk mencetak invoice.', 'info');
+            printWindow.document.write(`<!doctype html><html lang="id"><head><meta charset="utf-8"><title>${escapeHTML(invoiceId)}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:30px auto;color:#111}.header{text-align:center;border-bottom:2px solid #111;padding-bottom:16px}.header img{max-width:72px;max-height:72px}.header h1{margin:8px 0}.meta{display:flex;justify-content:space-between;margin:20px 0}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd}th{background:#f3f4f6}.total{text-align:right;font-size:1.2rem;font-weight:bold;margin-top:18px}.note{margin-top:16px}@media print{body{margin:0 auto}}</style></head><body><header class="header"><img src="${escapeHTML(antiBlokir(settings.logoUrl))}" onerror="this.style.display='none'"><h1>${escapeHTML(settings.namaToko || 'Kemal Computer')}</h1><p>${escapeHTML(settings.alamat || '')}</p><p>${escapeHTML(settings.wa || '')}</p></header><div class="meta"><div><strong>Invoice:</strong> ${escapeHTML(invoiceId)}<br><strong>Tanggal:</strong> ${escapeHTML(invoice.tanggal)}</div><div><strong>${partyLabel}:</strong> ${escapeHTML(partyName)}<br><strong>Pembayaran:</strong> ${escapeHTML(invoice.pembayaran || '-')}</div></div><table><thead><tr><th>Barang</th><th>Jumlah</th><th>Harga Satuan</th><th>Subtotal</th></tr></thead><tbody>${rows}</tbody></table><p class="total">Total: ${formatTransactionCurrency(invoice.total)}</p><p class="note">${escapeHTML(invoice.catatan || '')}</p><p style="text-align:center;margin-top:32px">Terima kasih telah bertransaksi.</p>${scriptTag}</body></html>`);
+            printWindow.document.close();
+        };
+
         window.contactCustomer = (hp, nama) => { if (hp === 'Tanpa Nomor') return showModal('Nomor HP tidak tercatat.', 'info'); window.open(`https://wa.me/${hp}?text=${encodeURIComponent(`Halo Kak ${nama},\nTerima kasih sudah mempercayakan servis di ${window.tokoSettings.namaToko}...`)}`, '_blank'); };
 
         // PENGIRIMAN WHATSAPP CUSTOM KEMAL COMPUTER (ULTIMATE FIX EMOTICON)
@@ -859,20 +1797,43 @@
         window.saveEdit = async () => {
             const code = document.getElementById('editKodeService').value, nm = document.getElementById('editNama').value.trim(), dv = document.getElementById('editDevice').value.trim(), kr = document.getElementById('editKerusakan').value.trim(), hp = document.getElementById('editNomorHp').value.trim(), by = document.getElementById('editBiaya').value.trim(), mk = document.getElementById('editModalKomponen').value.trim(), st = document.getElementById('editStatus').value, pst = document.getElementById('editPaymentStatus').value, kt = document.getElementById('editKeterangan').value.trim(), gr = document.getElementById('editGaransi').value, btn = document.getElementById('btnSaveEdit');
             if (!nm || !dv || !kr || !hp || !st) return showModal('Wajib diisi semua!', 'info');
+            
+            // Validasi Nomor HP
+            if (!/^\d+$/.test(hp) || !hp.startsWith('62') || hp.length < 10) {
+                return showModal('Nomor HP tidak valid. Wajib diawali 62, hanya angka, dan minimal 10 digit (Contoh: 62812...).', 'info');
+            }
+
             btn.disabled = true;
             try {
                 let fUrls = [...window.existingPhotos];
                 for (let i = 0; i < window.pendingFiles.length; i++) {
                     try {
                         let f = await compressImage(window.pendingFiles[i], 800, 800, 0.7);
-                        const result = await uploadToImgBBWithProgress(f, (pct) => {
-                            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Foto ${i + 1}/${window.pendingFiles.length} (${pct}%)...`;
-                        });
-                        if (result.success) fUrls.push(result.data.url);
-                    } catch (e) { console.log(e); }
+                        try {
+                            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Foto ${i + 1}/${window.pendingFiles.length} (Uploading)...`;
+                            const result = await uploadToImgBBWithProgress(f, (pct) => {
+                                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Foto ${i + 1}/${window.pendingFiles.length} (${pct}%)...`;
+                            });
+                            if (result.success) {
+                                fUrls.push(result.data.url);
+                            } else {
+                                throw new Error("Upload failed on server");
+                            }
+                        } catch (uploadErr) {
+                            console.warn("ImgBB upload failed, falling back to Base64:", uploadErr);
+                            const base64Url = await fileToBase64(f);
+                            fUrls.push(base64Url);
+                        }
+                    } catch (e) { console.error("Error processing photo:", e); }
                 }
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-                const d = { nama: nm, device: dv, kerusakan: kr, nomorHp: hp, biaya: Number(by) || 0, modal_komponen: Number(mk) || 0, status: st, payment_status: pst, keterangan: kt, timestamp: servicesData[code]?.timestamp || new Date().toISOString() };
+                const existingService = servicesData[code] || {};
+                const wasCompleted = isCompletedService(existingService);
+                const isCompleted = st === 'Selesai' || st === 'Diambil';
+                const completedAt = isCompleted
+                    ? (existingService.completedAt || (!wasCompleted ? new Date().toISOString() : null))
+                    : null;
+                const d = { nama: nm, device: dv, kerusakan: kr, nomorHp: hp, biaya: Number(by) || 0, modal_komponen: Number(mk) || 0, status: st, payment_status: pst, keterangan: kt, timestamp: existingService.timestamp || new Date().toISOString(), completedAt };
                 
                 // Mengelola input garansi
                 if (st === 'Selesai' || st === 'Diambil') {
@@ -906,12 +1867,50 @@
 
         window.filterByTab = (status, el) => {
             currentTabFilter = status;
+            currentServiceQuickFilter = null;
+            currentServicePage = 1;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
             window.filterTableServices();
         };
 
-        window.filterTableServices = () => {
+        window.filterServicesByOverview = (filter) => {
+            currentServiceQuickFilter = filter;
+            currentTabFilter = ['waiting', 'process', 'ready'].includes(filter)
+                ? ({ waiting: 'Menunggu', process: 'Proses', ready: 'Selesai' })[filter]
+                : 'Semua';
+            document.querySelectorAll('#statusTabs .tab-btn').forEach(button => {
+                const isActive = button.getAttribute('onclick')?.includes(`'${currentTabFilter}'`);
+                button.classList.toggle('active', Boolean(isActive));
+            });
+            window.openTab('tab-services', document.getElementById('menu-services'), 'Antrian Servis');
+            window.filterTableServices();
+        };
+
+        const renderServicePagination = (matchCount, pageSize) => {
+            const pagination = document.getElementById('servicePagination');
+            if (!pagination) return;
+            const pageCount = Math.max(1, Math.ceil(matchCount / pageSize));
+            currentServicePage = Math.min(currentServicePage, pageCount);
+            const start = matchCount ? ((currentServicePage - 1) * pageSize) + 1 : 0;
+            const end = Math.min(currentServicePage * pageSize, matchCount);
+
+            pagination.innerHTML = `
+                <span class="pagination-summary">Menampilkan ${start}–${end} dari ${matchCount} servis</span>
+                <div class="pagination-actions">
+                    <button type="button" class="pagination-button" aria-label="Halaman sebelumnya" ${currentServicePage <= 1 ? 'disabled' : ''} onclick="changeServicePage(${currentServicePage - 1})"><i class="fas fa-chevron-left"></i><span>Sebelumnya</span></button>
+                    <span class="pagination-page">Halaman ${currentServicePage} dari ${pageCount}</span>
+                    <button type="button" class="pagination-button" aria-label="Halaman berikutnya" ${currentServicePage >= pageCount ? 'disabled' : ''} onclick="changeServicePage(${currentServicePage + 1})"><span>Berikutnya</span><i class="fas fa-chevron-right"></i></button>
+                </div>`;
+        };
+
+        window.changeServicePage = (page) => {
+            currentServicePage = Math.max(1, page);
+            window.filterTableServices(false);
+        };
+
+        window.filterTableServices = (resetPage = true) => {
+            if (resetPage) currentServicePage = 1;
             const searchInput = document.getElementById('searchInputServices');
             const searchText = searchInput ? searchInput.value.toLowerCase() : '';
             const tbody = document.querySelector('#serviceTable tbody');
@@ -920,27 +1919,60 @@
             const noDataRows = tbody.querySelectorAll('.no-data-row');
             noDataRows.forEach(r => r.remove());
 
-            const rows = tbody.querySelectorAll('tr');
-            let hasVisibleData = false;
-
-            rows.forEach(row => {
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const matchingRows = rows.filter(row => {
                 const status = row.getAttribute('data-status');
                 const matchesStatus = (currentTabFilter === 'Semua' || status === currentTabFilter);
                 const matchesSearch = row.textContent.toLowerCase().includes(searchText);
-
-                if (matchesStatus && matchesSearch) {
-                    row.style.display = '';
-                    hasVisibleData = true;
-                } else {
-                    row.style.display = 'none';
+                const service = servicesData[row.getAttribute('data-id')] || {};
+                const createdAt = parseServiceDate(service.timestamp);
+                const completedAt = parseServiceDate(service.completedAt);
+                let matchesQuickFilter = true;
+                switch (currentServiceQuickFilter) {
+                    case 'overdue':
+                        matchesQuickFilter = (status === 'Menunggu' || status === 'Proses') &&
+                            createdAt && (Date.now() - createdAt.getTime()) > 5 * 24 * 60 * 60 * 1000;
+                        break;
+                    case 'unpaid':
+                        matchesQuickFilter = service.payment_status !== 'Lunas';
+                        break;
+                    case 'today':
+                        matchesQuickFilter = createdAt && localDateKey(createdAt) === localDateKey(new Date());
+                        break;
+                    case 'revenueToday':
+                        matchesQuickFilter = isCompletedService(service) && completedAt &&
+                            localDateKey(completedAt) === localDateKey(new Date());
+                        break;
                 }
+                return matchesStatus && matchesSearch && matchesQuickFilter;
             });
 
-            if (!hasVisibleData && rows.length > 0) {
+            const pageSize = window.matchMedia('(max-width: 768px)').matches ? 5 : 10;
+            const pageCount = Math.max(1, Math.ceil(matchingRows.length / pageSize));
+            currentServicePage = Math.min(currentServicePage, pageCount);
+            const firstRow = (currentServicePage - 1) * pageSize;
+            const visibleRows = new Set(matchingRows.slice(firstRow, firstRow + pageSize));
+            rows.forEach(row => { row.style.display = visibleRows.has(row) ? '' : 'none'; });
+
+            if (matchingRows.length === 0) {
                 const colCount = document.querySelector('#serviceTable thead tr').children.length;
-                tbody.insertAdjacentHTML('beforeend', `<tr class="no-data-row"><td colspan="${colCount}" style="text-align:center; padding:30px; color:var(--text-light);"><i class="fas fa-box-open fa-2x" style="display:block;margin-bottom:10px"></i> Tidak ada data untuk kategori "${currentTabFilter}".</td></tr>`);
+                const emptyMessage = rows.length === 0
+                    ? 'Belum ada antrian servis.'
+                    : `Tidak ada data untuk kategori "${currentTabFilter}".`;
+                tbody.insertAdjacentHTML('beforeend', `<tr class="no-data-row"><td colspan="${colCount}" style="text-align:center; padding:30px; color:var(--text-light);"><i class="fas fa-box-open fa-2x" style="display:block;margin-bottom:10px"></i> ${emptyMessage}</td></tr>`);
             }
+            renderServicePagination(matchingRows.length, pageSize);
         };
+
+        let servicePaginationBreakpoint = window.matchMedia('(max-width: 768px)').matches;
+        window.addEventListener('resize', () => {
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
+            if (isMobile !== servicePaginationBreakpoint) {
+                servicePaginationBreakpoint = isMobile;
+                currentServicePage = 1;
+                window.filterTableServices();
+            }
+        });
 
         window.filterTableCustomers = () => { const t = document.getElementById('searchInputCustomers').value.toLowerCase(), r = document.getElementById('customerTable').getElementsByTagName('tbody')[0].getElementsByTagName('tr'); let f = false, h = false; document.querySelector('#customerTable .no-data-row')?.remove(); for (let i = 0; i < r.length; i++) if (!r[i].classList.contains('no-data-row')) h = true; for (let i = 0; i < r.length; i++) { if (r[i].classList.contains('no-data-row')) continue; if (r[i].textContent.toLowerCase().includes(t)) { r[i].style.display = ""; f = true; } else r[i].style.display = "none"; } if (!f && h) renderNoDataRow(document.getElementById('customerTable').getElementsByTagName('tbody')[0], 'Tidak ditemukan.', 6, true); };
         const renderNoDataRow = (tb, msg, col, isS = false) => { tb.innerHTML += `<tr class="no-data-row"><td colspan="${col}" style="text-align:center; padding:30px; color:${isS ? 'var(--danger-color)' : 'var(--text-light)'};">${isS ? '<i class="fas fa-search"></i>' : '<i class="fas fa-box-open fa-2x" style="display:block;margin-bottom:10px"></i>'} ${msg}</td></tr>`; };
@@ -1013,10 +2045,24 @@
         window.applyRoleGating = (role) => {
             window.currentUserRole = role;
             
-            // 1. Visibilitas Menu Sidebar
+            // 1. Visibilitas Menu Sidebar (Hanya Owner)
             const ownerOnlyElements = document.querySelectorAll('.owner-only');
             ownerOnlyElements.forEach(el => {
                 if (role === 'Owner') {
+                    if (el.tagName === 'BUTTON' || el.classList.contains('menu-list')) {
+                        el.style.setProperty('display', 'flex', 'important');
+                    } else {
+                        el.style.setProperty('display', 'block', 'important');
+                    }
+                } else {
+                    el.style.setProperty('display', 'none', 'important');
+                }
+            });
+
+            // 1b. Visibilitas Menu Sidebar (Owner & Admin)
+            const ownerAdminOnlyElements = document.querySelectorAll('.owner-admin-only');
+            ownerAdminOnlyElements.forEach(el => {
+                if (role === 'Owner' || role === 'Admin') {
                     if (el.tagName === 'BUTTON' || el.classList.contains('menu-list')) {
                         el.style.setProperty('display', 'flex', 'important');
                     } else {

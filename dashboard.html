@@ -26,36 +26,54 @@
 
         <div class="sidebar-category">Operasional</div>
         <div class="menu-list">
-            <button class="menu-item active" onclick="openTab('tab-services', this, 'Antrian Servis')"><i
+            <button class="menu-item active" id="menu-overview" onclick="openTab('tab-overview', this, 'Ringkasan')"><i
+                    class="fas fa-th-large"></i> Ringkasan</button>
+            <button class="menu-item" id="menu-services" onclick="openTab('tab-services', this, 'Antrian Servis')"><i
                     class="fas fa-list-alt"></i> Antrian Servis</button>
             <button class="menu-item" onclick="openTab('tab-customers', this, 'Database Pelanggan')"><i
                     class="fas fa-users"></i> Pelanggan</button>
+            <button class="menu-item" onclick="openTab('tab-finance', this, 'Laporan Keuangan')"><i
+                    class="fas fa-wallet"></i> Keuangan</button>
+        </div>
+
+        <div class="sidebar-category" style="margin-top: 25px;">Stok & Produk</div>
+        <div class="menu-list">
             <button class="menu-item" onclick="openTab('tab-inventory', this, 'Manajemen Inventaris')"><i
                     class="fas fa-boxes"></i> Inventaris</button>
-            <button class="menu-item owner-only" onclick="openTab('tab-finance', this, 'Laporan Keuangan')"
-                style="display: none;"><i class="fas fa-wallet"></i> Keuangan</button>
-            <button class="menu-item owner-only" id="menuUlasanPending"
+            <button class="menu-item" id="menu-purchases" onclick="openTab('tab-purchases', this, 'Invoice Pembelian')"><i
+                    class="fas fa-file-import"></i> Invoice Pembelian</button>
+            <button class="menu-item" id="menu-sales" onclick="openTab('tab-sales', this, 'Invoice Penjualan')"><i
+                    class="fas fa-file-invoice-dollar"></i> Invoice Penjualan</button>
+            <button class="menu-item" id="menu-warranties" onclick="openTab('tab-warranties', this, 'Garansi')"><i
+                    class="fas fa-shield-alt"></i> Garansi</button>
+            <button class="menu-item owner-admin-only" style="display: none;" onclick="openTab('tab-katalog', this, 'Katalog Produk')"><i
+                    class="fas fa-shopping-bag"></i> Katalog Produk</button>
+            <button class="menu-item owner-admin-only" style="display: none;" onclick="openTab('tab-rakit-pc', this, 'Komponen Simulasi Rakit')"><i
+                    class="fas fa-microchip"></i> Komponen Rakit PC</button>
+        </div>
+
+        <div class="sidebar-category owner-admin-only" style="margin-top: 25px; display: none;">Website</div>
+        <div class="menu-list owner-admin-only" style="display: none;">
+            <button class="menu-item" onclick="openTab('tab-identitas', this, 'Identitas & Legalitas')"><i
+                    class="fas fa-store"></i> Profil Toko & Legalitas</button>
+            <button class="menu-item" onclick="openTab('tab-tampilan', this, 'Tampilan Beranda')"><i
+                    class="fas fa-desktop"></i> Tampilan Beranda</button>
+            <button class="menu-item" onclick="openTab('tab-sosmed', this, 'Sosial Media')"><i
+                    class="fas fa-share-alt"></i> Sosial Media</button>
+            <button class="menu-item owner-admin-only" id="menuUlasanPending"
                 onclick="openTab('tab-ulasan-pending', this, 'Ulasan Pending')"
                 style="position: relative; display: none;"><i class="fas fa-star"></i> Ulasan Pending
                 <span id="badgePending"
                     style="display:none; position: absolute; top: 6px; right: 10px; background: #ef4444; color: white; font-size: 0.7rem; font-weight: 700; min-width: 18px; height: 18px; border-radius: 9px; text-align: center; line-height: 18px; padding: 0 4px;">0</span>
             </button>
-            <button class="menu-item owner-only" onclick="openTab('tab-staff', this, 'Manajemen Staf')"
-                style="display: none;"><i class="fas fa-user-shield"></i> Staf Karyawan</button>
         </div>
 
-        <div class="sidebar-category owner-only" style="margin-top: 25px; display: none;">Pengaturan CMS</div>
-        <div class="menu-list owner-only" style="display: none;">
-            <button class="menu-item" onclick="openTab('tab-identitas', this, 'Identitas & Legalitas')"><i
-                    class="fas fa-store"></i> Identitas & Legalitas</button>
-            <button class="menu-item" onclick="openTab('tab-tampilan', this, 'Tampilan Beranda')"><i
-                    class="fas fa-desktop"></i> Tampilan Beranda</button>
-            <button class="menu-item" onclick="openTab('tab-katalog', this, 'Katalog Produk')"><i
-                    class="fas fa-shopping-bag"></i> Katalog Produk</button>
+        <div class="sidebar-category owner-admin-only" style="margin-top: 25px; display: none;">Pengaturan</div>
+        <div class="menu-list owner-admin-only" style="display: none;">
+            <button class="menu-item owner-only" onclick="openTab('tab-staff', this, 'Manajemen Staf')"
+                style="display: none;"><i class="fas fa-user-shield"></i> Staf Karyawan</button>
             <button class="menu-item" onclick="openTab('tab-login-log', this, 'Riwayat Login')"><i
                     class="fas fa-history"></i> Log Akses</button>
-            <button class="menu-item" onclick="openTab('tab-sosmed', this, 'Sosial Media')"><i
-                    class="fas fa-share-alt"></i> Sosial Media</button>
             <button class="menu-item" onclick="openTab('tab-sistem', this, 'Tema & Pembayaran')"><i class="fas fa-cog"></i>
                 Tema & Pembayaran</button>
         </div>
@@ -82,7 +100,72 @@
 
         <div class="content-area">
 
-            <div id="tab-services" class="tab-pane active">
+            <div id="tab-overview" class="tab-pane active">
+                <section class="overview-intro">
+                    <div>
+                        <h2>Ringkasan Operasional</h2>
+                        <p>Pantau kondisi servis dan akses pekerjaan utama dengan cepat.</p>
+                    </div>
+                    <div class="overview-actions">
+                        <button type="button" class="btn" onclick="toggleDashboardCustomization()"><i class="fas fa-sliders-h"></i> Sesuaikan</button>
+                        <a href="admin.html" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Tambah Antrian</a>
+                    </div>
+                </section>
+                <section id="dashboardCustomization" class="settings-card dashboard-customization" style="display: none;">
+                    <h3><i class="fas fa-sliders-h"></i> Sesuaikan Ringkasan</h3>
+                    <p>Pilih bagian yang ingin ditampilkan pada halaman Ringkasan. Pengaturan disimpan untuk akun Anda.</p>
+                    <div class="dashboard-widget-options">
+                        <label><input type="checkbox" data-dashboard-setting="status" checked> Status servis</label>
+                        <label><input type="checkbox" data-dashboard-setting="metrics" checked> Metrik hari ini</label>
+                        <label><input type="checkbox" data-dashboard-setting="quickAction" checked> Akses cepat servis</label>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="saveDashboardPreferences()"><i class="fas fa-save"></i> Simpan Tampilan</button>
+                </section>
+                <section class="overview-grid overview-status-grid" data-dashboard-widget="status" aria-label="Ringkasan status servis">
+                    <button type="button" class="overview-card overview-card-action" onclick="filterServicesByOverview('waiting')">
+                        <span class="overview-icon waiting"><i class="fas fa-hourglass-half"></i></span>
+                        <div><p>Menunggu</p><strong id="overviewWaiting">0</strong></div>
+                    </button>
+                    <button type="button" class="overview-card overview-card-action" onclick="filterServicesByOverview('process')">
+                        <span class="overview-icon process"><i class="fas fa-tools"></i></span>
+                        <div><p>Sedang Diproses</p><strong id="overviewProcess">0</strong></div>
+                    </button>
+                    <button type="button" class="overview-card overview-card-action" onclick="filterServicesByOverview('ready')">
+                        <span class="overview-icon ready"><i class="fas fa-check-circle"></i></span>
+                        <div><p>Siap Diambil</p><strong id="overviewReady">0</strong></div>
+                    </button>
+                </section>
+                <section class="overview-grid overview-metrics-grid" data-dashboard-widget="metrics" aria-label="Metrik operasional hari ini">
+                    <button type="button" class="overview-card overview-card-action" onclick="filterServicesByOverview('overdue')">
+                        <span class="overview-icon overdue"><i class="fas fa-exclamation-circle"></i></span>
+                        <div><p>Terlambat <small>&gt; 5 hari</small></p><strong id="overviewOverdue">0</strong></div>
+                    </button>
+                    <button type="button" class="overview-card overview-card-action" onclick="filterServicesByOverview('unpaid')">
+                        <span class="overview-icon unpaid"><i class="fas fa-wallet"></i></span>
+                        <div><p>Belum Dibayar</p><strong id="overviewUnpaid">0</strong></div>
+                    </button>
+                    <button type="button" class="overview-card overview-card-action" onclick="filterServicesByOverview('today')">
+                        <span class="overview-icon today"><i class="fas fa-calendar-day"></i></span>
+                        <div><p>Servis Masuk Hari Ini</p><strong id="overviewToday">0</strong></div>
+                    </button>
+                    <button type="button" class="overview-card overview-card-action" onclick="filterServicesByOverview('revenueToday')">
+                        <span class="overview-icon revenue"><i class="fas fa-coins"></i></span>
+                        <div><p>Pendapatan Hari Ini</p><strong id="overviewRevenue">Rp 0</strong></div>
+                    </button>
+                </section>
+                <p class="overview-footnote" data-dashboard-widget="metrics">Pendapatan dihitung dari servis yang selesai hari ini dan waktu selesainya tercatat.</p>
+                <section class="overview-next-step" data-dashboard-widget="quickAction">
+                    <div>
+                        <h3>Kelola antrian servis</h3>
+                        <p>Cari perangkat, perbarui status pengerjaan, atau hubungi pelanggan.</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="openTab('tab-services', document.getElementById('menu-services'), 'Antrian Servis')">
+                        Buka Antrian <i class="fas fa-arrow-right"></i>
+                    </button>
+                </section>
+            </div>
+
+            <div id="tab-services" class="tab-pane">
                 <section class="controls">
                     <div class="status-tabs" id="statusTabs">
                         <button class="tab-btn active" onclick="filterByTab('Semua', this)">Semua Antrian</button>
@@ -103,7 +186,7 @@
                         </button>
                     </div>
                 </section>
-                <div class="table-responsive">
+                <div class="table-responsive service-table-wrap">
                     <table id="serviceTable">
                         <thead>
                             <tr>
@@ -123,6 +206,7 @@
                         <tbody></tbody>
                     </table>
                 </div>
+                <div class="service-pagination" id="servicePagination" aria-label="Navigasi halaman antrian"></div>
             </div>
 
             <div id="tab-customers" class="tab-pane">
@@ -176,6 +260,92 @@
                                 <th class="action-column">Aksi</th>
                             </tr>
                         </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-purchases" class="tab-pane">
+                <section class="transaction-intro">
+                    <div>
+                        <h2>Invoice Pembelian</h2>
+                        <p>Catat pembelian barang dari pemasok. Stok inventaris bertambah otomatis setelah invoice disimpan.</p>
+                    </div>
+                </section>
+                <form id="purchaseInvoiceForm" class="settings-card transaction-form">
+                    <h3><i class="fas fa-file-import"></i> Buat Invoice Pembelian</h3>
+                    <div class="transaction-fields">
+                        <div class="form-group"><label for="purchaseSupplier">Nama pemasok</label><input id="purchaseSupplier" type="text" required></div>
+                        <div class="form-group"><label for="purchaseDate">Tanggal</label><input id="purchaseDate" type="date" required></div>
+                        <div class="form-group"><label for="purchasePayment">Status pembayaran</label><select id="purchasePayment"><option>Belum Dibayar</option><option>Lunas</option></select></div>
+                    </div>
+                    <div class="transaction-line-heading"><strong>Barang dibeli</strong><button type="button" class="btn" onclick="addTransactionLine('purchase')"><i class="fas fa-plus"></i> Tambah Barang</button></div>
+                    <div id="purchaseLines" class="transaction-lines"></div>
+                    <div class="form-group"><label for="purchaseNotes">Catatan</label><textarea id="purchaseNotes" rows="2"></textarea></div>
+                    <div class="transaction-total">Total: <strong id="purchaseTotal">Rp 0</strong></div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Invoice Pembelian</button>
+                </form>
+                <div class="table-responsive">
+                    <table id="purchaseInvoiceTable">
+                        <thead><tr><th>Nomor Invoice</th><th>Tanggal</th><th>Pemasok</th><th>Barang</th><th>Total</th><th>Pembayaran</th><th class="action-column">Aksi</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-sales" class="tab-pane">
+                <section class="transaction-intro">
+                    <div>
+                        <h2>Invoice Penjualan</h2>
+                        <p>Buat nota penjualan untuk pelanggan. Stok akan diperiksa dan dikurangi otomatis saat invoice disimpan.</p>
+                    </div>
+                </section>
+                <form id="salesInvoiceForm" class="settings-card transaction-form">
+                    <h3><i class="fas fa-file-invoice-dollar"></i> Buat Invoice Penjualan</h3>
+                    <div class="transaction-fields">
+                        <div class="form-group"><label for="salesCustomer">Nama pelanggan</label><input id="salesCustomer" type="text" required></div>
+                        <div class="form-group"><label for="salesPhone">Nomor HP / WhatsApp</label><input id="salesPhone" type="tel"></div>
+                        <div class="form-group"><label for="salesDate">Tanggal</label><input id="salesDate" type="date" required></div>
+                        <div class="form-group"><label for="salesPayment">Status pembayaran</label><select id="salesPayment"><option>Lunas</option><option>Belum Dibayar</option></select></div>
+                    </div>
+                    <div class="transaction-line-heading"><strong>Barang dijual</strong><button type="button" class="btn" onclick="addTransactionLine('sales')"><i class="fas fa-plus"></i> Tambah Barang</button></div>
+                    <div id="salesLines" class="transaction-lines"></div>
+                    <div class="form-group"><label for="salesNotes">Catatan</label><textarea id="salesNotes" rows="2"></textarea></div>
+                    <div class="transaction-total">Total: <strong id="salesTotal">Rp 0</strong></div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Invoice Penjualan</button>
+                </form>
+                <div class="table-responsive">
+                    <table id="salesInvoiceTable">
+                        <thead><tr><th>Nomor Invoice</th><th>Tanggal</th><th>Pelanggan</th><th>Barang</th><th>Total</th><th>Pembayaran</th><th class="action-column">Aksi</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-warranties" class="tab-pane">
+                <section class="transaction-intro">
+                    <div>
+                        <h2>Garansi Produk</h2>
+                        <p>Catat masa garansi dan nomor seri barang, lalu pantau status garansi yang masih berlaku.</p>
+                    </div>
+                </section>
+                <form id="warrantyForm" class="settings-card transaction-form">
+                    <h3><i class="fas fa-shield-alt"></i> Daftarkan Garansi</h3>
+                    <div class="transaction-fields">
+                        <div class="form-group"><label for="warrantyCustomer">Nama pelanggan</label><input id="warrantyCustomer" type="text" required></div>
+                        <div class="form-group"><label for="warrantyPhone">Nomor HP / WhatsApp</label><input id="warrantyPhone" type="tel"></div>
+                        <div class="form-group"><label for="warrantyProduct">Produk</label><input id="warrantyProduct" type="text" required></div>
+                        <div class="form-group"><label for="warrantySerial">Nomor seri</label><input id="warrantySerial" type="text"></div>
+                        <div class="form-group"><label for="warrantyInvoice">Nomor invoice penjualan</label><input id="warrantyInvoice" type="text" placeholder="Opsional"></div>
+                        <div class="form-group"><label for="warrantyStart">Tanggal mulai</label><input id="warrantyStart" type="date" required></div>
+                        <div class="form-group"><label for="warrantyEnd">Garansi sampai</label><input id="warrantyEnd" type="date" required></div>
+                    </div>
+                    <div class="form-group"><label for="warrantyNotes">Ketentuan / catatan garansi</label><textarea id="warrantyNotes" rows="2"></textarea></div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Garansi</button>
+                </form>
+                <div class="table-responsive">
+                    <table id="warrantyTable">
+                        <thead><tr><th>Kode Garansi</th><th>Pelanggan</th><th>Produk / No. Seri</th><th>Invoice</th><th>Periode</th><th>Status</th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -301,8 +471,9 @@
                                 <label>Peran / Hak Akses</label>
                                 <select id="staffRole" required
                                     style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--secondary-color); color: var(--text-color);">
-                                    <option value="Teknisi">Teknisi (Hanya Kelola Servis)</option>
-                                    <option value="Kasir">Kasir (Kelola Servis & Stok Barang)</option>
+                                    <option value="Admin">Admin (Kelola Operasional & CMS)</option>
+                                    <option value="Kasir">Kasir (Kelola Operasional)</option>
+                                    <option value="Teknisi">Teknisi (Kelola Operasional)</option>
                                 </select>
                             </div>
                             <button type="submit" class="btn btn-primary"
@@ -450,6 +621,158 @@
                     </div>
                 </div>
 
+                <div id="tab-rakit-pc" class="tab-pane">
+                    <div class="settings-card" style="max-width: 1000px;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                            <div>
+                                <h3 style="margin-bottom: 4px;"><i class="fas fa-microchip"></i> Master Komponen Simulasi Rakit PC</h3>
+                                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Kelola daftar komponen, harga Baru (New), harga Bekas (Second), daya (Watt), dan garansi yang tampil di kalkulator real-time.</p>
+                                <p id="rakitCatalogLoadStatus" role="status" aria-live="polite" hidden style="color: #f59e0b; font-size: 0.85rem; margin: 8px 0 0;"></p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" onclick="window.initDefaultComponentsInFirebase()" class="btn btn-outline" style="font-size: 0.8rem; padding: 8px 12px;">
+                                    <i class="fas fa-sync-alt"></i> Muat Default
+                                </button>
+                                <button type="button" id="btnSaveRakitComponents" onclick="window.saveRakitPcSettings()" class="btn btn-primary" style="font-size: 0.85rem; padding: 8px 16px;" disabled>
+                                    <i class="fas fa-save"></i> Simpan Komponen
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="settings-card" style="margin-bottom: 20px; background: rgba(13, 148, 136, 0.06);">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;">
+                                <div>
+                                    <h4 style="margin: 0 0 5px;"><i class="fas fa-sliders-h"></i> Tampilan Kategori Simulasi</h4>
+                                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Atur nama, visibilitas, dan urutan Monitor serta Aksesori pada halaman simulasi. Pilihan aksesori jamak tetap aktif.</p>
+                                    <p id="pcBuilderDisplayStatus" role="status" aria-live="polite" hidden style="color: #f59e0b; font-size: 0.85rem; margin: 8px 0 0;"></p>
+                                </div>
+                                <button type="button" id="btnSavePcBuilderDisplay" onclick="window.savePcBuilderDisplaySettings()" class="btn btn-primary" style="font-size: 0.85rem; padding: 8px 14px;" disabled>
+                                    <i class="fas fa-save"></i> Simpan Tampilan Menu
+                                </button>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 16px;">
+                                <div style="padding: 14px; border: 1px solid var(--border-color); border-radius: 8px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 12px;">
+                                        <input type="checkbox" id="pcBuilderShowMonitor" style="accent-color: var(--color-primary);">
+                                        Tampilkan kategori Monitor
+                                    </label>
+                                    <label for="pcBuilderMonitorLabel" style="display: block; font-size: 0.8rem; margin-bottom: 5px;">Nama kategori</label>
+                                    <input type="text" id="pcBuilderMonitorLabel" maxlength="40" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg, var(--bg-secondary)); color: var(--text-color);">
+                                    <label for="pcBuilderMonitorOrder" style="display: block; font-size: 0.8rem; margin: 10px 0 5px;">Urutan di bagian akhir</label>
+                                    <select id="pcBuilderMonitorOrder" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg, var(--bg-secondary)); color: var(--text-color);">
+                                        <option value="1">Pertama</option>
+                                        <option value="2">Kedua</option>
+                                    </select>
+                                </div>
+                                <div style="padding: 14px; border: 1px solid var(--border-color); border-radius: 8px;">
+                                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 12px;">
+                                        <input type="checkbox" id="pcBuilderShowAccessories" style="accent-color: var(--color-primary);">
+                                        Tampilkan kategori Aksesori
+                                    </label>
+                                    <label for="pcBuilderAccessoriesLabel" style="display: block; font-size: 0.8rem; margin-bottom: 5px;">Nama kategori</label>
+                                    <input type="text" id="pcBuilderAccessoriesLabel" maxlength="40" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg, var(--bg-secondary)); color: var(--text-color);">
+                                    <label for="pcBuilderAccessoriesOrder" style="display: block; font-size: 0.8rem; margin: 10px 0 5px;">Urutan di bagian akhir</label>
+                                    <select id="pcBuilderAccessoriesOrder" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg, var(--bg-secondary)); color: var(--text-color);">
+                                        <option value="1">Pertama</option>
+                                        <option value="2">Kedua</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel Integrasi Google Sheets & Kontrol Markup Massal -->
+                        <div style="background: rgba(13, 148, 136, 0.08); border: 1px solid rgba(13, 148, 136, 0.25); border-radius: 8px; padding: 18px; margin-bottom: 25px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                                <h4 style="margin: 0; color: var(--color-primary-light, #2dd4bf); display: flex; align-items: center; gap: 8px; font-size: 1rem;">
+                                    <i class="fab fa-google-drive"></i> Sinkronisasi Google Sheets &amp; Auto-Markup Margin
+                                </h4>
+                                <span id="sheetSyncStatus" style="font-size: 0.775rem; color: var(--text-muted); font-style: italic;">
+                                    Belum pernah disinkronkan
+                                </span>
+                            </div>
+                            <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">
+                                Perbarui puluhan harga sekaligus dari spreadsheet Google Sheets Anda (bisa diedit lewat HP). Lengkap dengan fitur auto-markup margin keuntungan toko secara massal.
+                            </p>
+
+                            <!-- Input URL Google Sheet -->
+                            <div style="margin-bottom: 14px;">
+                                <label style="display: block; font-size: 0.775rem; font-weight: 700; text-transform: uppercase; color: var(--text-color); margin-bottom: 6px;">
+                                    Link / URL Google Sheets (Akses: "Siapa saja yang memiliki link dapat melihat")
+                                </label>
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <input type="url" id="rakitSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=0" style="flex: 1; min-width: 260px; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg, var(--bg-secondary)); color: var(--text-color); font-size: 0.875rem;">
+                                    <button type="button" class="btn btn-outline" onclick="window.downloadRakitCsvTemplate()" style="padding: 9px 14px; font-size: 0.825rem; white-space: nowrap;">
+                                        <i class="fas fa-file-download"></i> Unduh Template Sheet (CSV)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Opsi Margin Markup Toko -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 14px; background: rgba(0,0,0,0.18); padding: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06);">
+                                <div>
+                                    <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #10b981; margin-bottom: 4px;">
+                                        Markup Margin Part Baru (%)
+                                    </label>
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <input type="number" id="markupNewPct" value="15" min="0" max="200" style="width: 80px; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg, var(--bg-secondary)); color: var(--text-color); font-weight: bold;">
+                                        <span style="font-size: 0.85rem; font-weight: bold; color: var(--text-color);">%</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #3b82f6; margin-bottom: 4px;">
+                                        Markup Margin Part Second (%)
+                                    </label>
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <input type="number" id="markupSecondPct" value="25" min="0" max="200" style="width: 80px; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg, var(--bg-secondary)); color: var(--text-color); font-weight: bold;">
+                                        <span style="font-size: 0.85rem; font-weight: bold; color: var(--text-color);">%</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; justify-content: center;">
+                                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; cursor: pointer; color: var(--text-color);">
+                                        <input type="checkbox" id="roundTo10kCheck" checked style="accent-color: var(--color-primary); width: 16px; height: 16px;">
+                                        <span>Bulatkan ke Rp 10.000 terdekat (Contoh: Rp 1.543.000 &rarr; Rp 1.550.000)</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Tombol Aksi -->
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                <button type="button" id="btnSyncSheet" onclick="window.syncRakitFromGoogleSheets()" class="btn btn-primary" style="padding: 9px 18px; font-size: 0.875rem;">
+                                    <i class="fas fa-sync-alt"></i> Tarik &amp; Sinkronkan dari Google Sheets
+                                </button>
+                                <button type="button" onclick="window.applyMarkupToCurrentData()" class="btn btn-outline" style="padding: 9px 15px; font-size: 0.85rem;" title="Menaikkan harga komponen saat ini secara proporsional sesuai margin di atas">
+                                    <i class="fas fa-percentage"></i> Terapkan Markup ke Data Saat Ini
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Kategori Selector -->
+                        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <label style="font-weight: 600; font-size: 0.9rem;">Pilih Kategori:</label>
+                            <select id="rakitCategorySelect" onchange="window.filterRakitCategory(this.value)" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg, var(--bg-secondary)); color: var(--text-color); font-weight: 600;">
+                                <option value="cpu">Processor (CPU)</option>
+                                <option value="mobo">Motherboard (Mobo)</option>
+                                <option value="ram">Memory (RAM)</option>
+                                <option value="vga">Kartu Grafis (VGA / GPU)</option>
+                                <option value="ssd">Penyimpanan Utama (SSD)</option>
+                                <option value="extraStorage">Penyimpanan Tambahan (HDD/SSD)</option>
+                                <option value="psu">Power Supply (PSU)</option>
+                                <option value="casing">Casing PC</option>
+                                <option value="cooler">CPU Cooler (Pendingin)</option>
+                                <option value="monitor">Monitor</option>
+                                <option value="aksesori">Aksesori (bisa pilih lebih dari satu)</option>
+                            </select>
+                        </div>
+
+                        <!-- Container Dynamic Items -->
+                        <div id="rakitPcWrapper"></div>
+
+                        <button type="button" onclick="window.addRakitItemUI()" class="btn btn-success" style="margin-top: 15px;">
+                            <i class="fas fa-plus"></i> Tambah Komponen di Kategori Ini
+                        </button>
+                    </div>
+                </div>
+
                 <div id="tab-sosmed" class="tab-pane">
                     <div class="settings-card">
                         <h3><i class="fas fa-hashtag"></i> Tautan Sosial Media</h3>
@@ -547,7 +870,7 @@
         <div class="modal-content">
             <span class="close-button" onclick="closeEditModal()">×</span>
             <h2>Edit Layanan</h2>
-            <form id="editForm">
+            <form id="editForm" onsubmit="event.preventDefault(); saveEdit();">
                 <div class="form-group"><label>Kode Service</label><input type="text" id="editKodeService" readonly
                         style="background:#e2e8f0; cursor:not-allowed;"></div>
                 <div class="form-group"><label>Nama</label><input type="text" id="editNama" required></div>
@@ -606,7 +929,7 @@
         <div class="modal-content">
             <span class="close-button" onclick="closeExpenseModal()">×</span>
             <h2>Tambah Pengeluaran</h2>
-            <form id="expenseForm">
+            <form id="expenseForm" onsubmit="event.preventDefault(); saveExpense();">
                 <div class="form-group"><label>Tanggal</label><input type="date" id="expTanggal" required></div>
                 <div class="form-group"><label>Keterangan</label><input type="text" id="expKeterangan" required></div>
                 <div class="form-group"><label>Nominal (Rp)</label><input type="number" id="expNominal" min="1"
@@ -625,7 +948,7 @@
         <div class="modal-content">
             <span class="close-button" onclick="closeInventoryModal()">×</span>
             <h2 id="inventoryModalTitle">Tambah Barang Inventaris</h2>
-            <form id="inventoryForm">
+            <form id="inventoryForm" onsubmit="event.preventDefault(); saveInventory();">
                 <input type="hidden" id="invId">
                 <div class="form-group"><label>Nama Barang / Sparepart</label><input type="text" id="invNama" required>
                 </div>
@@ -649,7 +972,7 @@
         <div class="modal-content">
             <span class="close-button" onclick="closeMutasiModal()">×</span>
             <h2>Mutasi Stok Barang</h2>
-            <form id="mutasiForm">
+            <form id="mutasiForm" onsubmit="event.preventDefault(); saveMutasi();">
                 <input type="hidden" id="mutasiInvId">
                 <input type="hidden" id="mutasiInvNama">
                 <div class="form-group">
