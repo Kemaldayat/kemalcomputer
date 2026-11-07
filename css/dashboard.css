@@ -1015,6 +1015,29 @@ input[type="color"]::-webkit-color-swatch { border: none; border-radius: 8px; bo
     align-items: center;
 }
 
+.transaction-line.sales-transaction-line {
+    grid-template-columns: minmax(145px, 1.1fr) minmax(170px, 1.5fr) minmax(160px, 1.4fr) minmax(130px, 1fr) minmax(85px, 0.55fr) minmax(130px, 1fr) 40px;
+}
+
+.sales-transaction-line .transaction-source { grid-column: 1; }
+.sales-transaction-line .transaction-product { grid-column: 2; }
+.sales-transaction-line .transaction-name { grid-column: 3; }
+.sales-transaction-line .transaction-cost { grid-column: 4; }
+.sales-transaction-line .transaction-quantity { grid-column: 5; }
+.sales-transaction-line .transaction-price { grid-column: 6; }
+.sales-transaction-line .delete-button { grid-column: 7; }
+
+.transaction-line .is-hidden {
+    display: none;
+}
+
+.sales-invoice-actions {
+    display: flex;
+    min-width: 154px;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
 .transaction-line select,
 .transaction-line input {
     min-width: 0;
@@ -1108,15 +1131,28 @@ input[type="color"]::-webkit-color-swatch { border: none; border-radius: 8px; bo
         grid-template-columns: minmax(0, 1fr) 40px;
     }
 
+    .transaction-line.sales-transaction-line {
+        grid-template-columns: minmax(0, 1fr) 40px;
+    }
+
     .transaction-line select,
     .transaction-line .transaction-quantity,
-    .transaction-line .transaction-price {
+    .transaction-line .transaction-price,
+    .transaction-line .transaction-name,
+    .transaction-line .transaction-cost,
+    .transaction-line.sales-transaction-line .transaction-source,
+    .transaction-line.sales-transaction-line .transaction-product,
+    .transaction-line.sales-transaction-line .transaction-quantity,
+    .transaction-line.sales-transaction-line .transaction-price,
+    .transaction-line.sales-transaction-line .transaction-name,
+    .transaction-line.sales-transaction-line .transaction-cost {
         grid-column: 1;
     }
 
-    .transaction-line .delete-button {
+    .transaction-line .delete-button,
+    .transaction-line.sales-transaction-line .delete-button {
         grid-column: 2;
-        grid-row: 1 / span 3;
+        grid-row: 1 / span 6;
     }
 }
 

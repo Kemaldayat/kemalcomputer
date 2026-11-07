@@ -68,11 +68,20 @@
             style: 'currency', currency: 'IDR', maximumFractionDigits: 0
         }).format(Number(amount) || 0);
         const createTransactionId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
-        const getTransactionLines = (type) => Array.from(document.querySelectorAll(`#${type}Lines .transaction-line`)).map((row) => ({
-            id: row.querySelector('.transaction-product').value,
-            jumlah: Number(row.querySelector('.transaction-quantity').value),
-            harga: Number(row.querySelector('.transaction-price').value)
-        }));
+        const getTransactionLines = (type) => Array.from(document.querySelectorAll(`#${type}Lines .transaction-line`)).map((row) => {
+            const sumber = row.dataset.source || 'inventaris';
+            const id = sumber === 'inventaris' ? row.querySelector('.transaction-product').value : '';
+            return {
+                sumber,
+                id,
+                nama: sumber === 'manual'
+                    ? row.querySelector('.transaction-name').value.trim()
+                    : (window.inventoryData?.[id]?.nama || ''),
+                jumlah: Number(row.querySelector('.transaction-quantity').value),
+                harga: Number(row.querySelector('.transaction-price').value),
+                modal_satuan: sumber === 'manual' ? Number(row.querySelector('.transaction-cost')?.value) || 0 : 0
+            };
+        });
 
         // Variabel CMS
         window.existingPhotos = []; window.pendingFiles = [];
@@ -181,14 +190,44 @@
             }
         };
 
-        window.addTransactionLine = (type) => {
+        window.addTransactionLine = (type, initialLine = null) => {
             const target = document.getElementById(`${type}Lines`);
             const options = Object.entries(window.inventoryData || {}).map(([id, item]) =>
                 `<option value="${escapeHTML(id)}">${escapeHTML(item.nama)} (stok: ${Number(item.stok) || 0})</option>`
             ).join('');
             const row = document.createElement('div');
-            row.className = 'transaction-line';
-            row.innerHTML = `<select class="transaction-product" aria-label="Pilih barang" required><option value="">Pilih barang inventaris</option>${options}</select><input class="transaction-quantity" type="number" min="1" step="1" value="1" aria-label="Jumlah" required><input class="transaction-price" type="number" min="0" step="1" placeholder="${type === 'purchase' ? 'Harga modal/unit' : 'Harga jual/unit'}" aria-label="Harga satuan" required><button type="button" class="icon-btn delete-button" aria-label="Hapus barang" title="Hapus barang"><i class="fas fa-trash"></i></button>`;
+            row.className = `transaction-line${type === 'sales' ? ' sales-transaction-line' : ''}`;
+            row.dataset.source = 'inventaris';
+            row.innerHTML = `${type === 'sales' ? '<select class="transaction-source" aria-label="Sumber barang"><option value="inventaris">Barang inventaris</option><option value="manual">Item bebas / rakit PC</option></select>' : ''}<select class="transaction-product" aria-label="Pilih barang" required><option value="">Pilih barang inventaris</option>${options}</select>${type === 'sales' ? '<input class="transaction-name is-hidden" type="text" aria-label="Nama item bebas" placeholder="Nama item / komponen rakit PC"><input class="transaction-cost is-hidden" type="number" min="0" step="1" aria-label="Modal per unit" placeholder="Modal/unit (opsional)">' : ''}<input class="transaction-quantity" type="number" min="1" step="1" value="1" aria-label="Jumlah" required><input class="transaction-price" type="number" min="0" step="1" placeholder="${type === 'purchase' ? 'Harga modal/unit' : 'Harga jual/unit'}" aria-label="Harga satuan" required><button type="button" class="icon-btn delete-button" aria-label="Hapus barang" title="Hapus barang"><i class="fas fa-trash"></i></button>`;
+            const productSelect = row.querySelector('.transaction-product');
+            const nameInput = row.querySelector('.transaction-name');
+            const costInput = row.querySelector('.transaction-cost');
+            const sourceSelect = row.querySelector('.transaction-source');
+            if (sourceSelect) {
+                sourceSelect.addEventListener('change', () => {
+                    row.dataset.source = sourceSelect.value;
+                    const isManual = sourceSelect.value === 'manual';
+                    productSelect.classList.toggle('is-hidden', isManual);
+                    productSelect.required = !isManual;
+                    nameInput.classList.toggle('is-hidden', !isManual);
+                    nameInput.required = isManual;
+                    costInput.classList.toggle('is-hidden', !isManual);
+                    updateTransactionTotal(type);
+                });
+            }
+            if (initialLine && type === 'sales') {
+                const source = initialLine.sumber || (initialLine.id ? 'inventaris' : 'manual');
+                sourceSelect.value = source;
+                sourceSelect.dispatchEvent(new Event('change'));
+                if (source === 'manual') {
+                    nameInput.value = initialLine.nama || '';
+                    costInput.value = Number(initialLine.modal_satuan) || '';
+                } else {
+                    productSelect.value = initialLine.id || '';
+                }
+                row.querySelector('.transaction-quantity').value = Number(initialLine.jumlah) || 1;
+                row.querySelector('.transaction-price').value = Number(initialLine.harga) || 0;
+            }
             row.querySelector('.transaction-product').addEventListener('change', () => {
                 if (type === 'purchase') {
                     row.querySelector('.transaction-price').value = window.inventoryData?.[row.querySelector('.transaction-product').value]?.harga_modal ?? '';
@@ -220,7 +259,10 @@
                         snapshot.forEach((child) => { transactionData[key][child.key] = child.val(); });
                     }
                     render();
-                    if (key === 'sales' && window.calculateFinance) window.calculateFinance();
+                    if (key === 'sales') {
+                        renderCustomerDatabase();
+                        if (window.calculateFinance) window.calculateFinance();
+                    }
                 }, (error) => {
                     console.error(`Gagal memuat ${path}:`, error);
                     showModal(`Gagal memuat data ${path}: ${error.message}`, 'info');
@@ -229,6 +271,62 @@
         };
         const renderPurchaseInvoices = () => renderTransactionInvoices('purchaseInvoiceTable', transactionData.purchases, 'Pemasok');
         const renderSalesInvoices = () => renderTransactionInvoices('salesInvoiceTable', transactionData.sales, 'Pelanggan');
+        const renderCustomerDatabase = () => {
+            const body = document.querySelector('#customerTable tbody');
+            if (!body) return;
+            body.innerHTML = '';
+            customersData = {};
+            const getCustomer = (name, phone) => {
+                const rawPhone = String(phone || '').trim();
+                let normalizedPhone = rawPhone.replace(/\D/g, '');
+                if (normalizedPhone.startsWith('0')) normalizedPhone = `62${normalizedPhone.slice(1)}`;
+                else if (normalizedPhone.startsWith('8')) normalizedPhone = `62${normalizedPhone}`;
+                const key = normalizedPhone || `nama:${String(name || '').trim().toLowerCase()}`;
+                if (!customersData[key]) {
+                    customersData[key] = {
+                        nama: name || 'Pelanggan',
+                        hp: normalizedPhone || 'Tanpa Nomor',
+                        totSrv: 0,
+                        totInv: 0,
+                        totB: 0,
+                        riwayat: []
+                    };
+                }
+                return customersData[key];
+            };
+            Object.values(servicesData).forEach((service) => {
+                const customer = getCustomer(service.nama, service.nomorHp);
+                customer.totSrv++;
+                customer.totB += Number(service.biaya) || 0;
+                if (service.device && !customer.riwayat.includes(service.device)) customer.riwayat.push(service.device);
+            });
+            Object.entries(transactionData.sales).forEach(([invoiceId, invoice]) => {
+                const customer = getCustomer(invoice.pelanggan, invoice.nomorHp);
+                customer.totInv++;
+                customer.totB += Number(invoice.total) || 0;
+                const items = Array.isArray(invoice.items) ? invoice.items : Object.values(invoice.items || {});
+                items.forEach((item) => {
+                    const itemName = item.nama || item.name;
+                    if (itemName && !customer.riwayat.includes(itemName)) customer.riwayat.push(itemName);
+                });
+                if (!customer.riwayat.includes(`Invoice ${invoiceId}`)) customer.riwayat.push(`Invoice ${invoiceId}`);
+            });
+            Object.values(customersData).forEach((customer) => {
+                const row = body.insertRow();
+                const historyBadges = customer.riwayat.map((item) =>
+                    `<span style="background:var(--secondary-color); padding:4px 8px; border-radius:6px; font-size:0.85em; border:1px solid var(--border-color); margin-right:4px; display:inline-block; margin-bottom:4px;">${escapeHTML(item)}</span>`
+                ).join('');
+                row.innerHTML = `<td><strong>${escapeHTML(customer.nama)}</strong></td><td>${escapeHTML(customer.hp)}</td><td style="text-align: center;"><span class="status-badge" style="background-color:var(--info-color)">${customer.totSrv} Servis / ${customer.totInv} Invoice</span></td><td class="biaya-text">${formatRupiah(customer.totB)}</td><td style="white-space: normal; min-width: 200px;">${historyBadges || '-'}</td><td class="action-column"></td>`;
+                const chatButton = document.createElement('button');
+                chatButton.className = 'btn btn-primary';
+                chatButton.style.cssText = 'padding: 8px 12px; font-size: 0.85em;';
+                chatButton.innerHTML = '<i class="fab fa-whatsapp"></i> Chat';
+                chatButton.addEventListener('click', () => window.contactCustomer(customer.hp, customer.nama));
+                row.lastElementChild.appendChild(chatButton);
+            });
+            if (!Object.keys(customersData).length) renderNoDataRow(body, 'Belum ada data pelanggan.', 6);
+            window.filterTableCustomers();
+        };
         const renderTransactionInvoices = (tableId, records, counterpartyLabel) => {
             const body = document.querySelector(`#${tableId} tbody`);
             if (!body) return;
@@ -242,7 +340,7 @@
                 const invoiceItems = Array.isArray(invoice.items) ? invoice.items : Object.values(invoice.items || {});
                 const itemNames = invoiceItems.map((item) => item.nama).join(', ');
                 const row = body.insertRow();
-                row.innerHTML = `<td><strong>${escapeHTML(id)}</strong></td><td>${escapeHTML(invoice.tanggal)}</td><td>${escapeHTML(invoice[counterpartyLabel === 'Pemasok' ? 'pemasok' : 'pelanggan'])}</td><td>${escapeHTML(itemNames)}</td><td class="biaya-text">${formatTransactionCurrency(invoice.total)}</td><td>${escapeHTML(invoice.pembayaran || '-')}</td><td class="action-column"></td>`;
+                row.innerHTML = `<td><strong>${escapeHTML(id)}</strong></td><td>${escapeHTML(invoice.tanggal)}</td><td>${escapeHTML(invoice[counterpartyLabel === 'Pemasok' ? 'pemasok' : 'pelanggan'])}</td><td>${escapeHTML(itemNames)}</td><td class="biaya-text">${formatTransactionCurrency(invoice.total)}</td><td>${escapeHTML(invoice.pembayaran || '-')}</td><td class="action-column${counterpartyLabel === 'Pelanggan' ? ' sales-invoice-actions' : ''}"></td>`;
                 const printButton = document.createElement('button');
                 printButton.className = 'icon-btn print-button';
                 printButton.type = 'button';
@@ -251,6 +349,34 @@
                 printButton.innerHTML = '<i class="fas fa-print"></i>';
                 printButton.addEventListener('click', () => window.printBusinessInvoice(id, counterpartyLabel === 'Pemasok' ? 'purchase' : 'sales'));
                 row.lastElementChild.appendChild(printButton);
+                if (counterpartyLabel === 'Pelanggan') {
+                    const whatsappButton = document.createElement('button');
+                    whatsappButton.className = 'icon-btn whatsapp-button';
+                    whatsappButton.type = 'button';
+                    whatsappButton.title = 'Kirim invoice melalui WhatsApp';
+                    whatsappButton.setAttribute('aria-label', 'Kirim invoice melalui WhatsApp');
+                    whatsappButton.innerHTML = '<i class="fab fa-whatsapp"></i>';
+                    whatsappButton.addEventListener('click', () => window.sendSalesInvoiceWhatsApp(id));
+                    row.lastElementChild.appendChild(whatsappButton);
+
+                    const editButton = document.createElement('button');
+                    editButton.className = 'icon-btn edit-button';
+                    editButton.type = 'button';
+                    editButton.title = 'Edit invoice';
+                    editButton.setAttribute('aria-label', 'Edit invoice');
+                    editButton.innerHTML = '<i class="fas fa-edit"></i>';
+                    editButton.addEventListener('click', () => window.editSalesInvoice(id));
+                    row.lastElementChild.appendChild(editButton);
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = 'icon-btn delete-button';
+                    deleteButton.type = 'button';
+                    deleteButton.title = 'Hapus invoice';
+                    deleteButton.setAttribute('aria-label', 'Hapus invoice');
+                    deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+                    deleteButton.addEventListener('click', () => window.deleteSalesInvoice(id));
+                    row.lastElementChild.appendChild(deleteButton);
+                }
             });
         };
         const renderWarranties = () => {
@@ -320,27 +446,62 @@
         document.getElementById('salesInvoiceForm').addEventListener('submit', async (event) => {
             event.preventDefault();
             const lines = getTransactionLines('sales');
-            if (!lines.length || lines.some((line) => !line.id || line.jumlah < 1 || line.harga < 0)) return showModal('Pilih barang, jumlah, dan harga penjualan dengan benar.', 'info');
-            if (lines.some((line) => !window.inventoryData[line.id])) return showModal('Ada barang yang sudah tidak tersedia di inventaris. Muat ulang pilihan barang.', 'info');
+            if (!lines.length || lines.some((line) => !line.nama || line.jumlah < 1 || line.harga < 0 || (line.sumber === 'inventaris' && !line.id))) {
+                return showModal('Lengkapi barang, jumlah, dan harga penjualan dengan benar.', 'info');
+            }
+            if (lines.some((line) => line.sumber === 'inventaris' && !window.inventoryData[line.id])) {
+                return showModal('Ada barang inventaris yang sudah tidak tersedia. Muat ulang pilihan barang.', 'info');
+            }
             const quantities = {};
             lines.forEach((line) => {
+                if (line.sumber === 'manual') {
+                    line.subtotal = line.jumlah * line.harga;
+                    line.modal_subtotal = line.jumlah * line.modal_satuan;
+                    return;
+                }
                 const item = window.inventoryData[line.id];
                 quantities[line.id] = (quantities[line.id] || 0) + line.jumlah;
-                line.nama = item.nama;
                 line.subtotal = line.jumlah * line.harga;
                 line.modal_satuan = Number(item.harga_modal) || 0;
                 line.modal_subtotal = line.jumlah * line.modal_satuan;
             });
-            const stockErrors = Object.entries(quantities).filter(([id, quantity]) => quantity > (Number(window.inventoryData[id].stok) || 0));
+            const editingId = document.getElementById('salesEditingId').value;
+            const previousInvoice = editingId ? transactionData.sales[editingId] : null;
+            if (editingId && !previousInvoice) return showModal('Invoice yang akan diedit tidak ditemukan. Muat ulang data lalu coba lagi.', 'info');
+            const previousItems = previousInvoice
+                ? (Array.isArray(previousInvoice.items) ? previousInvoice.items : Object.values(previousInvoice.items || {}))
+                : [];
+            const previousQuantities = {};
+            previousItems.forEach((line) => {
+                if (line.sumber === 'manual' || (!line.sumber && !line.id) || !line.id) return;
+                previousQuantities[line.id] = (previousQuantities[line.id] || 0) + (Number(line.jumlah) || 0);
+            });
+            const missingPreviousItems = Object.keys(previousQuantities).filter((id) => !window.inventoryData[id]);
+            if (missingPreviousItems.length) {
+                return showModal(`Barang inventaris dari invoice lama tidak ditemukan (${missingPreviousItems.join(', ')}). Invoice tidak diubah agar stok tetap konsisten.`, 'info');
+            }
+            const stockErrors = Object.entries(quantities).filter(([id, quantity]) =>
+                quantity > (Number(window.inventoryData[id].stok) || 0) + (previousQuantities[id] || 0)
+            );
             if (stockErrors.length) {
                 const names = stockErrors.map(([id]) => window.inventoryData[id].nama).join(', ');
                 return showModal(`Stok tidak mencukupi untuk: ${names}.`, 'info');
             }
-            const invoiceId = createTransactionId('PJ');
+            const invoiceId = editingId || createTransactionId('PJ');
             const updates = {};
-            Object.entries(quantities).forEach(([id, quantity]) => {
-                updates[`inventaris/${id}/stok`] = (Number(window.inventoryData[id].stok) || 0) - quantity;
+            const affectedInventoryIds = new Set([...Object.keys(previousQuantities), ...Object.keys(quantities)]);
+            const negativeStockItems = [];
+            affectedInventoryIds.forEach((id) => {
+                const currentStock = Number(window.inventoryData[id]?.stok) || 0;
+                const updatedStock = currentStock + (previousQuantities[id] || 0) - (quantities[id] || 0);
+                if (updatedStock < 0) {
+                    negativeStockItems.push(window.inventoryData[id]?.nama || id);
+                    return;
+                }
+                updates[`inventaris/${id}/stok`] = updatedStock;
             });
+            if (negativeStockItems.length) return showModal(`Stok tidak mencukupi untuk: ${negativeStockItems.join(', ')}.`, 'info');
+            const priorCreatedAt = previousInvoice?.createdAt;
             updates[`invoice_penjualan/${invoiceId}`] = {
                 pelanggan: document.getElementById('salesCustomer').value.trim(),
                 nomorHp: document.getElementById('salesPhone').value.trim(),
@@ -349,20 +510,94 @@
                 catatan: document.getElementById('salesNotes').value.trim(),
                 items: lines,
                 total: lines.reduce((sum, line) => sum + line.subtotal, 0),
-                createdAt: new Date().toISOString()
+                createdAt: priorCreatedAt || new Date().toISOString(),
+                updatedAt: editingId ? new Date().toISOString() : null
             };
             try {
                 await update(ref(db), updates);
-                document.getElementById('salesInvoiceForm').reset();
-                document.getElementById('salesDate').value = localDateKey(new Date());
-                document.getElementById('salesLines').innerHTML = '';
-                window.addTransactionLine('sales');
-                showModal(`Invoice penjualan ${invoiceId} berhasil disimpan.`, 'info');
+                resetSalesInvoiceForm();
+                if (editingId) {
+                    showModal(`Invoice penjualan ${invoiceId} berhasil diperbarui. Kirim ulang invoice melalui WhatsApp?`, 'confirm', () => window.sendSalesInvoiceWhatsApp(invoiceId));
+                } else {
+                    showModal(`Invoice penjualan ${invoiceId} berhasil disimpan. Buka WhatsApp untuk mengirim invoice?`, 'confirm', () => window.sendSalesInvoiceWhatsApp(invoiceId));
+                }
             } catch (error) {
                 console.error('Gagal menyimpan invoice penjualan:', error);
                 showModal(`Gagal menyimpan invoice penjualan: ${error.message}`, 'info');
             }
         });
+
+        const resetSalesInvoiceForm = () => {
+            const form = document.getElementById('salesInvoiceForm');
+            form.reset();
+            document.getElementById('salesEditingId').value = '';
+            document.getElementById('salesDate').value = localDateKey(new Date());
+            document.getElementById('salesLines').innerHTML = '';
+            document.getElementById('salesSubmitButton').innerHTML = '<i class="fas fa-save"></i> Simpan Invoice Penjualan';
+            document.getElementById('cancelSalesEditButton').style.display = 'none';
+            window.addTransactionLine('sales');
+        };
+        window.editSalesInvoice = (invoiceId) => {
+            const invoice = transactionData.sales[invoiceId];
+            if (!invoice) return showModal('Invoice tidak ditemukan.', 'info');
+            const form = document.getElementById('salesInvoiceForm');
+            document.getElementById('salesEditingId').value = invoiceId;
+            document.getElementById('salesCustomer').value = invoice.pelanggan || '';
+            document.getElementById('salesPhone').value = invoice.nomorHp || '';
+            document.getElementById('salesDate').value = invoice.tanggal || localDateKey(new Date());
+            document.getElementById('salesPayment').value = invoice.pembayaran || 'Lunas';
+            document.getElementById('salesNotes').value = invoice.catatan || '';
+            document.getElementById('salesLines').innerHTML = '';
+            const items = Array.isArray(invoice.items) ? invoice.items : Object.values(invoice.items || {});
+            items.forEach((item) => window.addTransactionLine('sales', item));
+            if (!items.length) window.addTransactionLine('sales');
+            document.getElementById('salesSubmitButton').innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan Invoice';
+            document.getElementById('cancelSalesEditButton').style.display = 'inline-flex';
+            updateTransactionTotal('sales');
+            openTab('tab-sales', document.getElementById('menu-sales'), 'Invoice Penjualan');
+            form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+        window.cancelSalesInvoiceEdit = resetSalesInvoiceForm;
+        window.deleteSalesInvoice = (invoiceId) => {
+            const invoice = transactionData.sales[invoiceId];
+            if (!invoice) return showModal('Invoice tidak ditemukan.', 'info');
+            showModal(`Hapus invoice ${invoiceId}? Stok barang inventaris akan dikembalikan.`, 'confirm', async () => {
+                try {
+                    const items = Array.isArray(invoice.items) ? invoice.items : Object.values(invoice.items || {});
+                    const restoredQuantities = {};
+                    items.forEach((item) => {
+                        if (item.sumber === 'manual' || (!item.sumber && !item.id) || !item.id) return;
+                        restoredQuantities[item.id] = (restoredQuantities[item.id] || 0) + (Number(item.jumlah) || 0);
+                    });
+                    const missingItems = Object.keys(restoredQuantities).filter((id) => !window.inventoryData[id]);
+                    if (missingItems.length) {
+                        return showModal(`Barang inventaris ${missingItems.join(', ')} tidak ditemukan; invoice tidak dihapus agar stok tetap konsisten.`, 'info');
+                    }
+                    const updates = { [`invoice_penjualan/${invoiceId}`]: null };
+                    Object.entries(restoredQuantities).forEach(([id, quantity]) => {
+                        updates[`inventaris/${id}/stok`] = (Number(window.inventoryData[id].stok) || 0) + quantity;
+                    });
+                    await update(ref(db), updates);
+                    showModal(`Invoice ${invoiceId} dihapus dan stok dikembalikan.`, 'info');
+                } catch (error) {
+                    console.error('Gagal menghapus invoice penjualan:', error);
+                    showModal(`Gagal menghapus invoice: ${error.message}`, 'info');
+                }
+            });
+        };
+        window.sendSalesInvoiceWhatsApp = (invoiceId) => {
+            const invoice = transactionData.sales[invoiceId];
+            if (!invoice) return showModal('Invoice tidak ditemukan.', 'info');
+            let phone = String(invoice.nomorHp || '').replace(/\D/g, '');
+            if (phone.startsWith('0')) phone = `62${phone.slice(1)}`;
+            else if (phone.startsWith('8')) phone = `62${phone}`;
+            if (!phone) return showModal('Nomor WhatsApp pelanggan belum tersedia. Tambahkan nomor pada invoice terlebih dahulu.', 'info');
+            if (!/^62\d{8,15}$/.test(phone)) return showModal('Nomor WhatsApp tidak valid. Gunakan format Indonesia, contoh 628123456789.', 'info');
+            const items = Array.isArray(invoice.items) ? invoice.items : Object.values(invoice.items || {});
+            const itemLines = items.map((item) => `- ${item.nama} x${Number(item.jumlah) || 0}: ${formatTransactionCurrency(item.subtotal)}`).join('\n');
+            const message = `Halo ${invoice.pelanggan || 'Kak'}, berikut invoice dari ${window.tokoSettings?.namaToko || 'toko kami'}.\n\nNo. Invoice: ${invoiceId}\nTanggal: ${invoice.tanggal || '-'}\n${itemLines}\n\nTotal: ${formatTransactionCurrency(invoice.total)}\nStatus: ${invoice.pembayaran || 'Belum Dibayar'}${invoice.catatan ? `\nCatatan: ${invoice.catatan}` : ''}\n\nTerima kasih.`;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
+        };
         document.getElementById('warrantyForm').addEventListener('submit', async (event) => {
             event.preventDefault();
             const tanggalMulai = document.getElementById('warrantyStart').value;
@@ -1404,9 +1639,8 @@
         window.loadServices = () => {
             onValue(ref(db, 'antrian'), (snapshot) => {
                 const tableBody = document.getElementById('serviceTable').getElementsByTagName('tbody')[0];
-                const customerTableBody = document.getElementById('customerTable').getElementsByTagName('tbody')[0];
-                tableBody.innerHTML = ''; customerTableBody.innerHTML = '';
-                servicesData = {}; customersData = {};
+                    tableBody.innerHTML = '';
+                    servicesData = {}; customersData = {};
 
                 if (snapshot.exists()) {
                     const servicesList = [];
@@ -1445,17 +1679,9 @@
                         row.dataset.completedAt = s.completedAt || '';
                         row.innerHTML = `<td data-label="Pelanggan"><strong>${escapeHTML(s.nama)}</strong></td><td data-label="Perangkat">${dText}</td><td data-label="Keluhan">${escapeHTML(s.kerusakan)}</td><td data-label="No. HP">${escapeHTML(s.nomorHp) || '-'}</td><td data-label="Biaya" class="biaya-text">${formatRupiah(s.biaya)}</td><td data-label="Modal Komponen" class="biaya-text cost-column" style="color: var(--warning-color);">${formatRupiah(s.modal_komponen || 0)}</td><td data-label="Status" class="status-column"><span class="status-badge ${bClass}">${s.status}</span>${garansiBadge}</td><td data-label="Pembayaran">${payBadge}</td><td data-label="Keterangan">${escapeHTML(s.keterangan) || '-'}</td><td data-label="Invoice"><strong style="color:var(--primary-color)">${escapeHTML(code)}</strong></td><td data-label="Aksi" class="action-buttons action-column"><button class="icon-btn print-button" title="Cetak invoice" aria-label="Cetak invoice" onclick="printInvoice('${code}')"><i class="fas fa-print"></i></button><button class="icon-btn whatsapp-button" title="Hubungi via WhatsApp" aria-label="Hubungi via WhatsApp" onclick="sendWhatsappNotification('${code}')"><i class="fab fa-whatsapp"></i></button><button class="icon-btn edit-button" title="Edit servis" aria-label="Edit servis" onclick="openEditModal('${code}')"><i class="fas fa-edit"></i></button><button class="icon-btn delete-button" title="Hapus servis" aria-label="Hapus servis" onclick="deleteService('${code}')"><i class="fas fa-trash"></i></button></td>`;
 
-                        const hp = s.nomorHp ? s.nomorHp.trim() : 'Tanpa Nomor';
-                        if (!customersData[hp]) customersData[hp] = { nama: s.nama, hp: hp, totSrv: 0, totB: 0, riwayat: [] };
-                        customersData[hp].totSrv += 1; customersData[hp].totB += (Number(s.biaya) || 0);
-                        if (s.device && !customersData[hp].riwayat.includes(s.device)) customersData[hp].riwayat.push(s.device);
                     });
-                    for (const k in customersData) {
-                        const c = customersData[k]; const rBody = customerTableBody.insertRow();
-                        const rBadges = c.riwayat.map(d => `<span style="background:var(--secondary-color); padding:4px 8px; border-radius:6px; font-size:0.85em; border:1px solid var(--border-color); margin-right:4px; display:inline-block; margin-bottom:4px;">${escapeHTML(d)}</span>`).join('');
-                        rBody.innerHTML = `<td><strong>${escapeHTML(c.nama)}</strong></td><td>${escapeHTML(c.hp)}</td><td style="text-align: center;"><span class="status-badge" style="background-color:var(--info-color)">${c.totSrv} Kali</span></td><td class="biaya-text">${formatRupiah(c.totB)}</td><td style="white-space: normal; min-width: 200px;">${rBadges || '-'}</td><td class="action-column"><button class="btn btn-primary" style="padding: 8px 12px; font-size: 0.85em;" onclick="contactCustomer('${escapeHTML(c.hp)}', '${escapeHTML(c.nama)}')"><i class="fab fa-whatsapp"></i> Chat</button></td>`;
-                    }
                 }
+                 renderCustomerDatabase();
                  const todayKey = localDateKey(new Date());
                  const overviewCounts = { waiting: 0, process: 0, ready: 0, overdue: 0, unpaid: 0, today: 0, revenue: 0 };
                  Object.values(servicesData).forEach(service => {

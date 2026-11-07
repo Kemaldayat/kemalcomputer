@@ -225,7 +225,7 @@
                             <tr>
                                 <th>Nama Pelanggan</th>
                                 <th>Nomor WhatsApp</th>
-                                <th style="text-align: center;">Total Servis</th>
+                                <th style="text-align: center;">Servis / Invoice</th>
                                 <th>Total Transaksi</th>
                                 <th>Riwayat Device</th>
                                 <th class="action-column">Aksi</th>
@@ -301,22 +301,28 @@
                 <section class="transaction-intro">
                     <div>
                         <h2>Invoice Penjualan</h2>
-                        <p>Buat nota penjualan untuk pelanggan. Stok akan diperiksa dan dikurangi otomatis saat invoice disimpan.</p>
+                        <p>Tambahkan barang dari inventaris atau item bebas seperti komponen rakit PC. Stok hanya berkurang untuk barang inventaris.</p>
                     </div>
                 </section>
                 <form id="salesInvoiceForm" class="settings-card transaction-form">
                     <h3><i class="fas fa-file-invoice-dollar"></i> Buat Invoice Penjualan</h3>
+                    <input type="hidden" id="salesEditingId">
                     <div class="transaction-fields">
                         <div class="form-group"><label for="salesCustomer">Nama pelanggan</label><input id="salesCustomer" type="text" required></div>
                         <div class="form-group"><label for="salesPhone">Nomor HP / WhatsApp</label><input id="salesPhone" type="tel"></div>
                         <div class="form-group"><label for="salesDate">Tanggal</label><input id="salesDate" type="date" required></div>
                         <div class="form-group"><label for="salesPayment">Status pembayaran</label><select id="salesPayment"><option>Lunas</option><option>Belum Dibayar</option></select></div>
                     </div>
-                    <div class="transaction-line-heading"><strong>Barang dijual</strong><button type="button" class="btn" onclick="addTransactionLine('sales')"><i class="fas fa-plus"></i> Tambah Barang</button></div>
+                    <div class="transaction-line-heading"><strong>Barang / Komponen</strong><button type="button" class="btn" onclick="addTransactionLine('sales')"><i class="fas fa-plus"></i> Tambah Item</button></div>
                     <div id="salesLines" class="transaction-lines"></div>
                     <div class="form-group"><label for="salesNotes">Catatan</label><textarea id="salesNotes" rows="2"></textarea></div>
                     <div class="transaction-total">Total: <strong id="salesTotal">Rp 0</strong></div>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Invoice Penjualan</button>
+                    <div class="transaction-line-heading">
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button type="submit" id="salesSubmitButton" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Invoice Penjualan</button>
+                            <button type="button" id="cancelSalesEditButton" class="btn" style="display: none;" onclick="cancelSalesInvoiceEdit()">Batal Edit</button>
+                        </div>
+                    </div>
                 </form>
                 <div class="table-responsive">
                     <table id="salesInvoiceTable">
