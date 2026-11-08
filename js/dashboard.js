@@ -1994,11 +1994,89 @@
             const printWindow = window.open('', '_blank');
             if (!printWindow) return showModal('Jendela cetak diblokir browser. Izinkan pop-up untuk mencetak invoice.', 'info');
             const paymentDetails = `<strong>Status:</strong> ${escapeHTML(invoice.pembayaran || '-')}${invoice.metodePembayaran ? `<br><strong>Metode:</strong> ${escapeHTML(invoice.metodePembayaran)}` : ''}`;
-            const partyDetails = `<strong>${partyLabel}:</strong> ${escapeHTML(partyName || '-')}<br>${!isPurchase ? `<strong>No. HP:</strong> ${escapeHTML(invoice.nomorHp || '-')}` : ''}`;
             const itemContent = isReceipt
                 ? `<div class="items">${rows}</div>`
                 : `<table><thead><tr><th>Barang</th><th>Jumlah</th><th>Harga Satuan</th><th>Subtotal</th></tr></thead><tbody>${rows}</tbody></table>`;
-            printWindow.document.write(`<!doctype html><html lang="id"><head><meta charset="utf-8"><title>${escapeHTML(invoiceId)}</title><style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#111;margin:30px auto;max-width:760px}.header{text-align:center;border-bottom:2px solid #111;padding-bottom:16px}.header img{max-width:72px;max-height:72px}.header h1{margin:8px 0}.meta{display:flex;justify-content:space-between;gap:12px;margin:20px 0}.meta>div{line-height:1.7}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd}th{background:#f3f4f6}.total{text-align:right;font-size:1.2rem;font-weight:bold;margin-top:18px}.note{margin-top:16px;white-space:pre-wrap}.warranty{margin-top:12px;padding-top:10px;border-top:1px dashed #888;white-space:pre-wrap}.receipt-title{font-weight:bold;text-align:center;margin:14px 0}.item{padding:7px 0;border-bottom:1px dashed #aaa;overflow-wrap:anywhere}.item-details{display:flex;justify-content:space-between;gap:6px;margin-top:4px}.receipt-total{border-top:2px dashed #111;padding-top:10px}.receipt-contact{overflow-wrap:anywhere}@media print{@page{size:${isReceipt ? '80mm 200mm' : 'A4'};margin:${isReceipt ? '4mm' : '15mm'}}body{max-width:${isReceipt ? '72mm' : 'none'};margin:0;font-size:${isReceipt ? '11px' : '12px'}}.header{padding-bottom:10px}.header img{max-width:48px;max-height:48px}.header h1{font-size:${isReceipt ? '16px' : '24px'}}.meta{display:block;margin:12px 0}.meta>div+div{margin-top:8px}th,td{padding:6px 4px}.total{font-size:${isReceipt ? '1rem' : '1.2rem'}}.note,.warranty{font-size:10px}}</style></head><body><header class="header"><img src="${escapeHTML(antiBlokir(settings.logoUrl || ''))}" onerror="this.style.display='none'"><h1>${escapeHTML(settings.namaToko || 'Kemal Computer')}</h1><p>${escapeHTML(settings.alamat || '')}</p><p class="receipt-contact">${escapeHTML(settings.wa || '')}</p></header><div class="receipt-title">${isReceipt ? 'STRUK' : 'INVOICE'}</div><div class="meta"><div><strong>Invoice:</strong> ${escapeHTML(invoiceId)}<br><strong>Tanggal:</strong> ${escapeHTML(invoice.tanggal || '-')}</div><div>${partyDetails}<br>${paymentDetails}</div></div>${itemContent}<p class="total${isReceipt ? ' receipt-total' : ''}">Total: ${formatTransactionCurrency(invoice.total)}</p>${invoice.catatan ? `<p class="note"><strong>Catatan:</strong> ${escapeHTML(invoice.catatan)}</p>` : ''}${!isPurchase && invoice.garansi ? `<p class="warranty"><strong>Garansi / ketentuan:</strong><br>${escapeHTML(invoice.garansi)}</p>` : ''}<p style="text-align:center;margin-top:24px">Terima kasih telah bertransaksi.</p>${scriptTag}</body></html>`);
+            printWindow.document.write(`<!doctype html>
+                <html lang="id">
+                <head>
+                    <meta charset="utf-8">
+                    <title>${escapeHTML(invoiceId)}</title>
+                    <style>
+                        *{box-sizing:border-box}
+                        body{font-family:Arial,sans-serif;color:#17212b;margin:30px auto;max-width:760px;font-size:12px}
+                        .watermark{display:none}
+                        .page-content{position:relative;z-index:1}
+                        .header{display:flex;align-items:center;gap:18px;border-bottom:3px solid #0d9488;padding-bottom:18px}
+                        .header img{width:68px;height:68px;object-fit:contain}
+                        .brand{flex:1}
+                        .brand h1{font-size:22px;color:#123b40;margin:0 0 6px}
+                        .brand p{margin:3px 0;color:#52636a}
+                        .document-label{font-size:18px;font-weight:700;letter-spacing:2px;color:#0d9488}
+                        .receipt-title{font-weight:bold;text-align:center;margin:14px 0}
+                        .meta{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:22px 0}
+                        .meta>div{line-height:1.8}
+                        .meta-card{border:1px solid #dce5e5;border-radius:8px;padding:12px 15px}
+                        .meta-heading{font-size:10px;font-weight:700;color:#0d9488;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+                        table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:20px}
+                        th{background:#eaf5f3;color:#214c4e;font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+                        th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #e1e8e8}
+                        th:nth-child(1){width:46%}
+                        th:nth-child(2),td:nth-child(2){width:12%;text-align:center}
+                        th:nth-child(3),td:nth-child(3){width:21%;text-align:right}
+                        th:nth-child(4),td:nth-child(4){width:21%;text-align:right}
+                        .total{display:flex;justify-content:flex-end;align-items:center;gap:20px;background:#eaf5f3;border-right:4px solid #0d9488;padding:14px 16px;margin-top:18px;font-size:13px;font-weight:700}
+                        .total strong{font-size:19px;color:#0d6864}
+                        .note{margin-top:18px;padding:10px 12px;background:#f7f9fa;border-radius:6px;white-space:pre-wrap}
+                        .warranty{margin-top:14px;padding:12px 14px;border:1px solid #b8dcd5;border-left:4px solid #0d9488;border-radius:6px;background:#f2faf8;white-space:pre-wrap;line-height:1.6}
+                        .warranty strong{color:#0d6864}
+                        .items .item{padding:7px 0;border-bottom:1px dashed #aaa;overflow-wrap:anywhere}
+                        .item-details{display:flex;justify-content:space-between;gap:6px;margin-top:4px}
+                        .receipt-total{border-top:2px dashed #111;padding-top:10px}
+                        .receipt-contact{overflow-wrap:anywhere}
+                        .footer{text-align:center;color:#52636a;margin:26px 0 0}
+                        @media print{
+                            @page{size:${isReceipt ? '80mm 200mm' : 'A4'};margin:${isReceipt ? '4mm' : '15mm'}}
+                            body{max-width:${isReceipt ? '72mm' : 'none'};margin:0;font-size:${isReceipt ? '11px' : '12px'};-webkit-print-color-adjust:exact;print-color-adjust:exact}
+                            .header{padding-bottom:10px}
+                            .header img{width:${isReceipt ? '48px' : '68px'};height:${isReceipt ? '48px' : '68px'}}
+                            .brand h1{font-size:${isReceipt ? '16px' : '22px'}}
+                            .meta{${isReceipt ? 'display:block;margin:12px 0' : ''}}
+                            ${isReceipt ? '.meta-card{border:0;padding:4px 0}.meta>div+div{margin-top:8px}.document-label{display:none}.header{display:block;text-align:center}.brand{text-align:center}' : ''}
+                            th,td{padding:${isReceipt ? '6px 4px' : '11px 9px'}}
+                            .total{font-size:${isReceipt ? '1rem' : '13px'}}
+                            .total strong{font-size:${isReceipt ? '1rem' : '19px'}}
+                            .note,.warranty{font-size:10px}
+                            ${isReceipt ? '' : `.watermark{display:flex;position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.045;align-items:center;justify-content:center}.watermark img{width:300px;height:300px;object-fit:contain}.page-content{position:relative;z-index:1}`}
+                        }
+                    </style>
+                </head>
+                <body class="${isReceipt ? 'receipt' : 'a4'}">
+                    ${isReceipt ? '' : `<div class="watermark"><img src="${escapeHTML(antiBlokir(settings.logoUrl || ''))}" alt=""></div>`}
+                    <main class="page-content">
+                        <header class="header">
+                            <img src="${escapeHTML(antiBlokir(settings.logoUrl || ''))}" onerror="this.style.display='none'" alt="Logo toko">
+                            <div class="brand">
+                                <h1>${escapeHTML(settings.namaToko || 'Kemal Computer')}</h1>
+                                <p>${escapeHTML(settings.alamat || '')}</p>
+                                <p class="receipt-contact">${escapeHTML(settings.wa || '')}</p>
+                            </div>
+                            <div class="document-label">${isReceipt ? 'STRUK' : 'INVOICE'}</div>
+                        </header>
+                        ${isReceipt ? '<div class="receipt-title">STRUK</div>' : ''}
+                        <section class="meta">
+                            <div class="meta-card"><div class="meta-heading">Detail transaksi</div><strong>No. Invoice:</strong> ${escapeHTML(invoiceId)}<br><strong>Tanggal:</strong> ${escapeHTML(invoice.tanggal || '-')}<br>${paymentDetails}</div>
+                            <div class="meta-card"><div class="meta-heading">${partyLabel}</div>${partyName ? escapeHTML(partyName) : '-'}${!isPurchase ? `<br><strong>No. HP:</strong> ${escapeHTML(invoice.nomorHp || '-')}` : ''}</div>
+                        </section>
+                        ${itemContent}
+                        <div class="total${isReceipt ? ' receipt-total' : ''}"><span>Total</span><strong>${formatTransactionCurrency(invoice.total)}</strong></div>
+                        ${invoice.catatan ? `<p class="note"><strong>Catatan:</strong> ${escapeHTML(invoice.catatan)}</p>` : ''}
+                        ${!isPurchase && invoice.garansi ? `<div class="warranty"><strong>Garansi / ketentuan</strong><br>${escapeHTML(invoice.garansi)}</div>` : ''}
+                        <footer class="footer">Terima kasih telah bertransaksi.</footer>
+                    </main>
+                    ${scriptTag}
+                </body>
+                </html>`);
             printWindow.document.close();
         };
 
