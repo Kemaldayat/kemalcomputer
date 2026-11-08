@@ -1031,11 +1031,23 @@ input[type="color"]::-webkit-color-swatch { border: none; border-radius: 8px; bo
     display: none;
 }
 
-.sales-invoice-actions {
+.invoice-actions {
     display: flex;
-    min-width: 154px;
     gap: 6px;
     flex-wrap: wrap;
+}
+
+.invoice-actions .print-button {
+    width: auto;
+    min-width: 40px;
+    height: 32px;
+    gap: 4px;
+    padding: 0 6px;
+    font-size: 0.75rem;
+}
+
+.sales-invoice-actions {
+    min-width: 220px;
 }
 
 .transaction-line select,

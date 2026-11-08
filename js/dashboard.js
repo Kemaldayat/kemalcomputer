@@ -340,15 +340,24 @@
                 const invoiceItems = Array.isArray(invoice.items) ? invoice.items : Object.values(invoice.items || {});
                 const itemNames = invoiceItems.map((item) => item.nama).join(', ');
                 const row = body.insertRow();
-                row.innerHTML = `<td><strong>${escapeHTML(id)}</strong></td><td>${escapeHTML(invoice.tanggal)}</td><td>${escapeHTML(invoice[counterpartyLabel === 'Pemasok' ? 'pemasok' : 'pelanggan'])}</td><td>${escapeHTML(itemNames)}</td><td class="biaya-text">${formatTransactionCurrency(invoice.total)}</td><td>${escapeHTML(invoice.pembayaran || '-')}</td><td class="action-column${counterpartyLabel === 'Pelanggan' ? ' sales-invoice-actions' : ''}"></td>`;
+                row.innerHTML = `<td><strong>${escapeHTML(id)}</strong></td><td>${escapeHTML(invoice.tanggal)}</td><td>${escapeHTML(invoice[counterpartyLabel === 'Pemasok' ? 'pemasok' : 'pelanggan'])}</td><td>${escapeHTML(itemNames)}</td><td class="biaya-text">${formatTransactionCurrency(invoice.total)}</td><td>${escapeHTML(invoice.pembayaran || '-')}</td><td class="action-column invoice-actions${counterpartyLabel === 'Pelanggan' ? ' sales-invoice-actions' : ''}"></td>`;
+                const invoiceType = counterpartyLabel === 'Pemasok' ? 'purchase' : 'sales';
                 const printButton = document.createElement('button');
                 printButton.className = 'icon-btn print-button';
                 printButton.type = 'button';
-                printButton.title = 'Cetak invoice';
-                printButton.setAttribute('aria-label', 'Cetak invoice');
-                printButton.innerHTML = '<i class="fas fa-print"></i>';
-                printButton.addEventListener('click', () => window.printBusinessInvoice(id, counterpartyLabel === 'Pemasok' ? 'purchase' : 'sales'));
+                printButton.title = 'Cetak invoice A4';
+                printButton.setAttribute('aria-label', 'Cetak invoice A4');
+                printButton.innerHTML = '<i class="fas fa-print"></i><span>A4</span>';
+                printButton.addEventListener('click', () => window.printBusinessInvoice(id, invoiceType, 'a4'));
                 row.lastElementChild.appendChild(printButton);
+                const receiptButton = document.createElement('button');
+                receiptButton.className = 'icon-btn print-button';
+                receiptButton.type = 'button';
+                receiptButton.title = 'Cetak struk 80 mm';
+                receiptButton.setAttribute('aria-label', 'Cetak struk 80 mm');
+                receiptButton.innerHTML = '<i class="fas fa-receipt"></i><span>80mm</span>';
+                receiptButton.addEventListener('click', () => window.printBusinessInvoice(id, invoiceType, 'receipt'));
+                row.lastElementChild.appendChild(receiptButton);
                 if (counterpartyLabel === 'Pelanggan') {
                     const whatsappButton = document.createElement('button');
                     whatsappButton.className = 'icon-btn whatsapp-button';
@@ -507,6 +516,8 @@
                 nomorHp: document.getElementById('salesPhone').value.trim(),
                 tanggal: document.getElementById('salesDate').value,
                 pembayaran: document.getElementById('salesPayment').value,
+                metodePembayaran: document.getElementById('salesPaymentMethod').value,
+                garansi: document.getElementById('salesWarranty').value.trim() || window.tokoSettings.teksGaransi || '',
                 catatan: document.getElementById('salesNotes').value.trim(),
                 items: lines,
                 total: lines.reduce((sum, line) => sum + line.subtotal, 0),
@@ -546,6 +557,8 @@
             document.getElementById('salesPhone').value = invoice.nomorHp || '';
             document.getElementById('salesDate').value = invoice.tanggal || localDateKey(new Date());
             document.getElementById('salesPayment').value = invoice.pembayaran || 'Lunas';
+            document.getElementById('salesPaymentMethod').value = invoice.metodePembayaran || '';
+            document.getElementById('salesWarranty').value = invoice.garansi || '';
             document.getElementById('salesNotes').value = invoice.catatan || '';
             document.getElementById('salesLines').innerHTML = '';
             const items = Array.isArray(invoice.items) ? invoice.items : Object.values(invoice.items || {});
@@ -595,7 +608,7 @@
             if (!/^62\d{8,15}$/.test(phone)) return showModal('Nomor WhatsApp tidak valid. Gunakan format Indonesia, contoh 628123456789.', 'info');
             const items = Array.isArray(invoice.items) ? invoice.items : Object.values(invoice.items || {});
             const itemLines = items.map((item) => `- ${item.nama} x${Number(item.jumlah) || 0}: ${formatTransactionCurrency(item.subtotal)}`).join('\n');
-            const message = `Halo ${invoice.pelanggan || 'Kak'}, berikut invoice dari ${window.tokoSettings?.namaToko || 'toko kami'}.\n\nNo. Invoice: ${invoiceId}\nTanggal: ${invoice.tanggal || '-'}\n${itemLines}\n\nTotal: ${formatTransactionCurrency(invoice.total)}\nStatus: ${invoice.pembayaran || 'Belum Dibayar'}${invoice.catatan ? `\nCatatan: ${invoice.catatan}` : ''}\n\nTerima kasih.`;
+            const message = `Halo ${invoice.pelanggan || 'Kak'}, berikut invoice dari ${window.tokoSettings?.namaToko || 'toko kami'}.\n\nNo. Invoice: ${invoiceId}\nTanggal: ${invoice.tanggal || '-'}\n${itemLines}\n\nTotal: ${formatTransactionCurrency(invoice.total)}\nStatus: ${invoice.pembayaran || 'Belum Dibayar'}${invoice.metodePembayaran ? `\nMetode pembayaran: ${invoice.metodePembayaran}` : ''}${invoice.garansi ? `\nGaransi: ${invoice.garansi}` : ''}${invoice.catatan ? `\nCatatan: ${invoice.catatan}` : ''}\n\nTerima kasih.${window.tokoSettings?.wa ? `\n${window.tokoSettings.namaToko}: ${window.tokoSettings.wa}` : ''}`;
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
         };
         document.getElementById('warrantyForm').addEventListener('submit', async (event) => {
@@ -1398,7 +1411,14 @@
                 if (snapshot.exists()) {
                     const data = snapshot.val();
 
-                    if (data.namaToko) window.tokoSettings.namaToko = data.namaToko;
+                    window.tokoSettings = {
+                        ...window.tokoSettings,
+                        namaToko: data.namaToko || window.tokoSettings.namaToko,
+                        logoUrl: data.logoUrl || window.tokoSettings.logoUrl,
+                        alamat: data.alamat || '',
+                        wa: data.wa || '',
+                        teksGaransi: data.teksGaransi || ''
+                    };
                     if (data.warnaUtama) document.documentElement.style.setProperty('--primary-color', data.warnaUtama);
 
                     document.getElementById('adminTitle').innerText = `Super Admin - ${window.tokoSettings.namaToko}`;
@@ -1958,20 +1978,27 @@
             pw.document.close();
         };
 
-        window.printBusinessInvoice = (invoiceId, type) => {
+        window.printBusinessInvoice = (invoiceId, type, format = 'a4') => {
             const invoice = transactionData[type === 'purchase' ? 'purchases' : 'sales'][invoiceId];
             if (!invoice) return showModal('Invoice tidak ditemukan.', 'info');
             const isPurchase = type === 'purchase';
+            const isReceipt = format === 'receipt';
             const partyLabel = isPurchase ? 'Pemasok' : 'Pelanggan';
             const partyName = isPurchase ? invoice.pemasok : invoice.pelanggan;
-            const rows = (Array.isArray(invoice.items) ? invoice.items : Object.values(invoice.items || {})).map((item) =>
-                `<tr><td>${escapeHTML(item.nama)}</td><td>${Number(item.jumlah) || 0}</td><td>${formatTransactionCurrency(item.harga)}</td><td>${formatTransactionCurrency(item.subtotal)}</td></tr>`
-            ).join('');
+            const items = Array.isArray(invoice.items) ? invoice.items : Object.values(invoice.items || {});
+            const rows = isReceipt
+                ? items.map((item) => `<div class="item"><strong>${escapeHTML(item.nama)}</strong><div class="item-details"><span>${Number(item.jumlah) || 0} x ${formatTransactionCurrency(item.harga)}</span><strong>${formatTransactionCurrency(item.subtotal)}</strong></div></div>`).join('')
+                : items.map((item) => `<tr><td>${escapeHTML(item.nama)}</td><td>${Number(item.jumlah) || 0}</td><td>${formatTransactionCurrency(item.harga)}</td><td>${formatTransactionCurrency(item.subtotal)}</td></tr>`).join('');
             const settings = window.tokoSettings || {};
             const scriptTag = '<scr' + 'ipt> setTimeout(() => window.print(), 500); </scr' + 'ipt>';
             const printWindow = window.open('', '_blank');
             if (!printWindow) return showModal('Jendela cetak diblokir browser. Izinkan pop-up untuk mencetak invoice.', 'info');
-            printWindow.document.write(`<!doctype html><html lang="id"><head><meta charset="utf-8"><title>${escapeHTML(invoiceId)}</title><style>body{font-family:Arial,sans-serif;max-width:760px;margin:30px auto;color:#111}.header{text-align:center;border-bottom:2px solid #111;padding-bottom:16px}.header img{max-width:72px;max-height:72px}.header h1{margin:8px 0}.meta{display:flex;justify-content:space-between;margin:20px 0}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd}th{background:#f3f4f6}.total{text-align:right;font-size:1.2rem;font-weight:bold;margin-top:18px}.note{margin-top:16px}@media print{body{margin:0 auto}}</style></head><body><header class="header"><img src="${escapeHTML(antiBlokir(settings.logoUrl))}" onerror="this.style.display='none'"><h1>${escapeHTML(settings.namaToko || 'Kemal Computer')}</h1><p>${escapeHTML(settings.alamat || '')}</p><p>${escapeHTML(settings.wa || '')}</p></header><div class="meta"><div><strong>Invoice:</strong> ${escapeHTML(invoiceId)}<br><strong>Tanggal:</strong> ${escapeHTML(invoice.tanggal)}</div><div><strong>${partyLabel}:</strong> ${escapeHTML(partyName)}<br><strong>Pembayaran:</strong> ${escapeHTML(invoice.pembayaran || '-')}</div></div><table><thead><tr><th>Barang</th><th>Jumlah</th><th>Harga Satuan</th><th>Subtotal</th></tr></thead><tbody>${rows}</tbody></table><p class="total">Total: ${formatTransactionCurrency(invoice.total)}</p><p class="note">${escapeHTML(invoice.catatan || '')}</p><p style="text-align:center;margin-top:32px">Terima kasih telah bertransaksi.</p>${scriptTag}</body></html>`);
+            const paymentDetails = `<strong>Status:</strong> ${escapeHTML(invoice.pembayaran || '-')}${invoice.metodePembayaran ? `<br><strong>Metode:</strong> ${escapeHTML(invoice.metodePembayaran)}` : ''}`;
+            const partyDetails = `<strong>${partyLabel}:</strong> ${escapeHTML(partyName || '-')}<br>${!isPurchase ? `<strong>No. HP:</strong> ${escapeHTML(invoice.nomorHp || '-')}` : ''}`;
+            const itemContent = isReceipt
+                ? `<div class="items">${rows}</div>`
+                : `<table><thead><tr><th>Barang</th><th>Jumlah</th><th>Harga Satuan</th><th>Subtotal</th></tr></thead><tbody>${rows}</tbody></table>`;
+            printWindow.document.write(`<!doctype html><html lang="id"><head><meta charset="utf-8"><title>${escapeHTML(invoiceId)}</title><style>*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#111;margin:30px auto;max-width:760px}.header{text-align:center;border-bottom:2px solid #111;padding-bottom:16px}.header img{max-width:72px;max-height:72px}.header h1{margin:8px 0}.meta{display:flex;justify-content:space-between;gap:12px;margin:20px 0}.meta>div{line-height:1.7}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px;border-bottom:1px solid #ddd}th{background:#f3f4f6}.total{text-align:right;font-size:1.2rem;font-weight:bold;margin-top:18px}.note{margin-top:16px;white-space:pre-wrap}.warranty{margin-top:12px;padding-top:10px;border-top:1px dashed #888;white-space:pre-wrap}.receipt-title{font-weight:bold;text-align:center;margin:14px 0}.item{padding:7px 0;border-bottom:1px dashed #aaa;overflow-wrap:anywhere}.item-details{display:flex;justify-content:space-between;gap:6px;margin-top:4px}.receipt-total{border-top:2px dashed #111;padding-top:10px}.receipt-contact{overflow-wrap:anywhere}@media print{@page{size:${isReceipt ? '80mm 200mm' : 'A4'};margin:${isReceipt ? '4mm' : '15mm'}}body{max-width:${isReceipt ? '72mm' : 'none'};margin:0;font-size:${isReceipt ? '11px' : '12px'}}.header{padding-bottom:10px}.header img{max-width:48px;max-height:48px}.header h1{font-size:${isReceipt ? '16px' : '24px'}}.meta{display:block;margin:12px 0}.meta>div+div{margin-top:8px}th,td{padding:6px 4px}.total{font-size:${isReceipt ? '1rem' : '1.2rem'}}.note,.warranty{font-size:10px}}</style></head><body><header class="header"><img src="${escapeHTML(antiBlokir(settings.logoUrl || ''))}" onerror="this.style.display='none'"><h1>${escapeHTML(settings.namaToko || 'Kemal Computer')}</h1><p>${escapeHTML(settings.alamat || '')}</p><p class="receipt-contact">${escapeHTML(settings.wa || '')}</p></header><div class="receipt-title">${isReceipt ? 'STRUK' : 'INVOICE'}</div><div class="meta"><div><strong>Invoice:</strong> ${escapeHTML(invoiceId)}<br><strong>Tanggal:</strong> ${escapeHTML(invoice.tanggal || '-')}</div><div>${partyDetails}<br>${paymentDetails}</div></div>${itemContent}<p class="total${isReceipt ? ' receipt-total' : ''}">Total: ${formatTransactionCurrency(invoice.total)}</p>${invoice.catatan ? `<p class="note"><strong>Catatan:</strong> ${escapeHTML(invoice.catatan)}</p>` : ''}${!isPurchase && invoice.garansi ? `<p class="warranty"><strong>Garansi / ketentuan:</strong><br>${escapeHTML(invoice.garansi)}</p>` : ''}<p style="text-align:center;margin-top:24px">Terima kasih telah bertransaksi.</p>${scriptTag}</body></html>`);
             printWindow.document.close();
         };
 

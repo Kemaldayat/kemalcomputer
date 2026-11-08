@@ -312,6 +312,8 @@
                         <div class="form-group"><label for="salesPhone">Nomor HP / WhatsApp</label><input id="salesPhone" type="tel"></div>
                         <div class="form-group"><label for="salesDate">Tanggal</label><input id="salesDate" type="date" required></div>
                         <div class="form-group"><label for="salesPayment">Status pembayaran</label><select id="salesPayment"><option>Lunas</option><option>Belum Dibayar</option></select></div>
+                        <div class="form-group"><label for="salesPaymentMethod">Metode pembayaran</label><select id="salesPaymentMethod"><option value="">Pilih metode</option><option>Tunai</option><option>Transfer</option><option>QRIS</option><option>Kartu</option><option>Lainnya</option></select></div>
+                        <div class="form-group"><label for="salesWarranty">Garansi / ketentuan</label><input id="salesWarranty" type="text" placeholder="Contoh: Garansi toko 1 tahun"></div>
                     </div>
                     <div class="transaction-line-heading"><strong>Barang / Komponen</strong><button type="button" class="btn" onclick="addTransactionLine('sales')"><i class="fas fa-plus"></i> Tambah Item</button></div>
                     <div id="salesLines" class="transaction-lines"></div>
