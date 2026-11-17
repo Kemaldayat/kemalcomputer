@@ -20,6 +20,15 @@ const formatRupiah = (angka) => {
 const escapeHTML = (str) => String(str || '').replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
 window.escapeHTML = escapeHTML;
 
+const getSafeExternalUrl = (value) => {
+    try {
+        const url = new URL(value);
+        return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : '';
+    } catch {
+        return '';
+    }
+};
+
 let globalWaNumber = "";
 let currentSlide = 0; 
 let slideInterval; 
@@ -356,6 +365,7 @@ async function loadWebsiteSettings() {
 // Track Service
 window.currentTrackedService = null; 
 window.currentTrackedCode = null;
+const shownMapsReviewPrompts = new Set();
 
 window.trackService = async (kodeParam = null) => {
     const searchButton = document.getElementById('searchButton');
@@ -402,7 +412,7 @@ window.trackService = async (kodeParam = null) => {
             }
 
             let garansiHtml = '';
-            if (service.garansi_sampai) {
+            if (service.status === 'Diambil' && service.garansi_sampai) {
                 const now = new Date();
                 const garansiDate = new Date(service.garansi_sampai);
                 const formatter = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -428,23 +438,26 @@ window.trackService = async (kodeParam = null) => {
             let payButtonHtml = '';
             if (service.status === 'Selesai' && payStatus !== 'Lunas' && service.biaya > 0) {
                 const settings = window.tokoSettings || {};
-                const tipePembayaran = settings.tipePembayaran || 'manual';
 
-                if (tipePembayaran === 'otomatis') {
+                if (Number(service.biaya) > 500000) {
                     payButtonHtml = `
                     <div style="margin-top: 1rem;">
-                        <button id="payOnlineBtn" onclick="payServiceOnline('${code}')" class="btn" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; width: 100%; padding: 14px; font-weight: 600; font-size: 1rem; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); transition: all 0.2s;"><i class="fas fa-wallet"></i> Bayar Sekarang (QRIS / E-Wallet / VA)</button>
+                        <button id="payOnlineBtn" onclick="window.showManualPaymentModal('${code}', ${Number(service.biaya)}, '${settings.bcaNoRek || ''}', '${settings.bcaNama || ''}', '')" class="btn" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; width: 100%; padding: 14px; font-weight: 600; font-size: 1rem; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); transition: all 0.2s;"><i class="fas fa-wallet"></i> Pilih Transfer / Tunai</button>
                     </div>
                     `;
                 } else {
-                    // Manual Transfer / QRIS Statis -> Menggunakan Pop-up Modal untuk kerapian UI
                     payButtonHtml = `
                     <div style="margin-top: 1rem;">
-                        <button id="payOnlineBtn" onclick="window.showManualPaymentModal('${code}', ${service.biaya}, '${settings.bcaNoRek || ''}', '${settings.bcaNama || ''}', '${settings.qrisUrl || ''}')" class="btn" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; width: 100%; padding: 14px; font-weight: 600; font-size: 1rem; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); transition: all 0.2s;"><i class="fas fa-wallet"></i> Bayar Sekarang (QRIS / Transfer BCA)</button>
+                        <button id="payOnlineBtn" onclick="window.showManualPaymentModal('${code}', ${Number(service.biaya)}, '${settings.bcaNoRek || ''}', '${settings.bcaNama || ''}', '${settings.qrisUrl || ''}')" class="btn" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; width: 100%; padding: 14px; font-weight: 600; font-size: 1rem; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); transition: all 0.2s;"><i class="fas fa-wallet"></i> Bayar dengan QRIS Statis / Transfer</button>
                     </div>
                     `;
                 }
             }
+
+            const mapsReviewUrl = getSafeExternalUrl(window.tokoSettings?.reviewMapsUrl);
+            const mapsReviewHtml = service.status === 'Selesai' && mapsReviewUrl
+                ? `<div style="margin-top:1rem; padding:1rem; border-radius:10px; background:rgba(13,148,136,0.08); text-align:center;"><p style="margin:0 0 0.75rem; font-weight:600;">Servis sudah selesai. Bantu kami dengan memberikan ulasan di Google Maps.</p><button type="button" class="btn" onclick="window.showMapsReviewPopup()" style="background:var(--color-primary,#0d9488); color:white; padding:10px 16px; border:0; border-radius:8px; cursor:pointer;"><i class="fas fa-star"></i> Beri Ulasan di Google Maps</button></div>`
+                : '';
 
             // === STEP TRACKER LOGIC ===
             // Warna konsisten: completed = teal, active = sesuai step, pending = abu
@@ -812,11 +825,16 @@ window.trackService = async (kodeParam = null) => {
                     ${payRow}
                     ${garansiHtml}
                 </div>
+                ${mapsReviewHtml}
                 <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 10px;">
                     <button onclick="printCustomerInvoice()" class="btn" style="background-color: var(--color-primary, #0d9488); color: white; width: 100%; padding: 14px; font-weight: 600; font-size: 1rem; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="fas fa-file-download"></i> Download / Cetak Nota (PDF)</button>
                     ${payButtonHtml}
                 </div>
             `;
+            if (service.status === 'Selesai' && mapsReviewUrl && !shownMapsReviewPrompts.has(code)) {
+                shownMapsReviewPrompts.add(code);
+                window.setTimeout(() => window.showMapsReviewPopup(), 0);
+            }
         } else { 
             trackingContent.innerHTML = `<div style="background: rgba(239, 68, 68, 0.1); color: var(--color-danger); padding: 1rem; border-radius: var(--radius-md); display: flex; align-items: center; gap: 0.75rem;"><i class="fas fa-exclamation-circle"></i> Invoice <b>${escapeHTML(code)}</b> tidak ditemukan.</div>`; 
         }
@@ -828,47 +846,6 @@ window.trackService = async (kodeParam = null) => {
         searchButtonText.textContent = 'Lacak Sekarang'; 
         searchSpinner.classList.add('hidden'); 
         searchButton.disabled = false; 
-    }
-};
-
-// Fungsi bayar online via Midtrans Redirect
-window.payServiceOnline = async (orderId) => {
-    const payBtn = document.getElementById('payOnlineBtn');
-    if (!payBtn) return;
-
-    const originalText = payBtn.innerHTML;
-    payBtn.disabled = true;
-    payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyiapkan Pembayaran...';
-
-    try {
-        const response = await fetch('/api/create-payment', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ orderId })
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.error || 'Gagal membuat invoice pembayaran.');
-        }
-
-        if (data.redirect_url) {
-            // Arahkan pelanggan ke halaman pembayaran Midtrans yang aman
-            window.location.href = data.redirect_url;
-        } else {
-            throw new Error('URL pembayaran tidak diterima dari server.');
-        }
-    } catch (error) {
-        console.error('Error payServiceOnline:', error);
-        if (window.showSweetAlert) {
-            window.showSweetAlert(error.message, 'error');
-        } else {
-            alert(error.message);
-        }
-        payBtn.disabled = false;
-        payBtn.innerHTML = originalText;
     }
 };
 
@@ -901,7 +878,8 @@ window.showManualPaymentModal = (code, amount, bcaNoRek, bcaNama, qrisUrl) => {
         return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(angka); 
     };
 
-    let qrisImgHtml = qrisUrl 
+    const isHighValuePayment = Number(amount) > 500000;
+    let qrisImgHtml = !isHighValuePayment && qrisUrl
         ? `<div style="text-align:center; margin-bottom: 1.25rem;"><img src="${antiBlokir(qrisUrl)}" alt="QRIS Toko" style="max-width: 210px; border-radius: 12px; border: 1px solid var(--color-border); padding: 8px; background: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); display: block; margin: 0 auto;"><p style="font-size:0.8rem; color:#64748b; margin-top:6px; font-weight: 500;">Scan QRIS di atas untuk membayar</p></div>` 
         : '';
     
@@ -927,8 +905,17 @@ window.showManualPaymentModal = (code, amount, bcaNoRek, bcaNama, qrisUrl) => {
             <p style="margin:0; color:var(--color-text-muted);">Atas Nama: <b style="color:var(--color-text);">${escapeHTML(bcaNama || '')}</b></p>
         </div>`;
     }
+
+    const cashHtml = isHighValuePayment
+        ? `<div style="background:rgba(16,185,129,0.08); padding:1rem; border-radius:10px; border:1px solid rgba(16,185,129,0.2); margin-bottom:1.25rem; text-align:left; font-size:0.9rem;"><p style="margin:0; color:var(--color-text);"><i class="fas fa-money-bill-wave" style="color:#10b981;"></i> <b>Pembayaran tunai</b><br>Silakan bayar langsung di toko. Hubungi admin melalui WhatsApp untuk konfirmasi.</p></div>`
+        : '';
+    if (isHighValuePayment && !transferHtml) {
+        transferHtml = `<div style="background:rgba(0,0,0,0.02); padding:1rem; border-radius:10px; border:1px solid var(--color-border); margin-bottom:1.25rem; text-align:left; font-size:0.9rem; color:var(--color-text-muted);">Untuk pembayaran transfer, silakan hubungi admin melalui WhatsApp untuk mendapatkan rekening tujuan.</div>`;
+    }
     
-    let pesanWA = `Halo Admin, saya ingin konfirmasi pembayaran untuk nomor invoice *${code}* sebesar *${formatRupiahVal(amount)}*.\n\nBerikut bukti transfer saya:`;
+    let pesanWA = isHighValuePayment
+        ? `Halo Admin, saya ingin konfirmasi pembayaran untuk nomor invoice *${code}* sebesar *${formatRupiahVal(amount)}*. Saya memilih pembayaran melalui transfer bank atau tunai di toko.`
+        : `Halo Admin, saya ingin konfirmasi pembayaran untuk nomor invoice *${code}* sebesar *${formatRupiahVal(amount)}*.\n\nBerikut bukti transfer saya:`;
     let waUrl = `https://wa.me/${globalWaNumber}?text=${encodeURIComponent(pesanWA)}`;
     
     modal.innerHTML = `
@@ -974,9 +961,10 @@ window.showManualPaymentModal = (code, amount, bcaNoRek, bcaNama, qrisUrl) => {
                 
                 ${qrisImgHtml}
                 ${transferHtml}
+                ${cashHtml}
                 
                 <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 10px;">
-                    <a href="${waUrl}" target="_blank" class="btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; width: 100%; padding: 14px; font-weight: 600; font-size: 1rem; border-radius: 10px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); transition: all 0.2s; text-align: center;"><i class="fab fa-whatsapp"></i> Kirim Bukti Transfer WA</a>
+                    <a href="${waUrl}" target="_blank" class="btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; width: 100%; padding: 14px; font-weight: 600; font-size: 1rem; border-radius: 10px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); transition: all 0.2s; text-align: center;"><i class="fab fa-whatsapp"></i> ${isHighValuePayment ? 'Konfirmasi Pembayaran via WhatsApp' : 'Kirim Bukti Transfer WA'}</a>
                     <button onclick="document.getElementById('manualPayModal').style.display='none'" class="btn" style="background: var(--color-border); color: var(--color-text); width: 100%; padding: 12px; font-weight: 600; font-size: 0.95rem; border-radius: 10px; border: none; cursor: pointer;">Tutup</button>
                 </div>
             </div>
@@ -993,11 +981,39 @@ if (checkStatusForm) {
     });
 }
 
+window.showMapsReviewPopup = () => {
+    const reviewUrl = getSafeExternalUrl(window.tokoSettings?.reviewMapsUrl);
+    if (!reviewUrl) return;
+
+    let modal = document.getElementById('mapsReviewModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'mapsReviewModal';
+        modal.style.cssText = 'position:fixed; inset:0; z-index:999999; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(15,23,42,0.65); backdrop-filter:blur(6px);';
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) modal.style.display = 'none';
+        });
+        document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+        <div style="width:100%; max-width:380px; padding:24px; border-radius:16px; background:var(--color-bg,#fff); color:var(--color-text,#0f172a); text-align:center; box-shadow:0 20px 40px rgba(0,0,0,0.2);">
+            <div style="font-size:2rem; color:#f59e0b;"><i class="fas fa-star"></i></div>
+            <h3 style="margin:10px 0;">Servis sudah selesai</h3>
+            <p style="margin:0 0 20px;">Bagaimana pengalaman Anda? Ulasan Anda di Google Maps sangat membantu kami.</p>
+            <a href="${escapeHTML(reviewUrl)}" target="_blank" rel="noopener noreferrer" style="display:block; padding:12px; border-radius:8px; background:var(--color-primary,#0d9488); color:white; text-decoration:none; font-weight:600;"><i class="fas fa-map-marker-alt"></i> Tulis Ulasan di Google Maps</a>
+            <button type="button" onclick="document.getElementById('mapsReviewModal').style.display='none'" style="margin-top:10px; padding:10px; border:0; background:transparent; color:var(--color-text-muted,#64748b); cursor:pointer;">Nanti saja</button>
+        </div>
+    `;
+    modal.style.display = 'flex';
+};
+
 // Klaim Garansi Customer via WhatsApp
 window.claimWarranty = () => {
     if (!window.currentTrackedService || !window.currentTrackedCode) return;
     const s = window.currentTrackedService;
     const code = window.currentTrackedCode;
+    if (s.status !== 'Diambil' || !s.garansi_sampai || new Date(s.garansi_sampai) < new Date()) return;
     
     if (!globalWaNumber) {
         if (window.showSweetAlert) window.showSweetAlert('Nomor WA Toko belum diatur.', 'info');

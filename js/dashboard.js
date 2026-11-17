@@ -1428,6 +1428,7 @@
                     document.getElementById('setWa').value = data.wa || '';
                     document.getElementById('setAlamat').value = data.alamat || '';
                     document.getElementById('setMaps').value = data.maps || '';
+                    if (document.getElementById('setReviewMapsUrl')) document.getElementById('setReviewMapsUrl').value = data.reviewMapsUrl || '';
                     document.getElementById('setHeadline').value = data.headline || '';
                     document.getElementById('setSubHeadline').value = data.subHeadline || '';
                     document.getElementById('setIg').value = data.ig || '';
@@ -1437,7 +1438,7 @@
                     document.getElementById('hexWarnaTeks').innerText = data.warnaUtama || '#0d9488';
                     document.getElementById('setTeksGaransi').value = data.teksGaransi || '';
 
-                    if (document.getElementById('setTipePembayaran')) document.getElementById('setTipePembayaran').value = data.tipePembayaran || 'manual';
+                    if (document.getElementById('setTipePembayaran')) document.getElementById('setTipePembayaran').value = 'manual';
                     if (document.getElementById('setBcaNoRek')) document.getElementById('setBcaNoRek').value = data.bcaNoRek || '';
                     if (document.getElementById('setBcaNama')) document.getElementById('setBcaNama').value = data.bcaNama || '';
                     if (document.getElementById('setQrisUrl')) document.getElementById('setQrisUrl').value = data.qrisUrl || '';
@@ -1609,7 +1610,7 @@
 
             const dataToSave = {
                 namaToko: document.getElementById('setNamaToko').value.trim(), logoUrl: document.getElementById('setLogoUrl').value || 'images/logo.png', nib: document.getElementById('setNib').value.trim(), legalitasDesc: document.getElementById('setLegalitasDesc').value.trim(),
-                wa: document.getElementById('setWa').value.trim(), alamat: document.getElementById('setAlamat').value.trim(), maps: document.getElementById('setMaps').value.trim(), headline: document.getElementById('setHeadline').value.trim(), subHeadline: document.getElementById('setSubHeadline').value.trim(),
+                wa: document.getElementById('setWa').value.trim(), alamat: document.getElementById('setAlamat').value.trim(), maps: document.getElementById('setMaps').value.trim(), reviewMapsUrl: document.getElementById('setReviewMapsUrl')?.value.trim() || '', headline: document.getElementById('setHeadline').value.trim(), subHeadline: document.getElementById('setSubHeadline').value.trim(),
                 ig: document.getElementById('setIg').value.trim(), tiktok: document.getElementById('setTiktok').value.trim(), youtube: document.getElementById('setYoutube').value.trim(), warnaUtama: document.getElementById('setWarnaUtama').value, teksGaransi: document.getElementById('setTeksGaransi').value.trim(),
                 sliders: finalSliders, layanans: layanansArr, testimonis: testimoniArr, katalog: katalogArr,
                 tipePembayaran: document.getElementById('setTipePembayaran')?.value || 'manual',

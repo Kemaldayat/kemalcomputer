@@ -588,6 +588,10 @@
                                 required></textarea></div>
                         <div class="form-group"><label>Link Google Maps (Embed src)</label><textarea id="setMaps"
                                 rows="2"></textarea></div>
+                        <div class="form-group"><label>Link Ulasan Google Maps</label><input type="url"
+                                id="setReviewMapsUrl" placeholder="https://g.page/r/.../review">
+                            <small style="color: var(--text-light); display:block; margin-top:5px;">Popup ajakan ulasan akan ditampilkan kepada pelanggan setelah status servis menjadi Selesai.</small>
+                        </div>
                     </div>
                 </div>
 
@@ -843,8 +847,8 @@
                             <label>Pilih Metode Pembayaran</label>
                             <select id="setTipePembayaran" onchange="togglePembayaranFields()"
                                 style="padding:10px; border:1px solid var(--border-color); border-radius:6px; background:var(--input-bg); color:var(--text-color); font-family:inherit; font-size:0.95em; width:100%;">
-                                <option value="manual">QRIS Statis & Transfer Manual (Bebas Biaya Admin)</option>
-                                <option value="otomatis">Midtrans Gateway (Otomatis / Butuh Server Key Vercel)</option>
+                                <option value="manual">QRIS Statis & Transfer Manual (Sementara, DOKU menunggu validasi)</option>
+                                <option value="doku" disabled>DOKU QRIS Dinamis (tersedia setelah validasi akun)</option>
                             </select>
                         </div>
 
