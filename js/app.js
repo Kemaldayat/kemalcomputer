@@ -831,7 +831,7 @@ window.trackService = async (kodeParam = null) => {
                     ${payButtonHtml}
                 </div>
             `;
-            if (service.status === 'Selesai' && mapsReviewUrl && !shownMapsReviewPrompts.has(code)) {
+            if (service.status === 'Diambil' && mapsReviewUrl && !shownMapsReviewPrompts.has(code)) {
                 shownMapsReviewPrompts.add(code);
                 window.setTimeout(() => window.showMapsReviewPopup(), 0);
             }
